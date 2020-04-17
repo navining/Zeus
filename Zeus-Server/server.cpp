@@ -47,17 +47,34 @@ int main() {
 	// Accept
 	sockaddr_in clientAddr = {};
 	int addrlen = sizeof(sockaddr_in);
+	SOCKET _cli = accept(_sock, (sockaddr *)&clientAddr, &addrlen);
+	if (INVALID_SOCKET == _cli) {
+		cout << "Invaild client socket" << endl;
+	}
+	cout << "New client: " << inet_ntoa(clientAddr.sin_addr) << endl;
 
 	while (true) {
-		SOCKET _cli = accept(_sock, (sockaddr *)&clientAddr, &addrlen);
-		if (INVALID_SOCKET == _cli) {
-			cout << "Invaild client socket" << endl;
+		// Recv
+		char recvBuf[128] = {};
+		int recvlen = recv(_cli, recvBuf, 128, 0);
+		if (recvlen <= 0) {
+			cout << "Client quits" << endl;
+			break;
 		}
-		
-		cout << "New client: " << inet_ntoa(clientAddr.sin_addr) << endl;
+		cout << "Recieve command: " << recvBuf << endl;
+		// Handle request
+		char *msgBuf;
+		if (0 == strcmp(recvBuf, "name")) {
+			msgBuf = "Navi";
+		}
+		else if (0 == strcmp(recvBuf, "age")) {
+			msgBuf = "21";
+		}
+		else {
+			msgBuf = "???";
+		}
 
 		// Send
-		char msgBuf[] = "Hello, I'm server.";
 		send(_cli, msgBuf, strlen(msgBuf) + 1, 0);
 	}
 
@@ -65,6 +82,7 @@ int main() {
 	closesocket(_sock);
 
 	WSACleanup();
+	getchar();
 	return 0;
 }
 

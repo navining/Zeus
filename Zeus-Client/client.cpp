@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <WinSock2.h>
 #include <windows.h>
@@ -35,12 +36,27 @@ int main() {
 		cout << "Connect - Success" << endl;
 	}
 
-	// Recv
-	char recvBuf[256] = {};
-	int recvlen = recv(_sock, recvBuf, 256, 0);
-	if (recvlen > 0) {
-		cout << recvBuf << endl;
+	while (true) {
+		// Handle request
+		char cmdBuf[128] = {};
+		scanf("%s", cmdBuf);
+		if (0 == strcmp(cmdBuf, "quit")) {
+			cout << "Quit" << endl;
+			break;
+		}
+		else {
+			// Send
+			send(_sock, cmdBuf, strlen(cmdBuf) + 1, 0);
+
+			// Recv
+			char recvBuf[256] = {};
+			int recvlen = recv(_sock, recvBuf, 256, 0);
+			if (recvlen > 0) {
+				cout << "Recieve: " << recvBuf << endl;
+			}
+		}
 	}
+
 
 	// Close
 	closesocket(_sock);
