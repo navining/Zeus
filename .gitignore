@@ -37,6 +37,7 @@
 *.db
 *.vcxproj
 *.filters
+*.opendb
 
 build/
 bin/
