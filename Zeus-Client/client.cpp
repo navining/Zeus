@@ -9,6 +9,11 @@
 
 using namespace std;
 
+struct Data {
+	int age;
+	char name[32];
+};
+
 int main() {
 	WORD version = MAKEWORD(2, 2);
 	WSADATA data;
@@ -52,7 +57,8 @@ int main() {
 			char recvBuf[256] = {};
 			int recvlen = recv(_sock, recvBuf, 256, 0);
 			if (recvlen > 0) {
-				cout << "Recieve: " << recvBuf << endl;
+				Data *d = (Data *)recvBuf;
+				cout << "Recieve: " << d->age << " " <<d->name << endl;
 			}
 		}
 	}

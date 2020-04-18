@@ -8,6 +8,11 @@
 
 using namespace std;
 
+struct Data {
+	int age;
+	char name[32];
+};
+
 int main() {
 	WORD version = MAKEWORD(2,2);
 	WSADATA data;
@@ -63,19 +68,13 @@ int main() {
 		}
 		cout << "Recieve command: " << recvBuf << endl;
 		// Handle request
-		char *msgBuf;
-		if (0 == strcmp(recvBuf, "name")) {
-			msgBuf = "Navi";
-		}
-		else if (0 == strcmp(recvBuf, "age")) {
-			msgBuf = "21";
-		}
-		else {
-			msgBuf = "???";
+		Data buf;
+		if (0 == strcmp(recvBuf, "info")) {
+			buf = { 21, "Navi" };
 		}
 
 		// Send
-		send(_cli, msgBuf, strlen(msgBuf) + 1, 0);
+		send(_cli, (const char*)&buf, sizeof(Data), 0);
 	}
 
 	// Close
