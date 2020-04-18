@@ -8,9 +8,32 @@
 
 using namespace std;
 
-struct Data {
-	int age;
-	char name[32];
+enum CMD {
+	CMD_LOGIN,
+	CMD_LOGOUT,
+	CMD_ERROR
+};
+
+struct Header {
+	short cmd;
+	short length;
+};
+
+struct Login {
+	char username[32];
+	char password[32];
+};
+
+struct LoginResult {
+	int result;
+};
+
+struct Logout {
+	char username[32];
+};
+
+struct LogoutResult {
+	int result;
 };
 
 int main() {
@@ -59,22 +82,46 @@ int main() {
 	cout << "New client: " << inet_ntoa(clientAddr.sin_addr) << endl;
 
 	while (true) {
+		Header _header = {};
 		// Recv
-		char recvBuf[128] = {};
-		int recvlen = recv(_cli, recvBuf, 128, 0);
+		int recvlen = recv(_cli, (char *)&_header, sizeof(Header), 0);
 		if (recvlen <= 0) {
 			cout << "Client quits" << endl;
 			break;
 		}
-		cout << "Recieve command: " << recvBuf << endl;
-		// Handle request
-		Data buf;
-		if (0 == strcmp(recvBuf, "info")) {
-			buf = { 21, "Navi" };
-		}
+		cout <<"Data length: " << _header.length << " Recieve command: " << _header.cmd << endl;
 
-		// Send
-		send(_cli, (const char*)&buf, sizeof(Data), 0);
+		// Handle request
+		switch (_header.cmd) {
+		case CMD_LOGIN:
+		{
+			Login _login = {};
+			recv(_cli, (char *)&_login, sizeof(Login), 0);
+			// Judge username and password
+			// Send
+			LoginResult _result = {0};
+			send(_cli, (char *)&_header, sizeof(Header), 0);
+			send(_cli, (char *)&_result, sizeof(LoginResult), 0);
+			break;
+		}
+		case CMD_LOGOUT:
+		{
+			Logout _logout = {};
+			recv(_cli, (char *)&_logout, sizeof(Logout), 0);
+			// Judge username and password
+			// Send
+			LogoutResult _result = { 1 };
+			send(_cli, (char *)&_header, sizeof(Header), 0);
+			send(_cli, (char *)&_result, sizeof(LogoutResult), 0);
+			break;
+		}
+		default:
+		{
+			_header.cmd = CMD_ERROR;
+			_header.cmd = 0;
+			send(_cli, (char *)&_header, sizeof(Header), 0);
+		}
+		}
 	}
 
 	// Close

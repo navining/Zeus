@@ -9,9 +9,32 @@
 
 using namespace std;
 
-struct Data {
-	int age;
-	char name[32];
+enum CMD {
+	CMD_LOGIN,
+	CMD_LOGOUT,
+	CMD_ERROR
+};
+
+struct Header {
+	short cmd;
+	short length;
+};
+
+struct Login {
+	char username[32];
+	char password[32];
+};
+
+struct LoginResult {
+	int result;
+};
+
+struct Logout {
+	char username[32];
+};
+
+struct LogoutResult {
+	int result;
 };
 
 int main() {
@@ -48,18 +71,33 @@ int main() {
 		if (0 == strcmp(cmdBuf, "quit")) {
 			cout << "Quit" << endl;
 			break;
+		} else if (0 == strcmp(cmdBuf, "login")) {
+			Header _header = { CMD_LOGIN, sizeof(Login) };
+			Login _login = {"navi", "123456"};
+			// Send
+			send(_sock, (char *)&_header, sizeof(Header), 0);
+			send(_sock, (char *)&_login, sizeof(Login), 0);
+			// Recv
+			Header _resultH = {};
+			LoginResult _result = {};
+			recv(_sock, (char *)&_resultH, sizeof(Header), 0);
+			recv(_sock, (char *)&_result, sizeof(LoginResult), 0);
+			cout << "Login result: " << _result.result << endl;
+		} else if (0 == strcmp(cmdBuf, "logout")) {
+			Header _header = { CMD_LOGOUT, sizeof(Logout) };
+			Logout _logout = { "navi"};
+			// Send
+			send(_sock, (char *)&_header, sizeof(Header), 0);
+			send(_sock, (char *)&_logout, sizeof(Logout), 0);
+			// Recv
+			Header _resultH = {};
+			LogoutResult _result = {};
+			recv(_sock, (char *)&_resultH, sizeof(Header), 0);
+			recv(_sock, (char *)&_result, sizeof(LogoutResult), 0);
+			cout << "Logout result: " << _result.result << endl;
 		}
 		else {
-			// Send
-			send(_sock, cmdBuf, strlen(cmdBuf) + 1, 0);
-
-			// Recv
-			char recvBuf[256] = {};
-			int recvlen = recv(_sock, recvBuf, 256, 0);
-			if (recvlen > 0) {
-				Data *d = (Data *)recvBuf;
-				cout << "Recieve: " << d->age << " " <<d->name << endl;
-			}
+			cout << "Invaild input" << endl;
 		}
 	}
 
