@@ -11,7 +11,9 @@ using namespace std;
 
 enum CMD {
 	CMD_LOGIN,
+	CMD_LOGIN_RESULT,
 	CMD_LOGOUT,
+	CMD_LOGOUT_RESULT,
 	CMD_ERROR
 };
 
@@ -20,20 +22,38 @@ struct Header {
 	short length;
 };
 
-struct Login {
+struct Login : public Header {
+	Login() {
+		length = sizeof(Login);
+		cmd = CMD_LOGIN;
+	}
 	char username[32];
 	char password[32];
 };
 
-struct LoginResult {
+struct LoginResult : public Header {
+	LoginResult() {
+		length = sizeof(LoginResult);
+		cmd = CMD_LOGIN_RESULT;
+		result = 0;
+	}
 	int result;
 };
 
-struct Logout {
+struct Logout : public Header {
+	Logout() {
+		length = sizeof(Logout);
+		cmd = CMD_LOGOUT;
+	}
 	char username[32];
 };
 
-struct LogoutResult {
+struct LogoutResult : public Header {
+	LogoutResult() {
+		length = sizeof(LogoutResult);
+		cmd = CMD_LOGOUT_RESULT;
+		result = 0;
+	}
 	int result;
 };
 
@@ -72,27 +92,22 @@ int main() {
 			cout << "Quit" << endl;
 			break;
 		} else if (0 == strcmp(cmdBuf, "login")) {
-			Header _header = { CMD_LOGIN, sizeof(Login) };
-			Login _login = {"navi", "123456"};
+			Login _login;
+			strcpy(_login.username, "navi");
+			strcpy(_login.password, "123456");
 			// Send
-			send(_sock, (char *)&_header, sizeof(Header), 0);
 			send(_sock, (char *)&_login, sizeof(Login), 0);
 			// Recv
-			Header _resultH = {};
 			LoginResult _result = {};
-			recv(_sock, (char *)&_resultH, sizeof(Header), 0);
 			recv(_sock, (char *)&_result, sizeof(LoginResult), 0);
 			cout << "Login result: " << _result.result << endl;
 		} else if (0 == strcmp(cmdBuf, "logout")) {
-			Header _header = { CMD_LOGOUT, sizeof(Logout) };
-			Logout _logout = { "navi"};
+			Logout _logout;
+			strcpy(_logout.username, "navi");
 			// Send
-			send(_sock, (char *)&_header, sizeof(Header), 0);
 			send(_sock, (char *)&_logout, sizeof(Logout), 0);
 			// Recv
-			Header _resultH = {};
 			LogoutResult _result = {};
-			recv(_sock, (char *)&_resultH, sizeof(Header), 0);
 			recv(_sock, (char *)&_result, sizeof(LogoutResult), 0);
 			cout << "Logout result: " << _result.result << endl;
 		}

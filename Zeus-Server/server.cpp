@@ -10,7 +10,9 @@ using namespace std;
 
 enum CMD {
 	CMD_LOGIN,
+	CMD_LOGIN_RESULT,
 	CMD_LOGOUT,
+	CMD_LOGOUT_RESULT,
 	CMD_ERROR
 };
 
@@ -19,20 +21,38 @@ struct Header {
 	short length;
 };
 
-struct Login {
+struct Login : public Header {
+	Login() {
+		length = sizeof(Login);
+		cmd = CMD_LOGIN;
+	}
 	char username[32];
 	char password[32];
 };
 
-struct LoginResult {
+struct LoginResult : public Header {
+	LoginResult() {
+		length = sizeof(LoginResult);
+		cmd = CMD_LOGIN_RESULT;
+		result = 0;
+	}
 	int result;
 };
 
-struct Logout {
+struct Logout : public Header {
+	Logout() {
+		length = sizeof(Logout);
+		cmd = CMD_LOGOUT;
+	}
 	char username[32];
 };
 
-struct LogoutResult {
+struct LogoutResult : public Header {
+	LogoutResult() {
+		length = sizeof(LogoutResult);
+		cmd = CMD_LOGOUT_RESULT;
+		result = 0;
+	}
 	int result;
 };
 
@@ -89,29 +109,27 @@ int main() {
 			cout << "Client quits" << endl;
 			break;
 		}
-		cout <<"Data length: " << _header.length << " Recieve command: " << _header.cmd << endl;
-
+		
 		// Handle request
 		switch (_header.cmd) {
 		case CMD_LOGIN:
 		{
-			Login _login = {};
-			recv(_cli, (char *)&_login, sizeof(Login), 0);
+			Login _login;
+			recv(_cli, (char *)&_login + sizeof(Header), sizeof(Login) - sizeof(Header), 0);
+			cout << "Command: "<< _login.cmd << "Data length: " << _login.length << " Username: " << _login.username << " Password: " << _login.password << endl;
 			// Judge username and password
 			// Send
-			LoginResult _result = {0};
-			send(_cli, (char *)&_header, sizeof(Header), 0);
+			LoginResult _result;
 			send(_cli, (char *)&_result, sizeof(LoginResult), 0);
 			break;
 		}
 		case CMD_LOGOUT:
 		{
-			Logout _logout = {};
-			recv(_cli, (char *)&_logout, sizeof(Logout), 0);
-			// Judge username and password
+			Logout _logout;
+			recv(_cli, (char *)&_logout + sizeof(Header), sizeof(Logout) - sizeof(Header), 0);
+			cout << "Command: " << _logout.cmd << " Data length: " << _logout.length << " Username: " << _logout.username << endl;
 			// Send
-			LogoutResult _result = { 1 };
-			send(_cli, (char *)&_header, sizeof(Header), 0);
+			LogoutResult _result;
 			send(_cli, (char *)&_result, sizeof(LogoutResult), 0);
 			break;
 		}
