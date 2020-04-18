@@ -102,21 +102,22 @@ int main() {
 	cout << "New client: " << inet_ntoa(clientAddr.sin_addr) << endl;
 
 	while (true) {
-		Header _header = {};
+		char recvBuf[1024] = {};
 		// Recv
-		int recvlen = recv(_cli, (char *)&_header, sizeof(Header), 0);
+		int recvlen = recv(_cli, recvBuf, sizeof(Header), 0);
+		Header *_header = (Header *)recvBuf;
 		if (recvlen <= 0) {
 			cout << "Client quits" << endl;
 			break;
 		}
 		
 		// Handle request
-		switch (_header.cmd) {
+		switch (_header->cmd) {
 		case CMD_LOGIN:
 		{
-			Login _login;
-			recv(_cli, (char *)&_login + sizeof(Header), sizeof(Login) - sizeof(Header), 0);
-			cout << "Command: "<< _login.cmd << "Data length: " << _login.length << " Username: " << _login.username << " Password: " << _login.password << endl;
+			recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
+			Login* _login = (Login *)recvBuf;
+			cout << "Command: "<< _login->cmd << " Data length: " << _login->length << " Username: " << _login->username << " Password: " << _login->password << endl;
 			// Judge username and password
 			// Send
 			LoginResult _result;
@@ -125,9 +126,9 @@ int main() {
 		}
 		case CMD_LOGOUT:
 		{
-			Logout _logout;
-			recv(_cli, (char *)&_logout + sizeof(Header), sizeof(Logout) - sizeof(Header), 0);
-			cout << "Command: " << _logout.cmd << " Data length: " << _logout.length << " Username: " << _logout.username << endl;
+			recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
+			Logout* _logout = (Logout *)recvBuf;
+			cout << "Command: " << _logout->cmd << " Data length: " << _logout->length << " Username: " << _logout->username << endl;
 			// Send
 			LogoutResult _result;
 			send(_cli, (char *)&_result, sizeof(LogoutResult), 0);
@@ -135,8 +136,7 @@ int main() {
 		}
 		default:
 		{
-			_header.cmd = CMD_ERROR;
-			_header.cmd = 0;
+			Header _header = { 0, CMD_ERROR };
 			send(_cli, (char *)&_header, sizeof(Header), 0);
 		}
 		}
