@@ -5,6 +5,7 @@
 #include <WinSock2.h>
 #include <windows.h>
 #include <iostream>
+#include <thread>
 //#pragma comment(lib, "ws2_32.lib")
 
 using namespace std;
@@ -106,6 +107,33 @@ int processor(SOCKET _cli) {
 	return 0;
 }
 
+bool g_exit = false;
+
+void cmdThread(SOCKET _sock) {
+	char cmdBuf[256] = {};
+	while (!g_exit) {
+		scanf("%s", cmdBuf);
+		if (0 == strcmp(cmdBuf, "quit")) {
+			cout << "Client exits" << endl;
+			g_exit = true;
+		}
+		else if (0 == strcmp(cmdBuf, "login")) {
+			Login _login;
+			strcpy(_login.username, "Navi");
+			strcpy(_login.password, "123456");
+			send(_sock, (const char *)&_login, sizeof(Login), 0);
+		}
+		else if (0 == strcmp(cmdBuf, "logout")) {
+			Logout _logout;
+			strcpy(_logout.username, "Navi");
+			send(_sock, (const char *)&_logout, sizeof(Logout), 0);
+		}
+		else {
+			cout << "Invalid input!" << endl;
+		}
+	}
+}
+
 int main() {
 	WORD version = MAKEWORD(2, 2);
 	WSADATA data;
@@ -133,12 +161,16 @@ int main() {
 		cout << "Connect - Success" << endl;
 	}
 
-	while (true) {
+	// New thread
+	thread _cmd(cmdThread, _sock);
+	_cmd.detach();
+
+	while (!g_exit) {
 		// Select
 		fd_set fdRead;
 		FD_ZERO(&fdRead);
 		FD_SET(_sock, &fdRead);
-		timeval t = { 0, 5e5 };
+		timeval t = { 0, 0 };
 		int ret = select(_sock, &fdRead, NULL, NULL, &t);
 
 		if (ret < 0) {
@@ -154,16 +186,10 @@ int main() {
 				break;
 			}
 		}
-
-		// Handle other services
-		cout << "Other services..." << endl;
-		Login _login;
-		strcpy(_login.username, "Navi");
-		strcpy(_login.password, "123456");
-		send(_sock, (const char *)&_login, sizeof(Login), 0);
-		Sleep(500);
 	}
 
+	// Handle other services
+	//cout << "Other services..." << endl;
 
 	// Close
 	closesocket(_sock);

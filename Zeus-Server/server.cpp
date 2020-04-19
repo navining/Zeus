@@ -77,7 +77,7 @@ int processor(SOCKET _cli) {
 	int recvlen = recv(_cli, recvBuf, sizeof(Header), 0);
 	Header *_header = (Header *)recvBuf;
 	if (recvlen <= 0) {
-		cout << "Client " << _cli << " quits" << endl;
+		cout << "Client " << _cli << " exits" << endl;
 		return -1;
 	}
 
@@ -167,7 +167,7 @@ int main() {
 			FD_SET(g_clients[n], &fdRead);
 		}
 
-		timeval t = {0, 5e5};
+		timeval t = {0, 0};
 		int ret = select(_sock + 1, &fdRead, &fdWrite, &fdExcept, &t);
 
 		if (ret < 0) {
@@ -209,7 +209,7 @@ int main() {
 		}
 
 		// Handle other services
-		cout << "Other services..." << endl;
+		//cout << "Other services..." << endl;
 	}
 
 	// Close
