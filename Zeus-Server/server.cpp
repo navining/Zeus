@@ -14,6 +14,7 @@ enum CMD {
 	CMD_LOGIN_RESULT,
 	CMD_LOGOUT,
 	CMD_LOGOUT_RESULT,
+	CMD_NEW_USER_JOIN,
 	CMD_ERROR
 };
 
@@ -57,6 +58,15 @@ struct LogoutResult : public Header {
 	int result;
 };
 
+struct NewUserJoin : public Header {
+	NewUserJoin() {
+		length = sizeof(NewUserJoin);
+		cmd = CMD_NEW_USER_JOIN;
+		sock = 0;
+	}
+	int sock;
+};
+
 vector<SOCKET> g_clients;
 
 int processor(SOCKET _cli) {
@@ -67,7 +77,7 @@ int processor(SOCKET _cli) {
 	int recvlen = recv(_cli, recvBuf, sizeof(Header), 0);
 	Header *_header = (Header *)recvBuf;
 	if (recvlen <= 0) {
-		cout << "Client quits" << endl;
+		cout << "Client " << _cli << " quits" << endl;
 		return -1;
 	}
 
@@ -76,7 +86,7 @@ int processor(SOCKET _cli) {
 	{
 		recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
 		Login* _login = (Login *)recvBuf;
-		cout << "Command: " << _login->cmd << " Data length: " << _login->length << " Username: " << _login->username << " Password: " << _login->password << endl;
+		cout << "Client " << _cli << " Command: " << _login->cmd << " Data length: " << _login->length << " Username: " << _login->username << " Password: " << _login->password << endl;
 		// Judge username and password
 		// Send
 		LoginResult _result;
@@ -87,7 +97,7 @@ int processor(SOCKET _cli) {
 	{
 		recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
 		Logout* _logout = (Logout *)recvBuf;
-		cout << "Command: " << _logout->cmd << " Data length: " << _logout->length << " Username: " << _logout->username << endl;
+		cout << "Client " << _cli << " Command: " << _logout->cmd << " Data length: " << _logout->length << " Username: " << _logout->username << endl;
 		// Send
 		LogoutResult _result;
 		send(_cli, (char *)&_result, sizeof(LogoutResult), 0);
@@ -157,7 +167,7 @@ int main() {
 			FD_SET(g_clients[n], &fdRead);
 		}
 
-		timeval t = {0, 0};
+		timeval t = {0, 5e5};
 		int ret = select(_sock + 1, &fdRead, &fdWrite, &fdExcept, &t);
 
 		if (ret < 0) {
@@ -165,6 +175,7 @@ int main() {
 			break;
 		}
 
+		// If socket is inside the set
 		if (FD_ISSET(_sock, &fdRead)) {
 			FD_CLR(_sock, &fdRead);
 			// Accept
@@ -173,9 +184,18 @@ int main() {
 			SOCKET _cli = accept(_sock, (sockaddr *)&clientAddr, &addrlen);
 			if (INVALID_SOCKET == _cli) {
 				cout << "Invaild client socket" << endl;
+				continue;
 			}
+
+			// Broadcast
+			for (int n = (int)g_clients.size() - 1; n >= 0; n--) {
+				NewUserJoin userJoin;
+				userJoin.sock = _cli;
+				send(g_clients[n], (const char *)&userJoin, sizeof(NewUserJoin), 0);
+			}
+
 			g_clients.push_back(_cli);
-			cout << "New client: " << inet_ntoa(clientAddr.sin_addr) << endl;
+			cout << "New client " << _cli << " : " << inet_ntoa(clientAddr.sin_addr) << "-" << clientAddr.sin_port << endl;
 		}
 
 		// Handle request
@@ -187,6 +207,9 @@ int main() {
 				}
 			}
 		}
+
+		// Handle other services
+		cout << "Other services..." << endl;
 	}
 
 	// Close

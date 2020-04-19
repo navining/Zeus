@@ -14,6 +14,7 @@ enum CMD {
 	CMD_LOGIN_RESULT,
 	CMD_LOGOUT,
 	CMD_LOGOUT_RESULT,
+	CMD_NEW_USER_JOIN,
 	CMD_ERROR
 };
 
@@ -57,6 +58,54 @@ struct LogoutResult : public Header {
 	int result;
 };
 
+struct NewUserJoin : public Header {
+	NewUserJoin() {
+		length = sizeof(NewUserJoin);
+		cmd = CMD_NEW_USER_JOIN;
+		sock = 0;
+	}
+	int sock;
+};
+
+int processor(SOCKET _cli) {
+
+	// Buffer
+	char recvBuf[1024] = {};
+	// Recv
+	int recvlen = recv(_cli, recvBuf, sizeof(Header), 0);
+	Header *_header = (Header *)recvBuf;
+	if (recvlen <= 0) {
+		cout << "Disconnected" << endl;
+		return -1;
+	}
+
+	switch (_header->cmd) {
+	case CMD_LOGIN_RESULT:
+	{
+		recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
+		LoginResult* _loginResult = (LoginResult *)recvBuf;
+		cout << "Recieve Message: " << _loginResult->cmd << " Data Length: " << _loginResult->length << " Result: " << _loginResult->result << endl;
+		break;
+	}
+	case CMD_LOGOUT_RESULT:
+	{
+		recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
+		LogoutResult* _logoutResult = (LogoutResult *)recvBuf;
+		cout << "Recieve Message: " << _logoutResult->cmd << " Data Length: " << _logoutResult->length << " Result: " << _logoutResult->result << endl;
+		break;
+	}
+	case CMD_NEW_USER_JOIN:
+	{
+		recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
+		NewUserJoin* _userJoin = (NewUserJoin *)recvBuf;
+		cout << "Recieve Message: " << _userJoin->cmd << " Data Length: " << _userJoin->length << " New User: " << _userJoin->sock << endl;
+		break;
+	}
+	}
+
+	return 0;
+}
+
 int main() {
 	WORD version = MAKEWORD(2, 2);
 	WSADATA data;
@@ -85,35 +134,34 @@ int main() {
 	}
 
 	while (true) {
-		// Handle request
-		char cmdBuf[128] = {};
-		scanf("%s", cmdBuf);
-		if (0 == strcmp(cmdBuf, "quit")) {
-			cout << "Quit" << endl;
+		// Select
+		fd_set fdRead;
+		FD_ZERO(&fdRead);
+		FD_SET(_sock, &fdRead);
+		timeval t = { 0, 5e5 };
+		int ret = select(_sock, &fdRead, NULL, NULL, &t);
+
+		if (ret < 0) {
+			cout << "Select quits" << endl;
 			break;
-		} else if (0 == strcmp(cmdBuf, "login")) {
-			Login _login;
-			strcpy(_login.username, "navi");
-			strcpy(_login.password, "123456");
-			// Send
-			send(_sock, (char *)&_login, sizeof(Login), 0);
-			// Recv
-			LoginResult _result = {};
-			recv(_sock, (char *)&_result, sizeof(LoginResult), 0);
-			cout << "Login result: " << _result.result << endl;
-		} else if (0 == strcmp(cmdBuf, "logout")) {
-			Logout _logout;
-			strcpy(_logout.username, "navi");
-			// Send
-			send(_sock, (char *)&_logout, sizeof(Logout), 0);
-			// Recv
-			LogoutResult _result = {};
-			recv(_sock, (char *)&_result, sizeof(LogoutResult), 0);
-			cout << "Logout result: " << _result.result << endl;
 		}
-		else {
-			cout << "Invaild input" << endl;
+
+		// If socket is inside the set
+		if (FD_ISSET(_sock, &fdRead)) {
+			FD_CLR(_sock, &fdRead);
+			// Handle request
+			if (-1 == processor(_sock)) {
+				break;
+			}
 		}
+
+		// Handle other services
+		cout << "Other services..." << endl;
+		Login _login;
+		strcpy(_login.username, "Navi");
+		strcpy(_login.password, "123456");
+		send(_sock, (const char *)&_login, sizeof(Login), 0);
+		Sleep(500);
 	}
 
 
@@ -122,6 +170,7 @@ int main() {
 
 	WSACleanup();
 
+	cout << "Quit." << endl;
 	getchar();
 	return 0;
 }
