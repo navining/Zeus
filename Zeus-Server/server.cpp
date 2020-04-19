@@ -4,6 +4,7 @@
 #include <WinSock2.h>
 #include <windows.h>
 #include <iostream>
+#include <vector>
 //#pragma comment(lib, "ws2_32.lib")
 
 using namespace std;
@@ -56,6 +57,52 @@ struct LogoutResult : public Header {
 	int result;
 };
 
+vector<SOCKET> g_clients;
+
+int processor(SOCKET _cli) {
+
+	// Buffer
+	char recvBuf[1024] = {};
+	// Recv
+	int recvlen = recv(_cli, recvBuf, sizeof(Header), 0);
+	Header *_header = (Header *)recvBuf;
+	if (recvlen <= 0) {
+		cout << "Client quits" << endl;
+		return -1;
+	}
+
+	switch (_header->cmd) {
+	case CMD_LOGIN:
+	{
+		recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
+		Login* _login = (Login *)recvBuf;
+		cout << "Command: " << _login->cmd << " Data length: " << _login->length << " Username: " << _login->username << " Password: " << _login->password << endl;
+		// Judge username and password
+		// Send
+		LoginResult _result;
+		send(_cli, (char *)&_result, sizeof(LoginResult), 0);
+		break;
+	}
+	case CMD_LOGOUT:
+	{
+		recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
+		Logout* _logout = (Logout *)recvBuf;
+		cout << "Command: " << _logout->cmd << " Data length: " << _logout->length << " Username: " << _logout->username << endl;
+		// Send
+		LogoutResult _result;
+		send(_cli, (char *)&_result, sizeof(LogoutResult), 0);
+		break;
+	}
+	default:
+	{
+		Header _header = { 0, CMD_ERROR };
+		send(_cli, (char *)&_header, sizeof(Header), 0);
+	}
+	}
+
+	return 0;
+}
+
 int main() {
 	WORD version = MAKEWORD(2,2);
 	WSADATA data;
@@ -92,57 +139,60 @@ int main() {
 		cout << "Listen - Success" << endl;
 	}
 
-	// Accept
-	sockaddr_in clientAddr = {};
-	int addrlen = sizeof(sockaddr_in);
-	SOCKET _cli = accept(_sock, (sockaddr *)&clientAddr, &addrlen);
-	if (INVALID_SOCKET == _cli) {
-		cout << "Invaild client socket" << endl;
-	}
-	cout << "New client: " << inet_ntoa(clientAddr.sin_addr) << endl;
-
 	while (true) {
-		char recvBuf[1024] = {};
-		// Recv
-		int recvlen = recv(_cli, recvBuf, sizeof(Header), 0);
-		Header *_header = (Header *)recvBuf;
-		if (recvlen <= 0) {
-			cout << "Client quits" << endl;
+		// Select
+		fd_set fdRead;
+		fd_set fdWrite;
+		fd_set fdExcept;
+
+		FD_ZERO(&fdRead);
+		FD_ZERO(&fdWrite);
+		FD_ZERO(&fdExcept);
+
+		FD_SET(_sock, &fdRead);
+		FD_SET(_sock, &fdWrite);
+		FD_SET(_sock, &fdExcept);
+
+		for (int n = (int)g_clients.size() - 1; n >= 0; n--) {
+			FD_SET(g_clients[n], &fdRead);
+		}
+
+		timeval t = {0, 0};
+		int ret = select(_sock + 1, &fdRead, &fdWrite, &fdExcept, &t);
+
+		if (ret < 0) {
+			cout << "Select quits" << endl;
 			break;
 		}
-		
+
+		if (FD_ISSET(_sock, &fdRead)) {
+			FD_CLR(_sock, &fdRead);
+			// Accept
+			sockaddr_in clientAddr = {};
+			int addrlen = sizeof(sockaddr_in);
+			SOCKET _cli = accept(_sock, (sockaddr *)&clientAddr, &addrlen);
+			if (INVALID_SOCKET == _cli) {
+				cout << "Invaild client socket" << endl;
+			}
+			g_clients.push_back(_cli);
+			cout << "New client: " << inet_ntoa(clientAddr.sin_addr) << endl;
+		}
+
 		// Handle request
-		switch (_header->cmd) {
-		case CMD_LOGIN:
-		{
-			recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
-			Login* _login = (Login *)recvBuf;
-			cout << "Command: "<< _login->cmd << " Data length: " << _login->length << " Username: " << _login->username << " Password: " << _login->password << endl;
-			// Judge username and password
-			// Send
-			LoginResult _result;
-			send(_cli, (char *)&_result, sizeof(LoginResult), 0);
-			break;
-		}
-		case CMD_LOGOUT:
-		{
-			recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
-			Logout* _logout = (Logout *)recvBuf;
-			cout << "Command: " << _logout->cmd << " Data length: " << _logout->length << " Username: " << _logout->username << endl;
-			// Send
-			LogoutResult _result;
-			send(_cli, (char *)&_result, sizeof(LogoutResult), 0);
-			break;
-		}
-		default:
-		{
-			Header _header = { 0, CMD_ERROR };
-			send(_cli, (char *)&_header, sizeof(Header), 0);
-		}
+		for (size_t n = 0; n < fdRead.fd_count; n++) {
+			if (-1 == processor(fdRead.fd_array[n])) {
+				auto it = find(g_clients.begin(), g_clients.end(), fdRead.fd_array[n]);
+				if (it != g_clients.end()) {
+					g_clients.erase(it);
+				}
+			}
 		}
 	}
 
 	// Close
+	for (int n = (int)g_clients.size() - 1; n >= 0; n--) {
+		closesocket(g_clients[n]);
+	}
 	closesocket(_sock);
 
 	WSACleanup();
