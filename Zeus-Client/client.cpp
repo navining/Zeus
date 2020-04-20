@@ -2,8 +2,18 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 
+#ifdef _WIN32
 #include <WinSock2.h>
 #include <windows.h>
+#else
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <string.h>
+#define SOCKET int
+#define INVALID_SOCKET    (SOCKET)(~0)
+#define SOCKET_ERROR        (-1)
+#endif
+
 #include <iostream>
 #include <thread>
 //#pragma comment(lib, "ws2_32.lib")
@@ -73,7 +83,7 @@ int processor(SOCKET _cli) {
 	// Buffer
 	char recvBuf[1024] = {};
 	// Recv
-	int recvlen = recv(_cli, recvBuf, sizeof(Header), 0);
+	int recvlen = (int)recv(_cli, recvBuf, sizeof(Header), 0);
 	Header *_header = (Header *)recvBuf;
 	if (recvlen <= 0) {
 		cout << "Disconnected" << endl;
@@ -135,10 +145,11 @@ void cmdThread(SOCKET _sock) {
 }
 
 int main() {
+#ifdef _WIN32
 	WORD version = MAKEWORD(2, 2);
 	WSADATA data;
 	WSAStartup(version, &data);
-
+#endif
 	// Create socket
 	SOCKET _sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (INVALID_SOCKET == _sock) {
@@ -152,7 +163,11 @@ int main() {
 	sockaddr_in _sin = {};
 	_sin.sin_family = AF_INET;
 	_sin.sin_port = htons(4567);
+#ifdef _WIN32
 	_sin.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+#else
+	_sin.sin_addr.s_addr = inet_addr("192.168.1.3");
+#endif
 	int ret = connect(_sock, (sockaddr *)&_sin, sizeof(sockaddr_in));
 	if (SOCKET_ERROR == ret) {
 		cout << "Connect - Fail" << endl;
@@ -171,7 +186,7 @@ int main() {
 		FD_ZERO(&fdRead);
 		FD_SET(_sock, &fdRead);
 		timeval t = { 0, 0 };
-		int ret = select(_sock, &fdRead, NULL, NULL, &t);
+		int ret = select(_sock + 1, &fdRead, NULL, NULL, &t);
 
 		if (ret < 0) {
 			cout << "Select quits" << endl;
@@ -192,10 +207,13 @@ int main() {
 	//cout << "Other services..." << endl;
 
 	// Close
+#ifdef _WIN32
 	closesocket(_sock);
 
 	WSACleanup();
-
+#else
+	close(_sock);
+#endif
 	cout << "Quit." << endl;
 	getchar();
 	return 0;
