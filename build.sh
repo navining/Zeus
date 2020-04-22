@@ -1,4 +1,5 @@
 #!/bin/bash
+mkdir bin
 
 FLAG=-std=c++11
 LIB=-lpthread

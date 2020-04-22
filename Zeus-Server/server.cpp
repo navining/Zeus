@@ -1,11 +1,21 @@
-#define WIN32_LEAN_AND_MEAN
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#ifdef _WIN32
+    #define WIN32_LEAN_AND_MEAN
+    #define _WINSOCK_DEPRECATED_NO_WARNINGS
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <WinSock2.h>
+    #include <windows.h>
+    #pragma comment(lib, "ws2_32.lib")
+#else
+    #include <unistd.h>
+    #include <arpa/inet.h>
+    #include <string.h>
+    #define SOCKET int
+    #define INVALID_SOCKET    (SOCKET)(~0)
+    #define SOCKET_ERROR        (-1)
+#endif
 
-#include <WinSock2.h>
-#include <windows.h>
 #include <iostream>
 #include <vector>
-//#pragma comment(lib, "ws2_32.lib")
 
 using namespace std;
 
@@ -74,7 +84,7 @@ int processor(SOCKET _cli) {
 	// Buffer
 	char recvBuf[1024] = {};
 	// Recv
-	int recvlen = recv(_cli, recvBuf, sizeof(Header), 0);
+	int recvlen = (int)recv(_cli, recvBuf, sizeof(Header), 0);
 	Header *_header = (Header *)recvBuf;
 	if (recvlen <= 0) {
 		cout << "Client " << _cli << " exits" << endl;
@@ -114,10 +124,11 @@ int processor(SOCKET _cli) {
 }
 
 int main() {
+#ifdef _WIN32
 	WORD version = MAKEWORD(2,2);
 	WSADATA data;
 	WSAStartup(version, &data);
-
+#endif
 	// Create socket
 	SOCKET _sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (INVALID_SOCKET == _sock) {
@@ -131,18 +142,20 @@ int main() {
 	sockaddr_in _sin = {};
 	_sin.sin_family = AF_INET;
 	_sin.sin_port = htons(4567);
+#ifdef _WIN32
 	_sin.sin_addr.S_un.S_addr = INADDR_ANY;
-	int ret = bind(_sock, (sockaddr *)&_sin, sizeof(sockaddr_in));
-	if (SOCKET_ERROR == ret) {
-		cout << "Bind - Fail" << endl;
-	}
-	else {
-		cout << "Bind - Success" << endl;
-	}
+#else
+    _sin.sin_addr.s_addr = INADDR_ANY;
+#endif
+    if (SOCKET_ERROR == ::bind(_sock, (sockaddr *)&_sin, sizeof(sockaddr_in))) {
+        cout << "Bind - Fail" << endl;
+    }
+    else {
+        cout << "Bind - Success" << endl;
+    }
 
 	// Listen
-	ret = listen(_sock, 5);
-	if (SOCKET_ERROR == ret) {
+	if (SOCKET_ERROR == listen(_sock, 5)) {
 		cout << "Listen - Fail" << endl;
 	}
 	else {
@@ -158,11 +171,13 @@ int main() {
 		FD_ZERO(&fdRead);
 		FD_ZERO(&fdWrite);
 		FD_ZERO(&fdExcept);
-
+        
+        // Put server sockets inside fd_set
 		FD_SET(_sock, &fdRead);
 		FD_SET(_sock, &fdWrite);
 		FD_SET(_sock, &fdExcept);
 
+        // Put client sockets inside fd_set
 		for (int n = (int)g_clients.size() - 1; n >= 0; n--) {
 			FD_SET(g_clients[n], &fdRead);
 		}
@@ -181,7 +196,11 @@ int main() {
 			// Accept
 			sockaddr_in clientAddr = {};
 			int addrlen = sizeof(sockaddr_in);
+#ifdef _WIN32
 			SOCKET _cli = accept(_sock, (sockaddr *)&clientAddr, &addrlen);
+#else
+            SOCKET _cli = accept(_sock, (sockaddr *)&clientAddr, (socklen_t *)&addrlen);
+#endif
 			if (INVALID_SOCKET == _cli) {
 				cout << "Invaild client socket" << endl;
 				continue;
@@ -199,26 +218,34 @@ int main() {
 		}
 
 		// Handle request
-		for (size_t n = 0; n < fdRead.fd_count; n++) {
-			if (-1 == processor(fdRead.fd_array[n])) {
-				auto it = find(g_clients.begin(), g_clients.end(), fdRead.fd_array[n]);
-				if (it != g_clients.end()) {
-					g_clients.erase(it);
-				}
-			}
-		}
+        for (int n = (int)g_clients.size() - 1; n >=0; n--) {
+            if (FD_ISSET(g_clients[n], &fdRead)) {
+                if (-1 == processor(g_clients[n])) {
+                    auto it = g_clients.begin() + n;
+                    if (it != g_clients.end()) {
+                        g_clients.erase(it);
+                    }
+                }
+            }
+        }
 
 		// Handle other services
 		//cout << "Other services..." << endl;
 	}
 
 	// Close
+#ifdef _WIN32
 	for (int n = (int)g_clients.size() - 1; n >= 0; n--) {
 		closesocket(g_clients[n]);
 	}
 	closesocket(_sock);
-
 	WSACleanup();
+#else
+    for (int n = (int)g_clients.size() - 1; n >= 0; n--) {
+        close(g_clients[n]);
+    }
+    close(_sock);
+#endif
 	getchar();
 	return 0;
 }
