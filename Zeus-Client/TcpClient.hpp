@@ -146,7 +146,8 @@ public:
 		}
 		// Receive Body
 		::recv(_sock, recvBuf + sizeof(Header), _msg->length - sizeof(Header), 0);
-		process(_msg);
+		int ret = process(_msg);
+        return ret;
 	}
 
 	// Process data

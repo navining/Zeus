@@ -47,7 +47,7 @@ void cmdThread(TcpClient* client) {
 }
 
 int main(int argc, char* argv[]) {
-	char *ip;
+	const char *ip;
 	u_short port;
 	if (argc == 1) {
 		ip = "127.0.0.1";
