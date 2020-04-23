@@ -87,7 +87,7 @@ int processor(SOCKET _cli) {
     int recvlen = (int)recv(_cli, recvBuf, sizeof(Header), 0);
     Header *_header = (Header *)recvBuf;
     if (recvlen <= 0) {
-        cout << "Client " << _cli << " exits" << endl;
+        cout << "<socket " << _cli << "> " << "exits" << endl;
         return -1;
     }
     
@@ -96,7 +96,7 @@ int processor(SOCKET _cli) {
         {
             recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
             Login* _login = (Login *)recvBuf;
-            cout << "Client " << _cli << " Command: " << _login->cmd << " Data length: " << _login->length << " Username: " << _login->username << " Password: " << _login->password << endl;
+            cout << "<socket " << _cli << "> " << "Command: " << _login->cmd << " Data length: " << _login->length << " Username: " << _login->username << " Password: " << _login->password << endl;
             // Judge username and password
             // Send
             LoginResult _result;
@@ -107,7 +107,7 @@ int processor(SOCKET _cli) {
         {
             recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
             Logout* _logout = (Logout *)recvBuf;
-            cout << "Client " << _cli << " Command: " << _logout->cmd << " Data length: " << _logout->length << " Username: " << _logout->username << endl;
+            cout << "<socket " << _cli << "> " << "Command: " << _logout->cmd << " Data length: " << _logout->length << " Username: " << _logout->username << endl;
             // Send
             LogoutResult _result;
             send(_cli, (char *)&_result, sizeof(LogoutResult), 0);

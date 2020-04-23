@@ -44,7 +44,7 @@ public:
 #endif
 		// Create socket
 		if (isConnected()) {
-			cout << "Close old connection..." << endl;
+			cout << "<socket " << _sock << "> " << "Close old connection..." << endl;
 			close();
 		}
 		_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -73,10 +73,10 @@ public:
 #endif
 		int ret = ::connect(_sock, (sockaddr *)&_sin, sizeof(sockaddr_in));
 		if (SOCKET_ERROR == ret) {
-			cout << "Connect - Fail..." << endl;
+			cout << "<socket " << _sock << "> " << "Connect - Fail..." << endl;
 		}
 		else {
-			cout << "Connect - Success..." << endl;
+			cout << "<socket " << _sock << "> " << "Connect - Success..." << endl;
 		}
 		return ret;
 	}
@@ -84,6 +84,7 @@ public:
 	// Close socket
 	void close() {
 		if (_sock == INVALID_SOCKET) return;
+		cout << "<socket " << _sock << "> " << "Quit..." << endl;
 #ifdef _WIN32
 		// Close Win Sock 2.x
 		closesocket(_sock);
@@ -92,14 +93,13 @@ public:
 		::close(_sock);
 #endif
 		_sock = INVALID_SOCKET;
-		cout << "Quit..." << endl;
 	}
 
 	// Start client service
 	bool start() {
 		if (!isConnected())
 		{
-			cout << "Start - Fail ..." << endl;
+			cout << "<socket " << _sock << "> " << "Start - Fail ..." << endl;
 			return false;
 		};
 
@@ -112,6 +112,7 @@ public:
 
 		if (ret < 0) {
 			cout << "<socket " << _sock << "> Select - Fail ..." << endl;
+			close();
 			return false;
 		}
 
@@ -120,7 +121,8 @@ public:
 			FD_CLR(_sock, &fdRead);
 			// Handle request
 			if (-1 == recv()) {
-				cout << "<socket " << _sock << "> Process - Fail ..." << endl;
+				cout << "<socket " << _sock << "> " << "Process - Fail ..." << endl;
+				close();
 				return false;
 			}
 		}
@@ -141,7 +143,7 @@ public:
 		int recvlen = (int)::recv(_sock, recvBuf, sizeof(Header), 0);
 		Header *_msg = (Header *)recvBuf;
 		if (recvlen <= 0) {
-			cout << "Disconnected..." << endl;
+			cout << "<socket " << _sock << "> " << "Disconnected..." << endl;
 			return -1;
 		}
 		// Receive Body
@@ -156,19 +158,19 @@ public:
 		case CMD_LOGIN_RESULT:
 		{
 			LoginResult* _loginResult = (LoginResult *)_msg;
-			cout << "Recieve Message: " << _loginResult->cmd << " Data Length: " << _loginResult->length << " Result: " << _loginResult->result << endl;
+			cout << "<socket " << _sock << "> " << "Recieve Message: " << _loginResult->cmd << " Data Length: " << _loginResult->length << " Result: " << _loginResult->result << endl;
 			break;
 		}
 		case CMD_LOGOUT_RESULT:
 		{
 			LogoutResult* _logoutResult = (LogoutResult *)_msg;
-			cout << "Recieve Message: " << _logoutResult->cmd << " Data Length: " << _logoutResult->length << " Result: " << _logoutResult->result << endl;
+			cout << "<socket " << _sock << "> " << "Recieve Message: " << _logoutResult->cmd << " Data Length: " << _logoutResult->length << " Result: " << _logoutResult->result << endl;
 			break;
 		}
 		case CMD_NEW_USER_JOIN:
 		{
 			NewUserJoin* _userJoin = (NewUserJoin *)_msg;
-			cout << "Recieve Message: " << _userJoin->cmd << " Data Length: " << _userJoin->length << " New User: " << _userJoin->sock << endl;
+			cout << "<socket " << _sock << "> " << "Recieve Message: " << _userJoin->cmd << " Data Length: " << _userJoin->length << " New User: " << _userJoin->sock << endl;
 			break;
 		}
 		}
