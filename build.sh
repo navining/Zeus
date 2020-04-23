@@ -1,9 +1,11 @@
 #!/bin/bash
-mkdir bin
 
-FLAG=-std=c++11
-LIB=-lpthread
+set -x
 
-g++ Zeus-Client/client.cpp ${FLAG} ${LIB} -o bin/client 
-g++ Zeus-Server/server.cpp ${FLAG} ${LIB} -o bin/server 
+if [ -d "`pwd`/build/" ];then
+	rm -rf `pwd`/build/*
+else
+	mkdir `pwd`/build
+fi
 
+cd `pwd`/build && cmake .. && make
