@@ -1,3 +1,6 @@
+#ifndef _Message_hpp_
+#define _Message_hpp_
+
 enum CMD {
 	CMD_LOGIN,
 	CMD_LOGIN_RESULT,
@@ -55,3 +58,5 @@ struct NewUserJoin : public Header {
 	}
 	int sock;
 };
+
+#endif // !_Message_hpp_
