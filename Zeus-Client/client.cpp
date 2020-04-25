@@ -1,17 +1,5 @@
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
-#include <WinSock2.h>
-#include <windows.h>
-#pragma comment(lib, "ws2_32.lib")
-#else
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <string.h>
-#define SOCKET int
-#define INVALID_SOCKET    (SOCKET)(~0)
-#define SOCKET_ERROR        (-1)
 #endif
 
 #include <iostream>
@@ -72,8 +60,6 @@ int main(int argc, char* argv[]) {
 
 	while (client.isConnected()) {
 		client.start();
-		// Handle other services Here
-		// cout << "Other services..." << endl;
 	}
 
 	getchar();
