@@ -193,6 +193,8 @@ public:
 
 		// Handle other services
 		//cout << "Other services..." << endl;
+
+		return true;
 	}
 
 
