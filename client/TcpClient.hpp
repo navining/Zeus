@@ -52,7 +52,7 @@ public:
 			cout << "Create socket - Fail..." << endl;
 		}
 		else {
-			cout << "Create socket - Success..." << endl;
+			cout << "<client " << _sock << "> " << "Create socket - Success..." << endl;
 		}
 		return _sock;
 	}
@@ -137,7 +137,7 @@ public:
 		return _sock != INVALID_SOCKET;
 	}
 
-// Size of the recieve buffer
+	// Size of the recieve buffer
 #define RECV_BUFF_SIZE 10240
 
 // Size of the message buffer
@@ -156,14 +156,14 @@ public:
 	int recv() {
 		// Receive data into the recieve buffer
 		int recvlen = (int)::recv(_sock, _recvBuf, RECV_BUFF_SIZE, 0);
-		
+
 		if (recvlen <= 0) {
 			cout << "<client " << _sock << "> " << "Disconnected..." << endl;
 			return -1;
 		}
 
 		// Copy data into the message buffer
-		memcpy(_msgBuf + _lastPos , _recvBuf, recvlen);
+		memcpy(_msgBuf + _lastPos, _recvBuf, recvlen);
 		_lastPos += recvlen;
 
 		while (_lastPos >= sizeof(Header)) {
@@ -206,7 +206,7 @@ public:
 			//cout << "<client " << _sock << "> " << "Recieve Message: " << _userJoin->cmd << " Data Length: " << _userJoin->length << " New User: " << _userJoin->sock << endl;
 			break;
 		}
-		case CMD_ERROR:	
+		case CMD_ERROR:
 		{
 			cout << "<client " << _sock << "> " << "Recieve Message: " << "ERROR" << " Data Length: " << msg->length << endl;
 			break;

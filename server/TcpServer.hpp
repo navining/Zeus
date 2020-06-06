@@ -24,6 +24,7 @@ using std::cout;
 using std::endl;
 
 #include "Message.hpp"
+#include "Timestamp.hpp"
 
 #ifndef RECV_BUFF_SIZE
 #define RECV_BUFF_SIZE 10240
@@ -65,6 +66,7 @@ class TcpServer {
 public:
 	TcpServer() {
 		_sock = INVALID_SOCKET;
+		_recvCount = 0;
 	}
 
 	virtual ~TcpServer() {
@@ -89,7 +91,7 @@ public:
 			cout << "Create socket - Fail..." << endl;
 		}
 		else {
-			cout << "Create socket - Success..." << endl;
+			cout << "<server " << _sock << "> " << "Create socket - Success..." << endl;
 		}
 		return _sock;
 	}
@@ -269,6 +271,15 @@ public:
 	}
 
 	virtual int process(SOCKET cli, Header *msg) {
+		// Benchmark
+		_recvCount++;
+		double t1 = _time.getElapsedSecond();
+		if (_time.getElapsedSecond() >= 1.0) {
+			printf("<server %d> Time: %f Clients: %d Packages: %d\n", _sock, t1, _clients.size(), _recvCount);
+			_recvCount = 0;
+			_time.update();
+		}
+		
 		switch (msg->cmd) {
 		case CMD_LOGIN:
 		{
@@ -343,6 +354,8 @@ public:
 private:
 	SOCKET _sock;
 	vector<ClientSocket*> _clients;
+	Timestamp _time;
+	int _recvCount;
 };
 
 #endif // !_TcpServer_hpp_

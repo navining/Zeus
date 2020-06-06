@@ -56,11 +56,8 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < numOfClients; i++) {
 		clients[i] = new TcpClient();
 		clients[i]->init();
-	}
-	for (int i = 0; i < numOfClients; i++) {
 		clients[i]->connect(ip, port);
 	}
-
 
 	// New thread
 	//thread _cmd(test, &client);
