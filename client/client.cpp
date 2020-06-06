@@ -34,14 +34,6 @@ void cmdThread(TcpClient* client) {
 	}
 }
 
-void test(TcpClient *client) {
-	Login _login;
-	strcpy(_login.username, "Navi");
-	strcpy(_login.password, "123456");
-	while (true) {
-		client->send(&_login);
-	}
-}
 
 int main(int argc, char* argv[]) {
 	const char *ip;
@@ -59,19 +51,30 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	TcpClient client;
-	client.init();
-	client.connect(ip, port);
-
-	// New thread
-	thread _cmd(test, &client);
-	_cmd.detach();
-
-	while (client.isConnected()) {
-		client.start();
+	const int numOfClients = 100;
+	TcpClient* clients[numOfClients];
+	for (int i = 0; i < numOfClients; i++) {
+		clients[i] = new TcpClient();
+		clients[i]->init();
+	}
+	for (int i = 0; i < numOfClients; i++) {
+		clients[i]->connect(ip, port);
 	}
 
-	getchar();
+
+	// New thread
+	//thread _cmd(test, &client);
+	//_cmd.detach();
+
+	Login login;
+	strcpy(login.username, "Navi");
+	strcpy(login.password, "123456");
+	while (true) {
+		for (int i = 0; i < numOfClients; i++) {
+			clients[i]->send(&login);
+		}
+	}
+
 	return 0;
 }
 
