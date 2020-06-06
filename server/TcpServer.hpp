@@ -1,7 +1,7 @@
 #ifndef _TcpServer_hpp_
 #define _TcpServer_hpp_
 #ifdef _WIN32
-
+#define FD_SETSIZE	1024
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
@@ -276,8 +276,8 @@ public:
 			//cout << "<server " << _sock << "> " << "From: " << "<client " << cli << "> " << "Command: " << _login->cmd << " Data length: " << _login->length << " Username: " << _login->username << " Password: " << _login->password << endl;
 			// Judge username and password
 			// Send
-			LoginResult _result;
-			send(cli, &_result);
+			//LoginResult _result;
+			//send(cli, &_result);
 			break;
 		}
 		case CMD_LOGOUT:
@@ -285,8 +285,8 @@ public:
 			Logout* _logout = (Logout *)msg;
 			//cout << "<server " << _sock << "> " << "From: " << "<client " << cli << "> " << "Command: " << _logout->cmd << " Data length: " << _logout->length << " Username: " << _logout->username << endl;
 			// Send
-			LogoutResult _result;
-			send(cli, &_result);
+			//LogoutResult _result;
+			//send(cli, &_result);
 			break;
 		}
 		default:
