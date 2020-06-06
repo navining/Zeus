@@ -11,6 +11,10 @@ enum CMD {
 };
 
 struct Header {
+	Header() {
+		length = sizeof(Header);
+		cmd = CMD_ERROR;
+	}
 	short cmd;
 	short length;
 };

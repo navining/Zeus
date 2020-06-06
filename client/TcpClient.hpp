@@ -186,34 +186,34 @@ public:
 	}
 
 	// Process data
-	virtual int process(Header *_msg) {
-		switch (_msg->cmd) {
+	virtual int process(Header *msg) {
+		switch (msg->cmd) {
 		case CMD_LOGIN_RESULT:
 		{
-			LoginResult* _loginResult = (LoginResult *)_msg;
+			LoginResult* _loginResult = (LoginResult *)msg;
 			//cout << "<client " << _sock << "> " << "Recieve Message: " << _loginResult->cmd << " Data Length: " << _loginResult->length << " Result: " << _loginResult->result << endl;
 			break;
 		}
 		case CMD_LOGOUT_RESULT:
 		{
-			LogoutResult* _logoutResult = (LogoutResult *)_msg;
+			LogoutResult* _logoutResult = (LogoutResult *)msg;
 			//cout << "<client " << _sock << "> " << "Recieve Message: " << _logoutResult->cmd << " Data Length: " << _logoutResult->length << " Result: " << _logoutResult->result << endl;
 			break;
 		}
 		case CMD_NEW_USER_JOIN:
 		{
-			NewUserJoin* _userJoin = (NewUserJoin *)_msg;
+			NewUserJoin* _userJoin = (NewUserJoin *)msg;
 			//cout << "<client " << _sock << "> " << "Recieve Message: " << _userJoin->cmd << " Data Length: " << _userJoin->length << " New User: " << _userJoin->sock << endl;
 			break;
 		}
 		case CMD_ERROR:	
 		{
-			cout << "<client " << _sock << "> " << "Recieve Message: " << "ERROR" << " Data Length: " << _msg->length << endl;
+			cout << "<client " << _sock << "> " << "Recieve Message: " << "ERROR" << " Data Length: " << msg->length << endl;
 			break;
 		}
 		default:
 		{
-			cout << "<client " << _sock << "> " << "Recieve Message: " << "Unknown" << " Data Length: " << _msg->length << endl;
+			cout << "<client " << _sock << "> " << "Recieve Message: " << "Unknown" << " Data Length: " << msg->length << endl;
 		}
 		}
 
