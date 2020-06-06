@@ -211,9 +211,12 @@ public:
 		// Receive body
 		::recv(_cli, recvBuf + sizeof(Header), _header->length - sizeof(Header), 0);
 
+		LoginResult _result;
+		send(_cli, &_result);
+		/*
 		// Process data
 		int ret = process(_cli, _header);
-		return ret;
+		return ret;*/
 	}
 
 	virtual int process(SOCKET _cli, Header *_msg) {

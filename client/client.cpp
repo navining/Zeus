@@ -34,6 +34,15 @@ void cmdThread(TcpClient* client) {
 	}
 }
 
+void test(TcpClient *client) {
+	Login _login;
+	strcpy(_login.username, "Navi");
+	strcpy(_login.password, "123456");
+	while (true) {
+		client->send(&_login);
+	}
+}
+
 int main(int argc, char* argv[]) {
 	const char *ip;
 	u_short port;
@@ -55,7 +64,7 @@ int main(int argc, char* argv[]) {
 	client.connect(ip, port);
 
 	// New thread
-	thread _cmd(cmdThread, &client);
+	thread _cmd(test, &client);
 	_cmd.detach();
 
 	while (client.isConnected()) {
