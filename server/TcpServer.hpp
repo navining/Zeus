@@ -331,7 +331,7 @@ public:
 		WSACleanup();
 #else
 		for (int i = (int)_clients.size() - 1; i >= 0; i--) {
-			close(_clients[i]->sockfd());
+			::close(_clients[i]->sockfd());
 			delete _clients[i];
 		}
 		::close(_sock);
