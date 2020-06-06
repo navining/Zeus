@@ -12,7 +12,7 @@ using std::thread;
 void cmdThread(TcpClient* client) {
 	char cmdBuf[256] = {};
 	while (true) {
-		scanf("%s", cmdBuf);
+		int ret = scanf("%s", cmdBuf);
 		if (0 == strcmp(cmdBuf, "quit")) {
 			client->close();
 			return;
