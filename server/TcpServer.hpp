@@ -275,7 +275,7 @@ public:
 		_recvCount++;
 		double t1 = _time.getElapsedSecond();
 		if (_time.getElapsedSecond() >= 1.0) {
-			printf("<server %d> Time: %f Clients: %d Packages: %d\n", _sock, t1, _clients.size(), _recvCount);
+			printf("<server %d> Time: %f Clients: %d Packages: %d\n", _sock, t1, (int)_clients.size(), _recvCount);
 			_recvCount = 0;
 			_time.update();
 		}
