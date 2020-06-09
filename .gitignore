@@ -34,7 +34,6 @@
 # Visual Studio
 .vs/
 *.db
-*.vcxproj
 *.filters
 *.opendb
 *.user
