@@ -33,7 +33,6 @@
 
 # Visual Studio
 .vs/
-*.sln
 *.db
 *.vcxproj
 *.filters
