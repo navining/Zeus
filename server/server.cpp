@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
 		port = atoi(argv[2]);
 	}
 	else {
-		cout << "Invalid Input!" << endl;
+		std::cout << "Invalid Input!" << std::endl;
 		return -1;
 	}
 
@@ -27,8 +27,8 @@ int main(int argc, char* argv[]) {
 	server.bind(ip, port);
 	server.listen(5);
 
-	while (server.isConnected()) {
-		server.start();
+	while (server.isRun()) {
+		server.onRun();
 	}
 
     getchar();

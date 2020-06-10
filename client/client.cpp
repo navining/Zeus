@@ -10,7 +10,7 @@
 using std::thread;
 
 // Number of clients
-const int numOfClients = 100;
+const int numOfClients = 1000;
 
 // Number of threads
 const int numOfThreads = 4;

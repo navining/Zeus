@@ -18,10 +18,6 @@
 #endif
 
 #include <iostream>
-
-using std::cout;
-using std::endl;
-
 #include "Message.hpp"
 
 class TcpClient {
@@ -43,12 +39,12 @@ public:
 		WSAStartup(version, &data);
 #endif
 		// Create socket
-		if (isConnected()) {
+		if (isRun()) {
 			printf("<client %d> Close old connection...\n", _sock);
 			close();
 		}
 		_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-		if (!isConnected()) {
+		if (!isRun()) {
 			printf("Create socket - Fail...\n");
 		}
 		else {
@@ -59,7 +55,7 @@ public:
 
 	// Connect server
 	int connect(const char *ip, unsigned short port) {
-		if (!isConnected()) {
+		if (!isRun()) {
 			init();
 		}
 		sockaddr_in _sin = {};
@@ -95,8 +91,8 @@ public:
 	}
 
 	// Start client service
-	bool start() {
-		if (!isConnected())
+	bool onRun() {
+		if (!isRun())
 		{
 			printf("<client %d> Start - Fail...\n", _sock);
 			return false;
@@ -133,7 +129,7 @@ public:
 	}
 
 	// If connected
-	inline bool isConnected() {
+	inline bool isRun() {
 		return _sock != INVALID_SOCKET;
 	}
 
@@ -173,7 +169,7 @@ public:
 				// Size of remaining messages
 				int nSize = _lastPos - header->length;
 				// Process message
-				process(header);
+				onMessage(header);
 				// Move remaining messages forward.
 				memcpy(_msgBuf, _msgBuf + header->length, nSize);
 				_lastPos = nSize;
@@ -186,7 +182,7 @@ public:
 	}
 
 	// Process data
-	virtual int process(Header *msg) {
+	virtual int onMessage(Header *msg) {
 		switch (msg->cmd) {
 		case CMD_LOGIN_RESULT:
 		{
@@ -208,12 +204,12 @@ public:
 		}
 		case CMD_ERROR:
 		{
-			cout << "<client " << _sock << "> " << "Recieve Message: " << "ERROR" << " Data Length: " << msg->length << endl;
+			//cout << "<client " << _sock << "> " << "Recieve Message: " << "ERROR" << " Data Length: " << msg->length << endl;
 			break;
 		}
 		default:
 		{
-			cout << "<client " << _sock << "> " << "Recieve Message: " << "Unknown" << " Data Length: " << msg->length << endl;
+			//cout << "<client " << _sock << "> " << "Recieve Message: " << "Unknown" << " Data Length: " << msg->length << endl;
 		}
 		}
 
@@ -222,7 +218,7 @@ public:
 
 	// Send data
 	int send(Header *_msg) {
-		if (!isConnected() || _msg == NULL)
+		if (!isRun() || _msg == NULL)
 			return SOCKET_ERROR;
 		return ::send(_sock, (const char *)_msg, _msg->length, 0);
 	}
