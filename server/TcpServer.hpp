@@ -31,6 +31,9 @@
 #ifndef MSG_BUFF_SIZE
 #define MSG_BUFF_SIZE 102400
 #endif
+#ifndef THREAD_COUNT
+#define THREAD_COUNT 4
+#endif
 
 class ClientSocket {
 public:
@@ -67,6 +70,7 @@ class MessageHandler
 public:
 	MessageHandler(SOCKET sock = INVALID_SOCKET) {
 		_sock = sock;
+		_pThread = nullptr;
 	}
 	virtual ~MessageHandler() {
 		close();
@@ -84,6 +88,13 @@ public:
 			printf("<server %d> Start - Fail...\n", _sock);
 			return false;
 		};
+
+		// Sleep if there's no clients
+		if (_clients.empty()) {
+			std::chrono::milliseconds t(1);
+			std::this_thread::sleep_for(t);
+			return true;
+		}
 
 		// Add clients from the buffer to the vector
 		{
@@ -109,7 +120,7 @@ public:
 		FD_SET(_sock, &fdExcept);
 
 		// Record curret max socket
-		SOCKET maxSock = _clients[0]->sockfd();
+		SOCKET maxSock = INVALID_SOCKET;
 
 		// Put client sockets inside fd_set
 		for (int n = (int)_clients.size() - 1; n >= 0; n--) {
@@ -244,11 +255,23 @@ public:
 		_clientsBuf.push_back(pClient);
 	}
 
+	// Start the server
+	void start() {
+		_pThread = new std::thread(std::mem_fun(&MessageHandler::onRun), this);
+		_pThread->detach();
+	}
+
+	// Get number of clients in the current handler
+	size_t getClientCount() {
+		return _clients.size() + _clientsBuf.size();
+	}
+
 private:
 	SOCKET _sock;
 	std::vector<ClientSocket*> _clients;
 	std::vector<ClientSocket*> _clientsBuf;	// Clients buffer
 	std::mutex _mutex;
+	std::thread *_pThread;
 };
 
 // Main thread responsible for accepting connections
@@ -347,16 +370,38 @@ public:
 			printf("<server %d> Invaild client socket...\n", _sock);
 		}
 		else {
-			// Broadcast
-			NewUserJoin userJoin;
-			userJoin.sock = cli;
-			broadcast(&userJoin);
+			addClient(new ClientSocket(cli));
+			// cout << "<server " << _sock << "> " << "New connection: " << "<client " << cli << "> " << inet_ntoa(clientAddr.sin_addr) << "-" << clientAddr.sin_port << endl;
 		}
 
-		_clients.push_back(new ClientSocket(cli));
-		// cout << "<server " << _sock << "> " << "New connection: " << "<client " << cli << "> " << inet_ntoa(clientAddr.sin_addr) << "-" << clientAddr.sin_port << endl;
-
 		return cli;
+	}
+
+	// Add new client into the buffer with least clients
+	void addClient(ClientSocket* pClient) {
+		_clients.push_back(pClient);
+
+		int minCount = INT_MAX;
+		MessageHandler *minHandler = nullptr;
+		for (auto handler : _handlers) {
+			if (handler->getClientCount() < minCount) {
+				minCount = handler->getClientCount();
+				minHandler = handler;
+			}
+		}
+		if (minHandler == nullptr) {
+			return;
+		}
+		minHandler->addClient(pClient);
+	}
+
+	// Start child threads
+	void start() {
+		for (int i = 0; i < THREAD_COUNT; i++) {
+			MessageHandler *handler = new MessageHandler(_sock);
+			_handlers.push_back(handler);
+			handler->start();
+		}
 	}
 
 	// Start server service
@@ -455,6 +500,7 @@ public:
 private:
 	SOCKET _sock;
 	std::vector<ClientSocket*> _clients;
+	std::vector<MessageHandler*> _handlers;
 	Timestamp _time;
 	int _recvCount;
 };

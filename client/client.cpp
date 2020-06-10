@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 		port = atoi(argv[2]);
 	}
 	else {
-		cout << "Invalid Input!" << endl;
+		std::cout << "Invalid Input!" << std::endl;
 		return -1;
 	}
 

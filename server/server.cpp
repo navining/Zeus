@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
 	server.init();
 	server.bind(ip, port);
 	server.listen(5);
+	server.start();
 
 	while (server.isRun()) {
 		server.onRun();
