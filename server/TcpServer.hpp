@@ -21,6 +21,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 #include "Message.hpp"
 #include "Timestamp.hpp"
@@ -71,6 +72,7 @@ public:
 	MessageHandler(SOCKET sock = INVALID_SOCKET) {
 		_sock = sock;
 		_pThread = nullptr;
+		_recvCount = 0;
 	}
 	virtual ~MessageHandler() {
 		close();
@@ -83,79 +85,73 @@ public:
 
 	// Start server service
 	bool onRun() {
-		if (!isRun())
-		{
-			printf("<server %d> Start - Fail...\n", _sock);
-			return false;
-		};
-
-		// Sleep if there's no clients
-		if (_clients.empty()) {
-			std::chrono::milliseconds t(1);
-			std::this_thread::sleep_for(t);
-			return true;
-		}
-
-		// Add clients from the buffer to the vector
-		{
-			std::lock_guard<std::mutex> lock(_mutex);
-			for (auto pClient : _clientsBuf) {
-				_clients.push_back(pClient);
+		while (isRun()) {
+			// Sleep if there's no clients
+			if (getClientCount() == 0) {
+				std::chrono::milliseconds t(1);
+				std::this_thread::sleep_for(t);
+				continue;
 			}
-		}
-		_clientsBuf.clear();
-
-		// Select
-		fd_set fdRead;
-		fd_set fdWrite;
-		fd_set fdExcept;
-
-		FD_ZERO(&fdRead);
-		FD_ZERO(&fdWrite);
-		FD_ZERO(&fdExcept);
-
-		// Put server sockets inside fd_set
-		FD_SET(_sock, &fdRead);
-		FD_SET(_sock, &fdWrite);
-		FD_SET(_sock, &fdExcept);
-
-		// Record curret max socket
-		SOCKET maxSock = INVALID_SOCKET;
-
-		// Put client sockets inside fd_set
-		for (int n = (int)_clients.size() - 1; n >= 0; n--) {
-			FD_SET(_clients[n]->sockfd(), &fdRead);
-			if (maxSock < _clients[n]->sockfd()) {
-				maxSock = _clients[n]->sockfd();
+			// Add clients from the buffer to the vector
+			{
+				std::lock_guard<std::mutex> lock(_mutex);
+				for (auto pClient : _clientsBuf) {
+					_clients.push_back(pClient);
+				}
 			}
-		}
+			_clientsBuf.clear();
 
-		// Timeval
-		timeval t = { 0, 10 };
+			// Select
+			fd_set fdRead;
+			fd_set fdWrite;
+			fd_set fdExcept;
 
-		int ret = select(maxSock + 1, &fdRead, &fdWrite, &fdExcept, &t);
+			FD_ZERO(&fdRead);
+			FD_ZERO(&fdWrite);
+			FD_ZERO(&fdExcept);
 
-		if (ret < 0) {
-			printf("<server %d> Select - Fail...\n", _sock);
-			close();
-			return false;
-		}
+			// Put server sockets inside fd_set
+			FD_SET(_sock, &fdRead);
+			FD_SET(_sock, &fdWrite);
+			FD_SET(_sock, &fdExcept);
 
-		// Client socket response: handle request
-		for (int n = (int)_clients.size() - 1; n >= 0; n--) {
-			if (FD_ISSET(_clients[n]->sockfd(), &fdRead)) {
-				if (-1 == recv(_clients[n])) {
-					auto it = _clients.begin() + n;
-					if (it != _clients.end()) {
-						delete _clients[n];
-						_clients.erase(it);
+			// Record curret max socket
+			SOCKET maxSock = INVALID_SOCKET;
+
+			// Put client sockets inside fd_set
+			for (int n = (int)_clients.size() - 1; n >= 0; n--) {
+				FD_SET(_clients[n]->sockfd(), &fdRead);
+				if (maxSock < _clients[n]->sockfd()) {
+					maxSock = _clients[n]->sockfd();
+				}
+			}
+
+			// Timeval
+			timeval t = { 0, 0 };
+
+			int ret = select(maxSock + 1, &fdRead, &fdWrite, &fdExcept, &t);
+
+			if (ret < 0) {
+				printf("<server %d> Select - Fail...\n", _sock);
+				close();
+				return false;
+			}
+
+			// Client socket response: handle request
+			for (int n = (int)_clients.size() - 1; n >= 0; n--) {
+				if (FD_ISSET(_clients[n]->sockfd(), &fdRead)) {
+					if (-1 == recv(_clients[n])) {
+						auto it = _clients.begin() + n;
+						if (it != _clients.end()) {
+							delete _clients[n];
+							_clients.erase(it);
+						}
 					}
 				}
 			}
+
+			// Handle other services
 		}
-
-		// Handle other services
-
 		return true;
 	}
 
@@ -196,7 +192,7 @@ public:
 
 	// Handle message
 	virtual int onMessage(SOCKET cli, Header *msg) {
-		// _recvCount++;
+		_recvCount++;
 		switch (msg->cmd) {
 		case CMD_LOGIN:
 		{
@@ -272,6 +268,8 @@ private:
 	std::vector<ClientSocket*> _clientsBuf;	// Clients buffer
 	std::mutex _mutex;
 	std::thread *_pThread;
+public:
+	std::atomic_int _recvCount;
 };
 
 // Main thread responsible for accepting connections
@@ -279,7 +277,6 @@ class TcpServer {
 public:
 	TcpServer() {
 		_sock = INVALID_SOCKET;
-		_recvCount = 0;
 	}
 
 	virtual ~TcpServer() {
@@ -443,16 +440,26 @@ public:
 			accept();
 		}
 
-		// Handle other services
+		// Handle other services here...
 		// Benchmark
-		double t1 = _time.getElapsedSecond();
-		if (_time.getElapsedSecond() >= 1.0) {
-			printf("<server %d> Time: %f Clients: %d Packages: %d\n", _sock, t1, (int)_clients.size(), _recvCount);
-			_recvCount = 0;
-			_time.update();
-		}
+		benchmark();
 
 		return true;
+	}
+
+	// Benchmark
+	void benchmark() {
+		double t1 = _time.getElapsedSecond();
+		if (_time.getElapsedSecond() >= 1.0) {
+			int recvCount = 0;
+			for (auto handler : _handlers) {
+				recvCount += handler->_recvCount;
+				handler->_recvCount = 0;
+			}
+			printf("<server %d> Time: %f Clients: %d Packages: %d\n", _sock, t1, (int)_clients.size(), recvCount);
+
+			_time.update();
+		}
 	}
 
 	// Send data
@@ -502,7 +509,6 @@ private:
 	std::vector<ClientSocket*> _clients;
 	std::vector<MessageHandler*> _handlers;
 	Timestamp _time;
-	int _recvCount;
 };
 
 #endif // !_TcpServer_hpp_
