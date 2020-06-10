@@ -9,35 +9,72 @@
 
 using std::thread;
 
-void cmdThread(TcpClient* client) {
-	char cmdBuf[256] = {};
+// Number of clients
+const int numOfClients = 100;
+
+// Number of threads
+const int numOfThreads = 4;
+
+// Server IP
+const char *ip;
+
+// Server port
+u_short port;
+
+// Array of clients
+TcpClient* clients[numOfClients];
+
+void sendThread(int id) {
+	int count = numOfClients / numOfThreads;
+	int begin = (id - 1) * count;
+	int end = id * count;
+
+	for (int i = begin; i < end; i++) {
+		clients[i] = new TcpClient();
+	}
+
+	for (int i = begin; i < end; i++) {
+		clients[i]->connect("127.0.0.1", 4567);
+	}
+
+	// Data to be sent
+	Login login;
+	strcpy(login.username, "Navi");
+	strcpy(login.password, "123456");
+
 	while (true) {
-		int ret = scanf("%s", cmdBuf);
-		if (0 == strcmp(cmdBuf, "quit")) {
-			client->close();
-			return;
-		}
-		else if (0 == strcmp(cmdBuf, "login")) {
-			Login _login;
-			strcpy(_login.username, "Navi");
-			strcpy(_login.password, "123456");
-			client->send(&_login);
-		}
-		else if (0 == strcmp(cmdBuf, "logout")) {
-			Logout _logout;
-			strcpy(_logout.username, "Navi");
-			client->send(&_logout);
-		}
-		else {
-			cout << "Invalid input!" << endl;
+		for (int i = begin; i < end; i++) {
+			clients[i]->send(&login);
 		}
 	}
 }
 
+/*void cmdThread(TcpClient* client) {
+char cmdBuf[256] = {};
+while (true) {
+int ret = scanf("%s", cmdBuf);
+if (0 == strcmp(cmdBuf, "quit")) {
+client->close();
+return;
+}
+else if (0 == strcmp(cmdBuf, "login")) {
+Login _login;
+strcpy(_login.username, "Navi");
+strcpy(_login.password, "123456");
+client->send(&_login);
+}
+else if (0 == strcmp(cmdBuf, "logout")) {
+Logout _logout;
+strcpy(_logout.username, "Navi");
+client->send(&_logout);
+}
+else {
+cout << "Invalid input!" << endl;
+}
+}
+}*/
 
 int main(int argc, char* argv[]) {
-	const char *ip;
-	u_short port;
 	if (argc == 1) {
 		ip = "127.0.0.1";
 		port = 4567;
@@ -51,27 +88,12 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	const int numOfClients = 100;
-	TcpClient* clients[numOfClients];
-	for (int i = 0; i < numOfClients; i++) {
-		clients[i] = new TcpClient();
-		clients[i]->init();
-		clients[i]->connect(ip, port);
+	for (int i = 0; i < numOfThreads; i++) {
+		thread t(sendThread, i + 1);
+		t.detach();
 	}
 
-	// New thread
-	//thread _cmd(test, &client);
-	//_cmd.detach();
-
-	Login login;
-	strcpy(login.username, "Navi");
-	strcpy(login.password, "123456");
-	while (true) {
-		for (int i = 0; i < numOfClients; i++) {
-			clients[i]->send(&login);
-		}
-	}
+	getchar();
 
 	return 0;
 }
-

@@ -75,7 +75,7 @@ public:
 			cout << "<client " << _sock << "> " << "Connect - Fail..." << endl;
 		}
 		else {
-			cout << "<client " << _sock << "> " << "Connect - Success..." << endl;
+			//cout << "<client " << _sock << "> " << "Connect - Success..." << endl;
 		}
 		return ret;
 	}

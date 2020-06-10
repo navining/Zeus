@@ -1,7 +1,7 @@
 #ifndef _TcpServer_hpp_
 #define _TcpServer_hpp_
 #ifdef _WIN32
-#define FD_SETSIZE	1024
+#define FD_SETSIZE	4096
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
@@ -164,7 +164,7 @@ public:
 		}
 
 		_clients.push_back(new ClientSocket(cli));
-		cout << "<server " << _sock << "> " << "New connection: " << "<client " << cli << "> " << inet_ntoa(clientAddr.sin_addr) << "-" << clientAddr.sin_port << endl;
+		// cout << "<server " << _sock << "> " << "New connection: " << "<client " << cli << "> " << inet_ntoa(clientAddr.sin_addr) << "-" << clientAddr.sin_port << endl;
 
 		return cli;
 	}
@@ -202,7 +202,9 @@ public:
 			}
 		}
 
-		timeval t = { 0, 0 };
+		// Timeval
+		timeval t = { 0, 10 };
+
 		int ret = select(maxSock + 1, &fdRead, &fdWrite, &fdExcept, &t);
 
 		if (ret < 0) {
@@ -279,7 +281,7 @@ public:
 			_recvCount = 0;
 			_time.update();
 		}
-		
+
 		switch (msg->cmd) {
 		case CMD_LOGIN:
 		{
