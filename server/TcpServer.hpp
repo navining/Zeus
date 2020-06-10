@@ -83,15 +83,15 @@ public:
 #endif
 		// Create socket
 		if (isConnected()) {
-			cout << "<server " << _sock << "> " << "Close old connection..." << endl;
+			printf("<server %d> Close old connection...\n", _sock);
 			close();
 		}
 		_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		if (!isConnected()) {
-			cout << "Create socket - Fail..." << endl;
+			printf("Create socket - Fail...\n");
 		}
 		else {
-			cout << "<server " << _sock << "> " << "Create socket - Success..." << endl;
+			printf("<server %d> Create socket - Success...\n", _sock);
 		}
 		return _sock;
 	}
@@ -120,10 +120,10 @@ public:
 		}
 		int ret = ::bind(_sock, (sockaddr *)&_sin, sizeof(sockaddr_in));
 		if (SOCKET_ERROR == ret) {
-			cout << "<server " << _sock << "> " << "Bind " << port << " - Fail..." << endl;
+			printf("<server %d> Bind %d - Fail...\n", _sock, port);
 		}
 		else {
-			cout << "<server " << _sock << "> " << "Bind " << port << " - Success..." << endl;
+			printf("<server %d> Bind %d - Success...\n", _sock, port);
 		}
 
 		return ret;
@@ -133,10 +133,10 @@ public:
 	int listen(int n) {
 		int ret = ::listen(_sock, n);
 		if (SOCKET_ERROR == ret) {
-			cout << "<server " << _sock << "> " << "Listen - Fail..." << endl;
+			printf("<server %d> Listen - Fail...\n", _sock);
 		}
 		else {
-			cout << "<server " << _sock << "> " << "Listen - Success..." << endl;
+			printf("<server %d> Listen - Success...\n", _sock);
 		}
 
 		return ret;
@@ -154,7 +154,7 @@ public:
 		SOCKET cli = ::accept(_sock, (sockaddr *)&clientAddr, (socklen_t *)&addrlen);
 #endif
 		if (INVALID_SOCKET == cli) {
-			cout << "<server " << _sock << "> " << "Invaild client socket..." << endl;
+			printf("<server %d> Invaild client socket...\n", _sock);
 		}
 		else {
 			// Broadcast
@@ -173,7 +173,7 @@ public:
 	bool start() {
 		if (!isConnected())
 		{
-			cout << "<server " << _sock << "> " << "Start - Fail ..." << endl;
+			printf("<server %d> Start - Fail...\n", _sock);
 			return false;
 		};
 
@@ -208,7 +208,7 @@ public:
 		int ret = select(maxSock + 1, &fdRead, &fdWrite, &fdExcept, &t);
 
 		if (ret < 0) {
-			cout << "<server " << _sock << "> Select - Fail ..." << endl;
+			printf("<server %d> Select - Fail...\n", _sock);
 			close();
 			return false;
 		}
@@ -233,7 +233,13 @@ public:
 		}
 
 		// Handle other services
-		//cout << "Other services..." << endl;
+		// Benchmark
+		double t1 = _time.getElapsedSecond();
+		if (_time.getElapsedSecond() >= 1.0) {
+			printf("<server %d> Time: %f Clients: %d Packages: %d\n", _sock, t1, (int)_clients.size(), _recvCount);
+			_recvCount = 0;
+			_time.update();
+		}
 
 		return true;
 	}
@@ -245,7 +251,7 @@ public:
 		// Receive header
 		int recvlen = (int)::recv(pClient->sockfd(), _recvBuf, RECV_BUFF_SIZE, 0);
 		if (recvlen <= 0) {
-			cout << "<server " << _sock << "> " << "<client " << pClient->sockfd() << "> " << "Disconnected..." << endl;
+			// printf("<server %d> <client %d> Disconnected...\n", _sock, pClient->sockfd());
 			return -1;
 		}
 
@@ -273,15 +279,7 @@ public:
 	}
 
 	virtual int process(SOCKET cli, Header *msg) {
-		// Benchmark
 		_recvCount++;
-		double t1 = _time.getElapsedSecond();
-		if (_time.getElapsedSecond() >= 1.0) {
-			printf("<server %d> Time: %f Clients: %d Packages: %d\n", _sock, t1, (int)_clients.size(), _recvCount);
-			_recvCount = 0;
-			_time.update();
-		}
-
 		switch (msg->cmd) {
 		case CMD_LOGIN:
 		{
@@ -333,7 +331,7 @@ public:
 	/// Close socket
 	void close() {
 		if (_sock == INVALID_SOCKET) return;
-		cout << "<server " << _sock << "> " << "Quit..." << endl;
+		printf("<server %d> Quit...\n", _sock);
 #ifdef _WIN32
 		for (int i = (int)_clients.size() - 1; i >= 0; i--) {
 			closesocket(_clients[i]->sockfd());

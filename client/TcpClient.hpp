@@ -44,15 +44,15 @@ public:
 #endif
 		// Create socket
 		if (isConnected()) {
-			cout << "<client " << _sock << "> " << "Close old connection..." << endl;
+			printf("<client %d> Close old connection...\n", _sock);
 			close();
 		}
 		_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		if (!isConnected()) {
-			cout << "Create socket - Fail..." << endl;
+			printf("Create socket - Fail...\n");
 		}
 		else {
-			cout << "<client " << _sock << "> " << "Create socket - Success..." << endl;
+			printf("<client %d> Create socket - Success...\n", _sock);
 		}
 		return _sock;
 	}
@@ -72,10 +72,10 @@ public:
 #endif
 		int ret = ::connect(_sock, (sockaddr *)&_sin, sizeof(sockaddr_in));
 		if (SOCKET_ERROR == ret) {
-			cout << "<client " << _sock << "> " << "Connect - Fail..." << endl;
+			printf("<client %d> Connect - Fail...\n", _sock);
 		}
 		else {
-			//cout << "<client " << _sock << "> " << "Connect - Success..." << endl;
+			// printf("<client %d> Connect - Success...\n", _sock);
 		}
 		return ret;
 	}
@@ -83,7 +83,7 @@ public:
 	// Close socket
 	void close() {
 		if (_sock == INVALID_SOCKET) return;
-		cout << "<client " << _sock << "> " << "Quit..." << endl;
+		printf("<client %d> Quit...\n", _sock);
 #ifdef _WIN32
 		// Close Win Sock 2.x
 		closesocket(_sock);
@@ -98,7 +98,7 @@ public:
 	bool start() {
 		if (!isConnected())
 		{
-			cout << "<client " << _sock << "> " << "Start - Fail ..." << endl;
+			printf("<client %d> Start - Fail...\n", _sock);
 			return false;
 		};
 
@@ -110,7 +110,7 @@ public:
 		int ret = select(_sock + 1, &fdRead, NULL, NULL, &t);
 
 		if (ret < 0) {
-			cout << "<client " << _sock << "> Select - Fail ..." << endl;
+			printf("<client %d> Select - Fail...\n", _sock);
 			close();
 			return false;
 		}
@@ -120,7 +120,7 @@ public:
 			FD_CLR(_sock, &fdRead);
 			// Handle request
 			if (-1 == recv()) {
-				cout << "<client " << _sock << "> " << "Process - Fail ..." << endl;
+				printf("<client %d> Process - Fail...\n", _sock);
 				close();
 				return false;
 			}
@@ -158,7 +158,7 @@ public:
 		int recvlen = (int)::recv(_sock, _recvBuf, RECV_BUFF_SIZE, 0);
 
 		if (recvlen <= 0) {
-			cout << "<client " << _sock << "> " << "Disconnected..." << endl;
+			printf("<client %d> Disconnected...\n", _sock);
 			return -1;
 		}
 
