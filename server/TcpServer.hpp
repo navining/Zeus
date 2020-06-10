@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <limits.h>
 #define SOCKET int
 #define INVALID_SOCKET    (SOCKET)(~0)
 #define SOCKET_ERROR        (-1)
