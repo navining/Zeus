@@ -25,6 +25,7 @@ class TcpClient {
 public:
 	TcpClient() {
 		_sock = INVALID_SOCKET;
+		isConnect = false;
 	}
 
 	virtual ~TcpClient() {
@@ -45,7 +46,7 @@ public:
 			close();
 		}
 		_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-		if (!isRun()) {
+		if (_sock == INVALID_SOCKET) {
 			printf("Create socket - Fail...\n");
 		}
 		else {
@@ -72,7 +73,8 @@ public:
 			printf("<client %d> Connect - Fail...\n", _sock);
 		}
 		else {
-			printf("<client %d> Connect - Success...\n", _sock);
+			isConnect = true;
+			// printf("<client %d> Connect - Success...\n", _sock);
 		}
 		return ret;
 	}
@@ -89,6 +91,7 @@ public:
 		::close(_sock);
 #endif
 		_sock = INVALID_SOCKET;
+		isConnect = false;
 	}
 
 	// Start client service
@@ -131,7 +134,7 @@ public:
 
 	// If connected
 	inline bool isRun() {
-		return _sock != INVALID_SOCKET;
+		return _sock != INVALID_SOCKET && isConnect;
 	}
 
 	// Recieve Buffer (System Buffer)
@@ -197,6 +200,12 @@ public:
 			//cout << "<client " << _sock << "> " << "Recieve Message: " << _userJoin->cmd << " Data Length: " << _userJoin->length << " New User: " << _userJoin->sock << endl;
 			break;
 		}
+		case CMD_TEST:
+		{
+			Test* test = (Test *)msg;
+			//printf("<client %d> Recieve Message: Test\n", _sock);
+			break;
+		}
 		case CMD_ERROR:
 		{
 			//cout << "<client " << _sock << "> " << "Recieve Message: " << "ERROR" << " Data Length: " << msg->length << endl;
@@ -215,11 +224,16 @@ public:
 	int send(Header *_msg) {
 		if (!isRun() || _msg == NULL)
 			return SOCKET_ERROR;
-		return ::send(_sock, (const char *)_msg, _msg->length, 0);
+		int ret = ::send(_sock, (const char *)_msg, _msg->length, 0);
+		if (SOCKET_ERROR == ret) {
+			close();
+		}
+		return ret;
 	}
 
 private:
 	SOCKET _sock;
+	bool isConnect;
 };
 
 #endif // !_TcpClient_hpp_

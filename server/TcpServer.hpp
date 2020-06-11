@@ -414,8 +414,8 @@ public:
 	}
 
 	// Start child threads
-	void start() {
-		for (int i = 0; i < TCPSERVER_THREAD_COUNT; i++) {
+	void start(int numOfThreads = TCPSERVER_THREAD_COUNT) {
+		for (int i = 0; i < numOfThreads; i++) {
 			MessageHandler *handler = new MessageHandler(_sock, this);
 			_handlers.push_back(handler);
 			handler->start();
@@ -464,7 +464,7 @@ public:
 	void benchmark() {
 		double t1 = _time.getElapsedSecond();
 		if (t1 >= 1.0) {
-			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, TCPSERVER_THREAD_COUNT, (int)_clientCount, _recvCount);
+			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, (int)_handlers.size(), (int)_clientCount, _recvCount);
 			_recvCount = 0;
 			_time.update();
 		}

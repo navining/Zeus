@@ -10,7 +10,7 @@
 using std::thread;
 
 // Number of clients
-const int numOfClients = 1000;
+const int numOfClients = 10000;
 
 // Number of threads
 const int numOfThreads = 4;
@@ -24,7 +24,7 @@ u_short port;
 // Array of clients
 TcpClient* clients[numOfClients];
 
-void sendThread(int id) {
+void IOThread(int id) {
 	int count = numOfClients / numOfThreads;
 	int begin = (id - 1) * count;
 	int end = id * count;
@@ -43,6 +43,7 @@ void sendThread(int id) {
 	while (true) {
 		for (int i = begin; i < end; i++) {
 			clients[i]->send(&data);
+			clients[i]->onRun();
 		}
 	}
 }
@@ -86,8 +87,10 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
+	printf("Number of clients: %d\nThreads: %d\n", numOfClients, numOfThreads);
+	printf("Size per package: %d Bytes\n", sizeof(Test));
 	for (int i = 0; i < numOfThreads; i++) {
-		thread t(sendThread, i + 1);
+		thread t(IOThread, i + 1);
 		t.detach();
 	}
 

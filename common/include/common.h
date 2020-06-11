@@ -5,7 +5,7 @@
 // Size of the recieve buffer
 #define RECV_BUFF_SIZE 10240
 
-// Size of the message buffer
-#define MSG_BUFF_SIZE 102400
+// Size of the message buffer (Secondary buffer)
+#define MSG_BUFF_SIZE 51200
 
 #endif // !_common_h_
