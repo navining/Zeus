@@ -52,6 +52,13 @@ public:
 	void setLastPos(int pos) {
 		_lastPos = pos;
 	}
+
+	int send(Header *msg) {
+		if (msg != nullptr) {
+			return ::send(_sockfd, (const char *)msg, msg->length, 0);
+		}
+		return SOCKET_ERROR;
+	}
 private:
 	SOCKET _sockfd;	// socket fd_set			
 	char _msgBuf[MSG_BUFF_SIZE];	// Message Buffer (Secondary Buffer)
@@ -66,7 +73,7 @@ public:
 	// Client disconnect event
 	virtual void onDisconnect(ClientSocket *pClient) = 0;
 	// Recieve message event
-	virtual void onMessage(SOCKET sock, Header *header) = 0;
+	virtual void onMessage(ClientSocket *pClient, Header *header) = 0;
 private:
 };
 
@@ -177,7 +184,7 @@ public:
 				// Size of remaining messages
 				int nSize = pClient->getLastPos() - header->length;
 				// Process message
-				onMessage(pClient->sockfd(), header);
+				onMessage(pClient, header);
 				// Move remaining messages forward.
 				memcpy(pClient->msgBuf(), pClient->msgBuf() + header->length, nSize);
 				pClient->setLastPos(nSize);
@@ -197,28 +204,36 @@ public:
 	}
 
 	// Handle message
-	virtual void onMessage(SOCKET cli, Header *msg) {
+	virtual void onMessage(ClientSocket *pClient, Header *msg) {
 		if (_pMain != nullptr) {
-			_pMain->onMessage(cli, msg);
+			_pMain->onMessage(pClient, msg);
 		}
 		switch (msg->cmd) {
 		case CMD_LOGIN:
 		{
-			Login* _login = (Login *)msg;
+			Login* login = (Login *)msg;
 			//cout << "<server " << _sock << "> " << "From: " << "<client " << cli << "> " << "Command: " << _login->cmd << " Data length: " << _login->length << " Username: " << _login->username << " Password: " << _login->password << endl;
 			// Judge username and password
 			// Send
-			//LoginResult _result;
-			//send(cli, &_result);
+			LoginResult result;
+			pClient->send(&result);
 			break;
 		}
 		case CMD_LOGOUT:
 		{
-			Logout* _logout = (Logout *)msg;
+			Logout* logout = (Logout *)msg;
 			//cout << "<server " << _sock << "> " << "From: " << "<client " << cli << "> " << "Command: " << _logout->cmd << " Data length: " << _logout->length << " Username: " << _logout->username << endl;
 			// Send
-			//LogoutResult _result;
-			//send(cli, &_result);
+			LogoutResult result;
+			pClient->send(&result);
+			break;
+		}
+		case CMD_TEST:	// Send back the test data (echo)
+		{
+			Test* _test = (Test *)msg;
+			// Send
+			Test result;
+			pClient->send(&result);
 			break;
 		}
 		default:
@@ -459,7 +474,7 @@ public:
 		_clientCount--;
 	}
 
-	virtual void onMessage(SOCKET sock, Header *header) {
+	virtual void onMessage(ClientSocket *pClient, Header *header) {
 		_recvCount++;
 	}
 
