@@ -48,7 +48,7 @@ public:
 			printf("Create socket - Fail...\n");
 		}
 		else {
-			printf("<client %d> Create socket - Success...\n", _sock);
+			// printf("<client %d> Create socket - Success...\n", _sock);
 		}
 		return _sock;
 	}
@@ -71,7 +71,7 @@ public:
 			printf("<client %d> Connect - Fail...\n", _sock);
 		}
 		else {
-			// printf("<client %d> Connect - Success...\n", _sock);
+			printf("<client %d> Connect - Success...\n", _sock);
 		}
 		return ret;
 	}
