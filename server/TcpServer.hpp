@@ -113,17 +113,7 @@ public:
 
 			// Select
 			fd_set fdRead;
-			fd_set fdWrite;
-			fd_set fdExcept;
-
 			FD_ZERO(&fdRead);
-			FD_ZERO(&fdWrite);
-			FD_ZERO(&fdExcept);
-
-			// Put server sockets inside fd_set
-			FD_SET(_sock, &fdRead);
-			FD_SET(_sock, &fdWrite);
-			FD_SET(_sock, &fdExcept);
 
 			// Record curret max socket
 			SOCKET maxSock = INVALID_SOCKET;
@@ -139,7 +129,7 @@ public:
 			// Timeval
 			timeval t = { 0, 0 };
 
-			int ret = select(maxSock + 1, &fdRead, &fdWrite, &fdExcept, &t);
+			int ret = select(maxSock + 1, &fdRead, 0, 0, &t);
 
 			if (ret < 0) {
 				printf("<server %d> Select - Fail...\n", _sock);
@@ -426,22 +416,14 @@ public:
 
 		// Select
 		fd_set fdRead;
-		fd_set fdWrite;
-		fd_set fdExcept;
-
 		FD_ZERO(&fdRead);
-		FD_ZERO(&fdWrite);
-		FD_ZERO(&fdExcept);
-
 		// Put server sockets inside fd_set
 		FD_SET(_sock, &fdRead);
-		FD_SET(_sock, &fdWrite);
-		FD_SET(_sock, &fdExcept);
 
 		// Timeval
 		timeval t = { 0, 10 };
 
-		int ret = select(_sock + 1, &fdRead, &fdWrite, &fdExcept, &t);
+		int ret = select(_sock + 1, &fdRead, 0, 0, &t);
 
 		if (ret < 0) {
 			printf("<server %d> Select - Fail...\n", _sock);
