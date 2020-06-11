@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	printf("Number of clients: %d\nThreads: %d\n", numOfClients, numOfThreads);
-	printf("Size per package: %d Bytes\n", sizeof(Test));
+	printf("Size per package: %d Bytes\n", (int)sizeof(Test));
 	for (int i = 0; i < numOfThreads; i++) {
 		thread t(IOThread, i + 1);
 		t.detach();

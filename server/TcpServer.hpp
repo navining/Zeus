@@ -240,7 +240,7 @@ public:
 
 	// Start the server
 	void start() {
-		_thread = std::thread(std::mem_fn(&Handler::onRun), this);
+		_thread = std::thread(std::mem_fun(&Handler::onRun), this);
 		_thread.detach();
 	}
 
@@ -433,7 +433,7 @@ public:
 	void benchmark() {
 		double t1 = _time.getElapsedSecond();
 		if (t1 >= 1.0) {
-			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, (int)_handlers.size(), (int)_clientCount, _msgCount);
+			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, (int)_handlers.size(), (int)_clientCount, (int)_msgCount);
 			_msgCount = 0;
 			_time.update();
 		}
