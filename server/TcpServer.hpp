@@ -27,11 +27,11 @@
 #include "Message.hpp"
 #include "common.h"
 
-#define TCPSERVER_THREAD_COUNT 4
+#define TCPSERVER_THREAD_COUNT 1
 
-class ClientSocket {
+class TcpSocket {
 public:
-	ClientSocket(SOCKET sockfd = INVALID_SOCKET) {
+	TcpSocket(SOCKET sockfd = INVALID_SOCKET) {
 		_sockfd = sockfd;
 		memset(_msgBuf, 0, sizeof(_msgBuf));
 		_lastPos = 0;
@@ -69,29 +69,29 @@ private:
 class Event {
 public:
 	// Client connect event
-	virtual void onConnect(ClientSocket *pClient) = 0;
+	virtual void onConnection(TcpSocket *pClient) = 0;
 	// Client disconnect event
-	virtual void onDisconnect(ClientSocket *pClient) = 0;
+	virtual void onDisconnection(TcpSocket *pClient) = 0;
 	// Recieve message event
-	virtual void onMessage(ClientSocket *pClient, Header *header) = 0;
+	virtual void onMessage(TcpSocket *pClient, Header *header) = 0;
 private:
 };
 
 // Child thread responsible for handling messsages
-class MessageHandler : Event
+class Handler : Event
 {
 public:
-	MessageHandler(SOCKET sock = INVALID_SOCKET, Event *pEvent = nullptr) {
+	Handler(SOCKET sock = INVALID_SOCKET, Event *pEvent = nullptr) {
 		_sock = sock;
 		_pMain = pEvent;
 	}
 
-	~MessageHandler() {
+	~Handler() {
 		close();
 	}
 
-	void onConnect(ClientSocket *pClient) {}
-	void onDisconnect(ClientSocket *pClient) {}
+	void onConnection(TcpSocket *pClient) {}
+	void onDisconnection(TcpSocket *pClient) {}
 
 	// If connected
 	inline bool isRun() {
@@ -147,7 +147,7 @@ public:
 						auto it = _clients.begin() + n;
 						if (it != _clients.end()) {
 							if (_pMain != nullptr) {
-								_pMain->onDisconnect(_clients[n]);
+								_pMain->onDisconnection(_clients[n]);
 							}
 							delete _clients[n];
 							_clients.erase(it);
@@ -165,7 +165,7 @@ public:
 	char _recvBuf[RECV_BUFF_SIZE] = {};
 
 	// Recieve data
-	int recv(ClientSocket *pClient) {
+	int recv(TcpSocket *pClient) {
 		// Receive header
 		int recvlen = (int)::recv(pClient->sockfd(), _recvBuf, RECV_BUFF_SIZE, 0);
 		if (recvlen <= 0) {
@@ -204,44 +204,10 @@ public:
 	}
 
 	// Handle message
-	virtual void onMessage(ClientSocket *pClient, Header *msg) {
+	virtual void onMessage(TcpSocket *pClient, Header *msg) {
 		if (_pMain != nullptr) {
 			_pMain->onMessage(pClient, msg);
 		}
-		switch (msg->cmd) {
-		case CMD_LOGIN:
-		{
-			Login* login = (Login *)msg;
-			//cout << "<server " << _sock << "> " << "From: " << "<client " << cli << "> " << "Command: " << _login->cmd << " Data length: " << _login->length << " Username: " << _login->username << " Password: " << _login->password << endl;
-			// Judge username and password
-			// Send
-			LoginResult result;
-			pClient->send(&result);
-			break;
-		}
-		case CMD_LOGOUT:
-		{
-			Logout* logout = (Logout *)msg;
-			//cout << "<server " << _sock << "> " << "From: " << "<client " << cli << "> " << "Command: " << _logout->cmd << " Data length: " << _logout->length << " Username: " << _logout->username << endl;
-			// Send
-			LogoutResult result;
-			pClient->send(&result);
-			break;
-		}
-		case CMD_TEST:	// Send back the test data (echo)
-		{
-			Test* _test = (Test *)msg;
-			// Send
-			Test result;
-			pClient->send(&result);
-			break;
-		}
-		default:
-		{
-			// cout << "<server " << _sock << "> " << "From: " << "<client " << _sock << "> " << "Recieve Message: " << "Unknown" << " Data Length: " << msg->length << endl;
-		}
-		}
-
 	}
 
 	// Close socket
@@ -267,14 +233,14 @@ public:
 	}
 
 	// Add new clients into the buffer
-	void addClients(ClientSocket* pClient) {
+	void addClients(TcpSocket* pClient) {
 		std::lock_guard<std::mutex> lock(_mutex);
 		_clientsBuf.push_back(pClient);
 	}
 
 	// Start the server
 	void start() {
-		_thread = std::thread(std::mem_fn(&MessageHandler::onRun), this);
+		_thread = std::thread(std::mem_fn(&Handler::onRun), this);
 		_thread.detach();
 	}
 
@@ -285,8 +251,8 @@ public:
 
 private:
 	SOCKET _sock;
-	std::vector<ClientSocket*> _clients;
-	std::vector<ClientSocket*> _clientsBuf;	// Clients buffer
+	std::vector<TcpSocket*> _clients;
+	std::vector<TcpSocket*> _clientsBuf;	// Clients buffer
 	std::mutex _mutex;	// Mutex for clients buffer
 	std::thread _thread;
 	Event *_pMain;	// Pointer to the main thread (for event callback)
@@ -297,7 +263,7 @@ class TcpServer : public Event {
 public:
 	TcpServer() {
 		_sock = INVALID_SOCKET;
-		_recvCount = 0;
+		_msgCount = 0;
 		_clientCount = 0;
 	}
 
@@ -389,26 +355,29 @@ public:
 			printf("<server %d> Invaild client socket...\n", _sock);
 		}
 		else {
-			onConnect(new ClientSocket(cli));
+			// Add new client into the buffer with least clients
+			int minCount = INT_MAX;
+			Handler *minHandler = nullptr;
+			for (auto handler : _handlers) {
+				if (handler->getClientCount() < minCount) {
+					minCount = handler->getClientCount();
+					minHandler = handler;
+				}
+			}
+			if (minHandler == nullptr) {
+				return INVALID_SOCKET;
+			}
+			TcpSocket *pClient = new TcpSocket(cli);
+			minHandler->addClients(pClient);
+
+			onConnection(pClient);
 		}
 
 		return cli;
 	}
 
-	// Add new client into the buffer with least clients
-	virtual void onConnect(ClientSocket* pClient) {
-		int minCount = INT_MAX;
-		MessageHandler *minHandler = nullptr;
-		for (auto handler : _handlers) {
-			if (handler->getClientCount() < minCount) {
-				minCount = handler->getClientCount();
-				minHandler = handler;
-			}
-		}
-		if (minHandler == nullptr) {
-			return;
-		}
-		minHandler->addClients(pClient);
+	
+	virtual void onConnection(TcpSocket* pClient) {
 		_clientCount++;
 		// cout << "<server " << _sock << "> " << "New connection: " << "<client " << cli << "> " << inet_ntoa(clientAddr.sin_addr) << "-" << clientAddr.sin_port << endl;
 	}
@@ -416,7 +385,7 @@ public:
 	// Start child threads
 	void start(int numOfThreads = TCPSERVER_THREAD_COUNT) {
 		for (int i = 0; i < numOfThreads; i++) {
-			MessageHandler *handler = new MessageHandler(_sock, this);
+			Handler *handler = new Handler(_sock, this);
 			_handlers.push_back(handler);
 			handler->start();
 		}
@@ -464,18 +433,18 @@ public:
 	void benchmark() {
 		double t1 = _time.getElapsedSecond();
 		if (t1 >= 1.0) {
-			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, (int)_handlers.size(), (int)_clientCount, _recvCount);
-			_recvCount = 0;
+			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, (int)_handlers.size(), (int)_clientCount, _msgCount);
+			_msgCount = 0;
 			_time.update();
 		}
 	}
 
-	virtual void onDisconnect(ClientSocket *pClient) {
+	virtual void onDisconnection(TcpSocket *pClient) {
 		_clientCount--;
 	}
 
-	virtual void onMessage(ClientSocket *pClient, Header *header) {
-		_recvCount++;
+	virtual void onMessage(TcpSocket *pClient, Header *header) {
+		_msgCount++;
 	}
 
 	// If connected
@@ -500,9 +469,10 @@ public:
 
 private:
 	SOCKET _sock;
-	std::vector<MessageHandler*> _handlers;
+	std::vector<Handler*> _handlers;
 	Timestamp _time;
-	std::atomic_int _recvCount;	// Number of packages
+protected:
+	std::atomic_int _msgCount;	// Number of messages
 	std::atomic_int _clientCount;	// Number of clients
 };
 
