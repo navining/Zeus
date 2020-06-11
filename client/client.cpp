@@ -38,13 +38,11 @@ void sendThread(int id) {
 	}
 
 	// Data to be sent
-	Login login;
-	strcpy(login.username, "Navi");
-	strcpy(login.password, "123456");
+	Test data;	// 100Byte
 
 	while (true) {
 		for (int i = begin; i < end; i++) {
-			clients[i]->send(&login);
+			clients[i]->send(&data);
 		}
 	}
 }

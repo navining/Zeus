@@ -7,7 +7,8 @@ enum CMD {
 	CMD_LOGOUT,
 	CMD_LOGOUT_RESULT,
 	CMD_NEW_USER_JOIN,
-	CMD_ERROR
+	CMD_ERROR,
+	CMD_TEST
 };
 
 struct Header {
@@ -63,4 +64,11 @@ struct NewUserJoin : public Header {
 	int sock;
 };
 
+struct Test : public Header {
+	Test() {
+		length = sizeof(Test);
+		cmd = CMD_TEST;
+	}
+	char data[96];
+};
 #endif // !_Message_hpp_
