@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include "Message.hpp"
+#include "common.h"
 
 class TcpClient {
 public:
@@ -132,12 +133,6 @@ public:
 	inline bool isRun() {
 		return _sock != INVALID_SOCKET;
 	}
-
-	// Size of the recieve buffer
-#define RECV_BUFF_SIZE 10240
-
-// Size of the message buffer
-#define MSG_BUFF_SIZE 102400
 
 	// Recieve Buffer (System Buffer)
 	char _recvBuf[RECV_BUFF_SIZE] = {};

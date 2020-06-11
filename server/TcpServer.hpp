@@ -25,17 +25,9 @@
 #include <atomic>
 
 #include "Message.hpp"
-#include "Timestamp.hpp"
+#include "common.h"
 
-#ifndef RECV_BUFF_SIZE
-#define RECV_BUFF_SIZE 10240
-#endif
-#ifndef MSG_BUFF_SIZE
-#define MSG_BUFF_SIZE 102400
-#endif
-#ifndef THREAD_COUNT
-#define THREAD_COUNT 4
-#endif
+#define TCPSERVER_THREAD_COUNT 4
 
 class ClientSocket {
 public:
@@ -408,7 +400,7 @@ public:
 
 	// Start child threads
 	void start() {
-		for (int i = 0; i < THREAD_COUNT; i++) {
+		for (int i = 0; i < TCPSERVER_THREAD_COUNT; i++) {
 			MessageHandler *handler = new MessageHandler(_sock, this);
 			_handlers.push_back(handler);
 			handler->start();
@@ -457,7 +449,7 @@ public:
 	void benchmark() {
 		double t1 = _time.getElapsedSecond();
 		if (t1 >= 1.0) {
-			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, THREAD_COUNT, (int)_clientCount, _recvCount);
+			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, TCPSERVER_THREAD_COUNT, (int)_clientCount, _recvCount);
 			_recvCount = 0;
 			_time.update();
 		}

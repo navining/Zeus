@@ -23,6 +23,7 @@
     <ClCompile Include="TcpClient.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\common\include\common.h" />
     <ClInclude Include="..\common\include\Message.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

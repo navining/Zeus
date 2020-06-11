@@ -145,9 +145,9 @@
     <ClCompile Include="server.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\common\include\common.h" />
     <ClInclude Include="..\common\include\Message.hpp" />
     <ClInclude Include="TcpServer.hpp" />
-    <ClInclude Include="Timestamp.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
