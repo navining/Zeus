@@ -66,27 +66,33 @@ private:
 	int _lastPos;	// Last position of the message buffer
 };
 
+// Interface for handling events
 class Event {
 public:
+	// Client connect event
+	virtual void onConnect(ClientSocket *pClient) = 0;
 	// Client disconnect event
 	virtual void onDisconnect(ClientSocket *pClient) = 0;
+	// Recieve message event
+	virtual void onMessage(SOCKET sock, Header *header) = 0;
 private:
 };
 
 // Child thread responsible for handling messsages
-class MessageHandler
+class MessageHandler : Event
 {
 public:
 	MessageHandler(SOCKET sock = INVALID_SOCKET, Event *pEvent = nullptr) {
 		_sock = sock;
-		_pThread = nullptr;
-		_recvCount = 0;
-		_pEvent = pEvent;
+		_pMain = pEvent;
 	}
 
 	~MessageHandler() {
 		close();
 	}
+
+	void onConnect(ClientSocket *pClient) {}
+	void onDisconnect(ClientSocket *pClient) {}
 
 	// If connected
 	inline bool isRun() {
@@ -126,10 +132,7 @@ public:
 				}
 			}
 
-			// Timeval
-			timeval t = { 0, 0 };
-
-			int ret = select(maxSock + 1, &fdRead, 0, 0, &t);
+			int ret = select(maxSock + 1, &fdRead, 0, 0, 0);
 
 			if (ret < 0) {
 				printf("<server %d> Select - Fail...\n", _sock);
@@ -144,8 +147,8 @@ public:
 						// Client disconnected
 						auto it = _clients.begin() + n;
 						if (it != _clients.end()) {
-							if (_pEvent != nullptr) {
-								_pEvent->onDisconnect(_clients[n]);
+							if (_pMain != nullptr) {
+								_pMain->onDisconnect(_clients[n]);
 							}
 							delete _clients[n];
 							_clients.erase(it);
@@ -194,9 +197,18 @@ public:
 		return 0;
 	}
 
+	// Send data
+	int send(SOCKET _cli, Header *_msg) {
+		if (!isRun() || _msg == NULL)
+			return SOCKET_ERROR;
+		return ::send(_cli, (const char *)_msg, _msg->length, 0);
+	}
+
 	// Handle message
-	virtual int onMessage(SOCKET cli, Header *msg) {
-		_recvCount++;
+	virtual void onMessage(SOCKET cli, Header *msg) {
+		if (_pMain != nullptr) {
+			_pMain->onMessage(cli, msg);
+		}
 		switch (msg->cmd) {
 		case CMD_LOGIN:
 		{
@@ -223,7 +235,6 @@ public:
 		}
 		}
 
-		return 0;
 	}
 
 	// Close socket
@@ -237,28 +248,27 @@ public:
 		}
 		// Close Win Sock 2.x
 		closesocket(_sock);
-		WSACleanup();
 #else
 		for (int i = (int)_clients.size() - 1; i >= 0; i--) {
 			::close(_clients[i]->sockfd());
 			delete _clients[i];
-	}
+		}
 		::close(_sock);
 #endif
 		_sock = INVALID_SOCKET;
 		_clients.clear();
-}
+	}
 
 	// Add new clients into the buffer
-	void addClient(ClientSocket* pClient) {
+	void addClients(ClientSocket* pClient) {
 		std::lock_guard<std::mutex> lock(_mutex);
 		_clientsBuf.push_back(pClient);
 	}
 
 	// Start the server
 	void start() {
-		_pThread = new std::thread(std::mem_fun(&MessageHandler::onRun), this);
-		_pThread->detach();
+		_thread = std::thread(std::mem_fn(&MessageHandler::onRun), this);
+		_thread.detach();
 	}
 
 	// Get number of clients in the current handler
@@ -270,11 +280,9 @@ private:
 	SOCKET _sock;
 	std::vector<ClientSocket*> _clients;
 	std::vector<ClientSocket*> _clientsBuf;	// Clients buffer
-	std::mutex _mutex;
-	std::thread *_pThread;
-	Event *_pEvent;
-public:
-	std::atomic_int _recvCount;
+	std::mutex _mutex;	// Mutex for clients buffer
+	std::thread _thread;
+	Event *_pMain;	// Pointer to the main thread (for event callback)
 };
 
 // Main thread responsible for accepting connections
@@ -282,6 +290,8 @@ class TcpServer : public Event {
 public:
 	TcpServer() {
 		_sock = INVALID_SOCKET;
+		_recvCount = 0;
+		_clientCount = 0;
 	}
 
 	virtual ~TcpServer() {
@@ -372,17 +382,14 @@ public:
 			printf("<server %d> Invaild client socket...\n", _sock);
 		}
 		else {
-			addClient(new ClientSocket(cli));
-			// cout << "<server " << _sock << "> " << "New connection: " << "<client " << cli << "> " << inet_ntoa(clientAddr.sin_addr) << "-" << clientAddr.sin_port << endl;
+			onConnect(new ClientSocket(cli));
 		}
 
 		return cli;
 	}
 
 	// Add new client into the buffer with least clients
-	void addClient(ClientSocket* pClient) {
-		_clients.push_back(pClient);
-
+	virtual void onConnect(ClientSocket* pClient) {
 		int minCount = INT_MAX;
 		MessageHandler *minHandler = nullptr;
 		for (auto handler : _handlers) {
@@ -394,7 +401,9 @@ public:
 		if (minHandler == nullptr) {
 			return;
 		}
-		minHandler->addClient(pClient);
+		minHandler->addClients(pClient);
+		_clientCount++;
+		// cout << "<server " << _sock << "> " << "New connection: " << "<client " << cli << "> " << inet_ntoa(clientAddr.sin_addr) << "-" << clientAddr.sin_port << endl;
 	}
 
 	// Start child threads
@@ -448,38 +457,18 @@ public:
 	void benchmark() {
 		double t1 = _time.getElapsedSecond();
 		if (t1 >= 1.0) {
-			int recvCount = 0;
-			for (auto handler : _handlers) {
-				recvCount += handler->_recvCount;
-				handler->_recvCount = 0;
-			}
-			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, THREAD_COUNT, (int)_clients.size(), recvCount);
+			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, THREAD_COUNT, (int)_clientCount, _recvCount);
+			_recvCount = 0;
 			_time.update();
 		}
 	}
 
-	// Send data
-	int send(SOCKET _cli, Header *_msg) {
-		if (!isRun() || _msg == NULL)
-			return SOCKET_ERROR;
-		return ::send(_cli, (const char *)_msg, _msg->length, 0);
+	virtual void onDisconnect(ClientSocket *pClient) {
+		_clientCount--;
 	}
 
-	// Broadcast data
-	void broadcast(Header *_msg) {
-		for (int n = (int)_clients.size() - 1; n >= 0; n--) {
-			send(_clients[n]->sockfd(), _msg);
-		}
-	}
-
-	void onDisconnect(ClientSocket *pClient) {
-		for (int n = (int)_clients.size() - 1; n >= 0; n--) {
-			if (_clients[n] == pClient) {
-				auto it = _clients.begin() + n;
-				if (it != _clients.end())
-					_clients.erase(it);
-			}
-		}
+	virtual void onMessage(SOCKET sock, Header *header) {
+		_recvCount++;
 	}
 
 	// If connected
@@ -492,29 +481,22 @@ public:
 		if (_sock == INVALID_SOCKET) return;
 		printf("<server %d> Quit...\n", _sock);
 #ifdef _WIN32
-		for (int i = (int)_clients.size() - 1; i >= 0; i--) {
-			closesocket(_clients[i]->sockfd());
-			delete _clients[i];
-		}
 		// Close Win Sock 2.x
 		closesocket(_sock);
 		WSACleanup();
 #else
-		for (int i = (int)_clients.size() - 1; i >= 0; i--) {
-			::close(_clients[i]->sockfd());
-			delete _clients[i];
-	}
 		::close(_sock);
 #endif
 		_sock = INVALID_SOCKET;
-		_clients.clear();
-}
+		_handlers.clear();
+	}
 
 private:
 	SOCKET _sock;
-	std::vector<ClientSocket*> _clients;
 	std::vector<MessageHandler*> _handlers;
 	Timestamp _time;
+	std::atomic_int _recvCount;	// Number of packages
+	std::atomic_int _clientCount;	// Number of clients
 };
 
 #endif // !_TcpServer_hpp_
