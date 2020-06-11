@@ -1,7 +1,7 @@
 #ifndef _TcpServer_hpp_
 #define _TcpServer_hpp_
 #ifdef _WIN32
-#define FD_SETSIZE	1024
+#define FD_SETSIZE	2048
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
@@ -66,16 +66,25 @@ private:
 	int _lastPos;	// Last position of the message buffer
 };
 
+class Event {
+public:
+	// Client disconnect event
+	virtual void onDisconnect(ClientSocket *pClient) = 0;
+private:
+};
+
 // Child thread responsible for handling messsages
 class MessageHandler
 {
 public:
-	MessageHandler(SOCKET sock = INVALID_SOCKET) {
+	MessageHandler(SOCKET sock = INVALID_SOCKET, Event *pEvent = nullptr) {
 		_sock = sock;
 		_pThread = nullptr;
 		_recvCount = 0;
+		_pEvent = pEvent;
 	}
-	virtual ~MessageHandler() {
+
+	~MessageHandler() {
 		close();
 	}
 
@@ -142,8 +151,12 @@ public:
 			for (int n = (int)_clients.size() - 1; n >= 0; n--) {
 				if (FD_ISSET(_clients[n]->sockfd(), &fdRead)) {
 					if (-1 == recv(_clients[n])) {
+						// Client disconnected
 						auto it = _clients.begin() + n;
 						if (it != _clients.end()) {
+							if (_pEvent != nullptr) {
+								_pEvent->onDisconnect(_clients[n]);
+							}
 							delete _clients[n];
 							_clients.erase(it);
 						}
@@ -239,12 +252,12 @@ public:
 		for (int i = (int)_clients.size() - 1; i >= 0; i--) {
 			::close(_clients[i]->sockfd());
 			delete _clients[i];
-		}
+	}
 		::close(_sock);
 #endif
 		_sock = INVALID_SOCKET;
 		_clients.clear();
-	}
+}
 
 	// Add new clients into the buffer
 	void addClient(ClientSocket* pClient) {
@@ -269,12 +282,13 @@ private:
 	std::vector<ClientSocket*> _clientsBuf;	// Clients buffer
 	std::mutex _mutex;
 	std::thread *_pThread;
+	Event *_pEvent;
 public:
 	std::atomic_int _recvCount;
 };
 
 // Main thread responsible for accepting connections
-class TcpServer {
+class TcpServer : public Event {
 public:
 	TcpServer() {
 		_sock = INVALID_SOCKET;
@@ -396,7 +410,7 @@ public:
 	// Start child threads
 	void start() {
 		for (int i = 0; i < THREAD_COUNT; i++) {
-			MessageHandler *handler = new MessageHandler(_sock);
+			MessageHandler *handler = new MessageHandler(_sock, this);
 			_handlers.push_back(handler);
 			handler->start();
 		}
@@ -451,14 +465,13 @@ public:
 	// Benchmark
 	void benchmark() {
 		double t1 = _time.getElapsedSecond();
-		if (_time.getElapsedSecond() >= 1.0) {
+		if (t1 >= 1.0) {
 			int recvCount = 0;
 			for (auto handler : _handlers) {
 				recvCount += handler->_recvCount;
 				handler->_recvCount = 0;
 			}
-			printf("<server %d> Time: %f Clients: %d Packages: %d\n", _sock, t1, (int)_clients.size(), recvCount);
-
+			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, THREAD_COUNT, (int)_clients.size(), recvCount);
 			_time.update();
 		}
 	}
@@ -474,6 +487,16 @@ public:
 	void broadcast(Header *_msg) {
 		for (int n = (int)_clients.size() - 1; n >= 0; n--) {
 			send(_clients[n]->sockfd(), _msg);
+		}
+	}
+
+	void onDisconnect(ClientSocket *pClient) {
+		for (int n = (int)_clients.size() - 1; n >= 0; n--) {
+			if (_clients[n] == pClient) {
+				auto it = _clients.begin() + n;
+				if (it != _clients.end())
+					_clients.erase(it);
+			}
 		}
 	}
 
@@ -498,12 +521,12 @@ public:
 		for (int i = (int)_clients.size() - 1; i >= 0; i--) {
 			::close(_clients[i]->sockfd());
 			delete _clients[i];
-		}
+	}
 		::close(_sock);
 #endif
 		_sock = INVALID_SOCKET;
 		_clients.clear();
-	}
+}
 
 private:
 	SOCKET _sock;
