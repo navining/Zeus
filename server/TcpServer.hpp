@@ -163,10 +163,19 @@ public:
 			// Client socket response: handle request
 #ifdef _WIN32
 			for (int n = 0; n < fdRead.fd_count; n++) {
+				TcpSocket *pClient = _clients[fdRead.fd_array[n]];
+				if (-1 == recv(pClient)) {
+					// Client disconnected
+					if (_pMain != nullptr) {
+						_pMain->onDisconnection(pClient);
+					}
 
+					_clients.erase(pClient->sockfd());
+					delete pClient;
+					_clientsChange = true;
+				}
 			}
 #else
-#endif
 			std::vector<TcpSocket *> disconnected;
 			for (auto it : _clients) {
 				if (FD_ISSET(it.second->sockfd(), &fdRead)) {
@@ -175,7 +184,7 @@ public:
 						if (_pMain != nullptr) {
 							_pMain->onDisconnection(it.second);
 						}
-						
+
 						disconnected.push_back(it.second);
 						_clientsChange = true;
 					}
@@ -187,7 +196,7 @@ public:
 				_clients.erase(pClient->sockfd());
 				delete pClient;
 			}
-
+#endif
 			// Handle other services
 		}
 		return true;
