@@ -167,6 +167,7 @@ public:
 			}
 #else
 #endif
+			std::vector<TcpSocket *> disconnected;
 			for (auto it : _clients) {
 				if (FD_ISSET(it.second->sockfd(), &fdRead)) {
 					if (-1 == recv(it.second)) {
@@ -174,11 +175,17 @@ public:
 						if (_pMain != nullptr) {
 							_pMain->onDisconnection(it.second);
 						}
-						delete it.second;
-						_clients.erase(it.first);
+						
+						disconnected.push_back(it.second);
 						_clientsChange = true;
 					}
 				}
+			}
+
+			// Delete disconnected clients
+			for (TcpSocket *pClient : disconnected) {
+				_clients.erase(pClient->sockfd());
+				delete pClient;
 			}
 
 			// Handle other services
