@@ -152,7 +152,7 @@ public:
 				memcpy(&fdRead, &_fdRead, sizeof(fd_set));
 			}
 
-			int ret = select(_maxSock + 1, &fdRead, 0, 0, 0);
+			int ret = select(_maxSock + 1, &fdRead, nullptr, nullptr, nullptr);
 
 			if (ret < 0) {
 				printf("<server %d> Select - Fail...\n", _sock);
