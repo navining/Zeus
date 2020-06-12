@@ -38,8 +38,8 @@ public:
 		{
 			Test* _test = (Test *)msg;
 			// Send
-			Test result;
-			pClient->send(&result);
+			//Test result;
+			//pClient->send(&result);
 			break;
 		}
 		default:

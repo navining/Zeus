@@ -23,7 +23,7 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
-
+#include <unordered_map>
 #include "Message.hpp"
 #include "common.h"
 
@@ -98,8 +98,16 @@ public:
 		return _sock != INVALID_SOCKET;
 	}
 
+	// A cache of fd_set
+	fd_set _fdRead;
+	// If the clients array changes
+	bool _clientsChange;
+	// Record current max socket
+	SOCKET _maxSock;
+
 	// Start server service
 	bool onRun() {
+		_clientsChange = false;
 		while (isRun()) {
 			// Sleep if there's no clients
 			if (getClientCount() == 0) {
@@ -107,31 +115,44 @@ public:
 				std::this_thread::sleep_for(t);
 				continue;
 			}
+
 			// Add clients from the buffer to the vector
-			{
-				std::lock_guard<std::mutex> lock(_mutex);
-				for (auto pClient : _clientsBuf) {
-					_clients.push_back(pClient);
+			if (_clientsBuf.size() > 0) {
+				{
+					std::lock_guard<std::mutex> lock(_mutex);
+					for (auto pClient : _clientsBuf) {
+						_clients[pClient->sockfd()] = pClient;
+					}
 				}
+				_clientsBuf.clear();
+				_clientsChange = true;
 			}
-			_clientsBuf.clear();
 
 			// Select
-			fd_set fdRead;
+			fd_set fdRead;	// Set of sockets
 			FD_ZERO(&fdRead);
 
-			// Record curret max socket
-			SOCKET maxSock = INVALID_SOCKET;
+			if (_clientsChange) {
+				_maxSock = INVALID_SOCKET;
 
-			// Put client sockets inside fd_set
-			for (int n = (int)_clients.size() - 1; n >= 0; n--) {
-				FD_SET(_clients[n]->sockfd(), &fdRead);
-				if (maxSock < _clients[n]->sockfd()) {
-					maxSock = _clients[n]->sockfd();
+				// Put client sockets inside fd_set
+				for (auto it : _clients) {
+					FD_SET(it.second->sockfd(), &fdRead);
+					if (_maxSock < it.second->sockfd()) {
+						_maxSock = it.second->sockfd();
+					}
 				}
+
+				// Cache _fdRead
+				memcpy(&_fdRead, &fdRead, sizeof(fd_set));
+				_clientsChange = false;
+			}
+			else {
+				// Use cached fdRead
+				memcpy(&fdRead, &_fdRead, sizeof(fd_set));
 			}
 
-			int ret = select(maxSock + 1, &fdRead, 0, 0, 0);
+			int ret = select(_maxSock + 1, &fdRead, 0, 0, 0);
 
 			if (ret < 0) {
 				printf("<server %d> Select - Fail...\n", _sock);
@@ -140,18 +161,22 @@ public:
 			}
 
 			// Client socket response: handle request
-			for (int n = (int)_clients.size() - 1; n >= 0; n--) {
-				if (FD_ISSET(_clients[n]->sockfd(), &fdRead)) {
-					if (-1 == recv(_clients[n])) {
+#ifdef _WIN32
+			for (int n = 0; n < fdRead.fd_count; n++) {
+
+			}
+#else
+#endif
+			for (auto it : _clients) {
+				if (FD_ISSET(it.second->sockfd(), &fdRead)) {
+					if (-1 == recv(it.second)) {
 						// Client disconnected
-						auto it = _clients.begin() + n;
-						if (it != _clients.end()) {
-							if (_pMain != nullptr) {
-								_pMain->onDisconnection(_clients[n]);
-							}
-							delete _clients[n];
-							_clients.erase(it);
+						if (_pMain != nullptr) {
+							_pMain->onDisconnection(it.second);
 						}
+						delete it.second;
+						_clients.erase(it.first);
+						_clientsChange = true;
 					}
 				}
 			}
@@ -215,16 +240,16 @@ public:
 		if (_sock == INVALID_SOCKET) return;
 		printf("<server %d> Quit...\n", _sock);
 #ifdef _WIN32
-		for (int i = (int)_clients.size() - 1; i >= 0; i--) {
-			closesocket(_clients[i]->sockfd());
-			delete _clients[i];
+		for (auto it : _clients) {
+			closesocket(it.second->sockfd());
+			delete it.second;
 		}
 		// Close Win Sock 2.x
 		closesocket(_sock);
 #else
-		for (int i = (int)_clients.size() - 1; i >= 0; i--) {
-			::close(_clients[i]->sockfd());
-			delete _clients[i];
+		for (auto it : _clients) {
+			::close(it.second->sockfd());
+			delete it.second;
 		}
 		::close(_sock);
 #endif
@@ -251,7 +276,7 @@ public:
 
 private:
 	SOCKET _sock;
-	std::vector<TcpSocket*> _clients;
+	std::unordered_map<SOCKET, TcpSocket*> _clients;
 	std::vector<TcpSocket*> _clientsBuf;	// Clients buffer
 	std::mutex _mutex;	// Mutex for clients buffer
 	std::thread _thread;
@@ -376,7 +401,7 @@ public:
 		return cli;
 	}
 
-	
+
 	virtual void onConnection(TcpSocket* pClient) {
 		_clientCount++;
 		// cout << "<server " << _sock << "> " << "New connection: " << "<client " << cli << "> " << inet_ntoa(clientAddr.sin_addr) << "-" << clientAddr.sin_port << endl;

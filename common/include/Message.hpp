@@ -1,6 +1,8 @@
 #ifndef _Message_hpp_
 #define _Message_hpp_
 
+#define TEST_DATA_SIZE 100
+
 enum CMD {
 	CMD_LOGIN,
 	CMD_LOGIN_RESULT,
@@ -69,6 +71,6 @@ struct Test : public Header {
 		length = sizeof(Test);
 		cmd = CMD_TEST;
 	}
-	char data[96];
+	char data[TEST_DATA_SIZE - 4];
 };
 #endif // !_Message_hpp_
