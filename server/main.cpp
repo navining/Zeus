@@ -38,13 +38,13 @@ public:
 		{
 			Test* _test = (Test *)msg;
 			// Send
-			//Test result;
-			//pClient->send(&result);
+			Test result;
+			pClient->send(&result);
 			break;
 		}
 		default:
 		{
-			// cout << "<server " << _sock << "> " << "From: " << "<client " << _sock << "> " << "Recieve Message: " << "Unknown" << " Data Length: " << msg->length << endl;
+			printf("<server &d> From: <client %d> Recieve Message: UNDIFINED\n", _sock, pClient->sockfd());
 		}
 		}
 
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	TcpServer server;
+	MyServer server;
 	server.init();
 	server.bind(ip, port);
 	server.listen(5);

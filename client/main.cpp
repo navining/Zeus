@@ -43,7 +43,7 @@ void IOThread(int id) {
 	while (true) {
 		for (int i = begin; i < end; i++) {
 			clients[i]->send(&data);
-			// clients[i]->onRun();
+			clients[i]->onRun();
 		}
 	}
 }

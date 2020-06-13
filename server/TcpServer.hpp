@@ -33,8 +33,10 @@ class TcpSocket {
 public:
 	TcpSocket(SOCKET sockfd = INVALID_SOCKET) {
 		_sockfd = sockfd;
-		memset(_msgBuf, 0, sizeof(_msgBuf));
-		_lastPos = 0;
+		memset(_msgBuf, 0, MSG_BUFF_SIZE);
+		_msgLastPos = 0;
+		memset(_sendBuf, 0, SEND_BUFF_SIZE);
+		_sendLastPos = 0;
 	}
 
 	SOCKET sockfd() {
@@ -46,23 +48,48 @@ public:
 	}
 
 	int getLastPos() {
-		return _lastPos;
+		return _msgLastPos;
 	}
 
 	void setLastPos(int pos) {
-		_lastPos = pos;
+		_msgLastPos = pos;
 	}
 
 	int send(Header *msg) {
-		if (msg != nullptr) {
-			return ::send(_sockfd, (const char *)msg, msg->length, 0);
+		int ret = SOCKET_ERROR;
+		int sendLength = msg->length;
+		const char *sendData = (const char *)msg;
+
+		while (true) {
+			// Data reaches the limitation of send buffer
+			if (_sendLastPos + sendLength >= SEND_BUFF_SIZE) {
+				int copyLength = SEND_BUFF_SIZE - _sendLastPos;
+				memcpy(_sendBuf + _sendLastPos, sendData, copyLength);
+				sendData += copyLength;
+				sendLength -= copyLength;
+				// Send the entire buffer
+				ret = ::send(_sockfd, _sendBuf, SEND_BUFF_SIZE, 0);
+				_sendLastPos = 0;
+				if (SOCKET_ERROR == ret) {
+					return ret;
+				}
+			}
+			else {
+				// Copy into the send buffer
+				memcpy(_sendBuf + _sendLastPos, sendData, sendLength);
+				_sendLastPos += sendLength;
+				return 0;
+			}
 		}
-		return SOCKET_ERROR;
+		
+		return ret;
 	}
 private:
 	SOCKET _sockfd;	// socket fd_set			
 	char _msgBuf[MSG_BUFF_SIZE];	// Message Buffer (Secondary Buffer)
-	int _lastPos;	// Last position of the message buffer
+	int _msgLastPos;	// Last position of the message buffer
+	char _sendBuf[SEND_BUFF_SIZE];	// Send Buffer
+	int _sendLastPos;	// Last position of the send buffer
 };
 
 // Interface for handling events
@@ -235,13 +262,6 @@ public:
 			}
 		}
 		return 0;
-	}
-
-	// Send data
-	int send(SOCKET _cli, Header *_msg) {
-		if (!isRun() || _msg == NULL)
-			return SOCKET_ERROR;
-		return ::send(_cli, (const char *)_msg, _msg->length, 0);
 	}
 
 	// Handle message
@@ -509,12 +529,12 @@ public:
 	}
 
 private:
-	SOCKET _sock;
 	std::vector<Handler*> _handlers;
 	Timestamp _time;
 protected:
 	std::atomic_int _msgCount;	// Number of messages
 	std::atomic_int _clientCount;	// Number of clients
+	SOCKET _sock;
 };
 
 #endif // !_TcpServer_hpp_

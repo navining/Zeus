@@ -203,17 +203,17 @@ public:
 		case CMD_TEST:
 		{
 			Test* test = (Test *)msg;
-			//printf("<client %d> Recieve Message: Test\n", _sock);
+			// printf("<client %d> Recieve Message: Test\n", _sock);
 			break;
 		}
 		case CMD_ERROR:
 		{
-			//cout << "<client " << _sock << "> " << "Recieve Message: " << "ERROR" << " Data Length: " << msg->length << endl;
+			printf("<client %d> Recieve Message: ERROR\n", _sock);
 			break;
 		}
 		default:
 		{
-			//cout << "<client " << _sock << "> " << "Recieve Message: " << "Unknown" << " Data Length: " << msg->length << endl;
+			printf("<client %d> Recieve Message: UNDIFINED\n", _sock);
 		}
 		}
 
