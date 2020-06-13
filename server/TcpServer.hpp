@@ -105,15 +105,15 @@ private:
 };
 
 // Child thread responsible for handling messsages
-class Handler : Event
+class TcpHandler : Event
 {
 public:
-	Handler(SOCKET sock = INVALID_SOCKET, Event *pEvent = nullptr) {
+	TcpHandler(SOCKET sock = INVALID_SOCKET, Event *pEvent = nullptr) {
 		_sock = sock;
 		_pMain = pEvent;
 	}
 
-	~Handler() {
+	~TcpHandler() {
 		close();
 	}
 
@@ -301,7 +301,7 @@ public:
 
 	// Start the server
 	void start() {
-		_thread = std::thread(std::mem_fun(&Handler::onRun), this);
+		_thread = std::thread(std::mem_fun(&TcpHandler::onRun), this);
 		_thread.detach();
 	}
 
@@ -418,7 +418,7 @@ public:
 		else {
 			// Add new client into the buffer with least clients
 			int minCount = INT_MAX;
-			Handler *minHandler = nullptr;
+			TcpHandler *minHandler = nullptr;
 			for (auto handler : _handlers) {
 				if (handler->getClientCount() < minCount) {
 					minCount = handler->getClientCount();
@@ -446,7 +446,7 @@ public:
 	// Start child threads
 	void start(int numOfThreads = TCPSERVER_THREAD_COUNT) {
 		for (int i = 0; i < numOfThreads; i++) {
-			Handler *handler = new Handler(_sock, this);
+			TcpHandler *handler = new TcpHandler(_sock, this);
 			_handlers.push_back(handler);
 			handler->start();
 		}
@@ -529,7 +529,7 @@ public:
 	}
 
 private:
-	std::vector<Handler*> _handlers;
+	std::vector<TcpHandler*> _handlers;
 	Timestamp _time;
 protected:
 	std::atomic_int _msgCount;	// Number of messages
