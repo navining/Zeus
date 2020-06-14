@@ -26,6 +26,7 @@
 #include <unordered_map>
 #include "Message.hpp"
 #include "common.h"
+#include "Task.hpp"
 
 #define TCPSERVER_THREAD_COUNT 1
 
@@ -92,6 +93,8 @@ private:
 	int _sendLastPos;	// Last position of the send buffer
 };
 
+class TcpSubserver;
+
 // Interface for handling events
 class Event {
 public:
@@ -100,20 +103,37 @@ public:
 	// Client disconnect event
 	virtual void onDisconnection(TcpSocket *pClient) = 0;
 	// Recieve message event
-	virtual void onMessage(TcpSocket *pClient, Header *header) = 0;
+	virtual void onMessage(TcpSubserver *pServer, TcpSocket *pClient, Header *header) = 0;
 private:
 };
 
+// Task for sending messages
+class TcpSendTask : public Task {
+public:
+	TcpSendTask(TcpSocket *pClient, Header *header) {
+		_pClient = pClient;
+		_pHeader = header;
+	}
+
+	void run() {
+		_pClient->send(_pHeader);
+		delete _pHeader;
+	}
+private:
+	TcpSocket *_pClient;
+	Header *_pHeader;
+};
+
 // Child thread responsible for handling messsages
-class TcpHandler : Event
+class TcpSubserver
 {
 public:
-	TcpHandler(SOCKET sock = INVALID_SOCKET, Event *pEvent = nullptr) {
+	TcpSubserver(SOCKET sock = INVALID_SOCKET, Event *pEvent = nullptr) {
 		_sock = sock;
 		_pMain = pEvent;
 	}
 
-	~TcpHandler() {
+	~TcpSubserver() {
 		close();
 	}
 
@@ -133,7 +153,7 @@ public:
 	SOCKET _maxSock;
 
 	// Start server service
-	bool onRun() {
+	void onRun() {
 		_clientsChange = false;
 		while (isRun()) {
 			// Sleep if there's no clients
@@ -184,7 +204,7 @@ public:
 			if (ret < 0) {
 				printf("<server %d> Select - Fail...\n", _sock);
 				close();
-				return false;
+				return;
 			}
 
 			// Client socket response: handle request
@@ -196,7 +216,6 @@ public:
 					if (_pMain != nullptr) {
 						_pMain->onDisconnection(pClient);
 					}
-
 					_clients.erase(pClient->sockfd());
 					delete pClient;
 					_clientsChange = true;
@@ -226,7 +245,6 @@ public:
 #endif
 			// Handle other services
 		}
-		return true;
 	}
 
 	// Recieve Buffer (System Buffer)
@@ -265,9 +283,9 @@ public:
 	}
 
 	// Handle message
-	virtual void onMessage(TcpSocket *pClient, Header *msg) {
+	void onMessage(TcpSocket *pClient, Header *msg) {
 		if (_pMain != nullptr) {
-			_pMain->onMessage(pClient, msg);
+			_pMain->onMessage(this, pClient, msg);
 		}
 	}
 
@@ -301,13 +319,19 @@ public:
 
 	// Start the server
 	void start() {
-		_thread = std::thread(std::mem_fun(&TcpHandler::onRun), this);
-		_thread.detach();
+		_thread = std::thread(std::mem_fun(&TcpSubserver::onRun), this);
+		// _thread.detach();
+		_sendTaskHandler.start();
 	}
 
-	// Get number of clients in the current handler
+	// Get number of clients in the current subserver
 	size_t getClientCount() {
 		return _clients.size() + _clientsBuf.size();
+	}
+
+	void send(TcpSocket *pClient, Header *header) {
+		TcpSendTask *task = new TcpSendTask(pClient, header);
+		_sendTaskHandler.addTask(task);
 	}
 
 private:
@@ -317,6 +341,7 @@ private:
 	std::mutex _mutex;	// Mutex for clients buffer
 	std::thread _thread;
 	Event *_pMain;	// Pointer to the main thread (for event callback)
+	TaskHandler _sendTaskHandler;	// Child thread for sending messages
 };
 
 // Main thread responsible for accepting connections
@@ -418,11 +443,11 @@ public:
 		else {
 			// Add new client into the buffer with least clients
 			int minCount = INT_MAX;
-			TcpHandler *minHandler = nullptr;
-			for (auto handler : _handlers) {
-				if (handler->getClientCount() < minCount) {
-					minCount = handler->getClientCount();
-					minHandler = handler;
+			TcpSubserver *minHandler = nullptr;
+			for (auto subserver : _subservers) {
+				if (subserver->getClientCount() < minCount) {
+					minCount = subserver->getClientCount();
+					minHandler = subserver;
 				}
 			}
 			if (minHandler == nullptr) {
@@ -446,55 +471,56 @@ public:
 	// Start child threads
 	void start(int numOfThreads = TCPSERVER_THREAD_COUNT) {
 		for (int i = 0; i < numOfThreads; i++) {
-			TcpHandler *handler = new TcpHandler(_sock, this);
-			_handlers.push_back(handler);
-			handler->start();
+			TcpSubserver *subserver = new TcpSubserver(_sock, this);
+			_subservers.push_back(subserver);
+			subserver->start();
 		}
+		this->onRun();
 	}
 
 	// Start server service
-	bool onRun() {
+	void onRun() {
 		if (!isRun())
 		{
 			printf("<server %d> Start - Fail...\n", _sock);
-			return false;
+			return;
 		};
 
-		// Select
-		fd_set fdRead;
-		FD_ZERO(&fdRead);
-		// Put server sockets inside fd_set
-		FD_SET(_sock, &fdRead);
+		while (isRun()) {
+			// Select
+			fd_set fdRead;
+			FD_ZERO(&fdRead);
+			// Put server sockets inside fd_set
+			FD_SET(_sock, &fdRead);
 
-		// Timeval
-		timeval t = { 0, 10 };
+			// Timeval
+			timeval t = { 0, 10 };
 
-		int ret = select(_sock + 1, &fdRead, 0, 0, &t);
+			int ret = select(_sock + 1, &fdRead, 0, 0, &t);
 
-		if (ret < 0) {
-			printf("<server %d> Select - Fail...\n", _sock);
-			close();
-			return false;
+			if (ret < 0) {
+				printf("<server %d> Select - Fail...\n", _sock);
+				close();
+				return;
+			}
+
+			// Server socket response: accept connection
+			if (FD_ISSET(_sock, &fdRead)) {
+				FD_CLR(_sock, &fdRead);
+				accept();
+			}
+
+			// Handle other services here...
+			// Benchmark
+			benchmark();
 		}
-
-		// Server socket response: accept connection
-		if (FD_ISSET(_sock, &fdRead)) {
-			FD_CLR(_sock, &fdRead);
-			accept();
-		}
-
-		// Handle other services here...
-		// Benchmark
-		benchmark();
-
-		return true;
 	}
 
 	// Benchmark
 	void benchmark() {
 		double t1 = _time.getElapsedSecond();
 		if (t1 >= 1.0) {
-			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, (int)_handlers.size(), (int)_clientCount, (int)_msgCount);
+			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, (int)_subservers.size(), (int)_clientCount, (int)_msgCount);
 			_msgCount = 0;
 			_time.update();
 		}
@@ -504,7 +530,7 @@ public:
 		_clientCount--;
 	}
 
-	virtual void onMessage(TcpSocket *pClient, Header *header) {
+	virtual void onMessage(TcpSubserver *pServer, TcpSocket *pClient, Header *header) {
 		_msgCount++;
 	}
 
@@ -525,11 +551,11 @@ public:
 		::close(_sock);
 #endif
 		_sock = INVALID_SOCKET;
-		_handlers.clear();
+		_subservers.clear();
 	}
 
 private:
-	std::vector<TcpHandler*> _handlers;
+	std::vector<TcpSubserver*> _subservers;
 	Timestamp _time;
 protected:
 	std::atomic_int _msgCount;	// Number of messages

@@ -4,16 +4,16 @@
 
 class MyServer : public TcpServer {
 public:
-	virtual void onConnection(TcpSocket *pClient) {
-		_clientCount++;
+	void onConnection(TcpSocket *pClient) {
+		TcpServer::onConnection(pClient);
 	}
 
-	virtual void onDisconnection(TcpSocket *pClient) {
-		_clientCount--;
+	void onDisconnection(TcpSocket *pClient) {
+		TcpServer::onDisconnection(pClient);
 	}
 
-	virtual void onMessage(TcpSocket *pClient, Header *msg) {
-		_msgCount++;
+	void onMessage(TcpSubserver *pServer, TcpSocket *pClient, Header *msg) {
+		TcpServer::onMessage(pServer, pClient, msg);
 		switch (msg->cmd) {
 		case CMD_LOGIN:
 		{
@@ -38,8 +38,8 @@ public:
 		{
 			Test* _test = (Test *)msg;
 			// Send
-			Test result;
-			pClient->send(&result);
+			Test *result = new Test();
+			pServer->send(pClient, result);
 			break;
 		}
 		default:
@@ -78,11 +78,6 @@ int main(int argc, char* argv[]) {
 	server.listen(5);
 	server.start(4);
 
-	while (server.isRun()) {
-		server.onRun();
-	}
-
-    getchar();
     return 0;
 }
 
