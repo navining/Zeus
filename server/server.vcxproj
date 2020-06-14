@@ -147,6 +147,7 @@
   <ItemGroup>
     <ClInclude Include="..\common\include\common.h" />
     <ClInclude Include="..\common\include\Message.hpp" />
+    <ClInclude Include="Task.hpp" />
     <ClInclude Include="TcpServer.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
