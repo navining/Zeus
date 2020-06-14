@@ -217,7 +217,7 @@ public:
 						_pMain->onDisconnection(pClient);
 					}
 					_clients.erase(pClient->sockfd());
-					delete pClient;
+					// delete pClient;
 					_clientsChange = true;
 				}
 			}
