@@ -240,7 +240,7 @@ public:
 			// Delete disconnected clients
 			for (TcpSocket *pClient : disconnected) {
 				_clients.erase(pClient->sockfd());
-				delete pClient;
+				// delete pClient;
 			}
 #endif
 			// Handle other services
