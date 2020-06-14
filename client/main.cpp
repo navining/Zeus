@@ -24,6 +24,9 @@ u_short port;
 // Array of clients
 TcpClient* clients[numOfClients];
 
+// Data to be sent
+Test data[10];	// 100*10Byte
+
 void IOThread(int id) {
 	int count = numOfClients / numOfThreads;
 	int begin = (id - 1) * count;
@@ -37,12 +40,9 @@ void IOThread(int id) {
 		clients[i]->connect("127.0.0.1", 4567);
 	}
 
-	// Data to be sent
-	Test data;	// 100Byte
-
 	while (true) {
 		for (int i = begin; i < end; i++) {
-			clients[i]->send(&data);
+			clients[i]->send(data, 10 * sizeof(Test));
 			clients[i]->onRun();
 		}
 	}
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	printf("Number of clients: %d\nThreads: %d\n", numOfClients, numOfThreads);
-	printf("Size per package: %d Bytes\n", (int)sizeof(Test));
+	printf("Size per package: %d Bytes\n", (int)sizeof(data));
 	for (int i = 0; i < numOfThreads; i++) {
 		thread t(IOThread, i + 1);
 		t.detach();

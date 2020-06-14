@@ -221,10 +221,10 @@ public:
 	}
 
 	// Send data
-	int send(Header *_msg) {
+	int send(Header *_msg, int length) {
 		if (!isRun() || _msg == NULL)
 			return SOCKET_ERROR;
-		int ret = ::send(_sock, (const char *)_msg, _msg->length, 0);
+		int ret = ::send(_sock, (const char *)_msg, length, 0);
 		if (SOCKET_ERROR == ret) {
 			close();
 		}
