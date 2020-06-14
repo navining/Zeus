@@ -454,7 +454,7 @@ public:
 			if (minHandler == nullptr) {
 				return INVALID_SOCKET;
 			}
-			TcpSocket *pClient = new TcpSocket(cli);
+			TcpSocket *pClient = new TcpSocket(cli);	// TODO: memory leaking here!
 			minHandler->addClients(pClient);
 
 			onConnection(pClient);

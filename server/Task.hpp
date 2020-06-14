@@ -3,7 +3,7 @@
 #include <mutex>
 #include <list>
 
-// Type of task
+// The task in producer-consumer pattern
 class Task {
 public:
 	Task() {
@@ -22,19 +22,22 @@ private:
 
 };
 
-// Class handling the task
+// Class handling the task (consumer)
 class TaskHandler {
 public:
+	// Put task into the buffer
 	void addTask(Task* task) {
 		std::lock_guard<std::mutex> lock(_mutex);
 		_tasksBuf.push_back(task);
 	}
 
+	// Start the thread
 	void start() {
 		std::thread t(std::mem_fun(&TaskHandler::onRun), this);
 		t.detach();
 	}
 protected:
+	// Run the task
 	void onRun() {
 		while (true) {
 			if (!_tasksBuf.empty()) {
@@ -46,6 +49,7 @@ protected:
 				_tasksBuf.clear();
 			}
 
+			// Sleep if there's no task to do
 			if (_tasks.empty()) {
 				std::chrono::milliseconds t(1);
 				std::this_thread::sleep_for(t);
