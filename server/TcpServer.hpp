@@ -247,20 +247,21 @@ public:
 		}
 	}
 
-	// Recieve Buffer (System Buffer)
-	char _recvBuf[RECV_BUFF_SIZE] = {};
+	/// Recieve Buffer (System Buffer)
+	/// char _recvBuf[RECV_BUFF_SIZE] = {};
 
 	// Recieve data
 	int recv(TcpSocket *pClient) {
-		// Receive header
-		int recvlen = (int)::recv(pClient->sockfd(), _recvBuf, RECV_BUFF_SIZE, 0);
+		/// Receive header into system buffer first
+		/// int recvlen = (int)::recv(pClient->sockfd(), _recvBuf, RECV_BUFF_SIZE, 0);
+		int recvlen = (int)::recv(pClient->sockfd(), pClient->msgBuf() + pClient->getLastPos(), MSG_BUFF_SIZE - pClient->getLastPos(), 0);
 		if (recvlen <= 0) {
 			// printf("<server %d> <client %d> Disconnected...\n", _sock, pClient->sockfd());
 			return -1;
 		}
 
-		// Copy data into the message buffer
-		memcpy(pClient->msgBuf() + pClient->getLastPos(), _recvBuf, recvlen);
+		/// Copy data from the system buffer into the message buffer
+		/// memcpy(pClient->msgBuf() + pClient->getLastPos(), _recvBuf, recvlen);
 		pClient->setLastPos(pClient->getLastPos() + recvlen);
 
 		while (pClient->getLastPos() >= sizeof(Header)) {
