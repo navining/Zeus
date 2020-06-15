@@ -1,20 +1,20 @@
 #include "Allocator.h"
-#include <stdlib.h>
+#include "Memory.hpp"
 
 void *operator new(size_t size) {
-	return malloc(size);
+	return Memory::Instance().alloc(size);
 }
 
 void *operator new[](size_t size) {
-	return malloc(size);
+	return Memory::Instance().alloc(size);
 }
 
 void operator delete(void *p) {
-	free(p);
+	Memory::Instance().free(p);
 }
 
 void operator delete[](void *p) {
-	free(p);
+	Memory::Instance().free(p);
 }
 
 void *mem_alloc(size_t size) {
