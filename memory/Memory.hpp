@@ -2,7 +2,6 @@
 #define _Memory_hpp_
 #include <stdlib.h>
 #include <assert.h>
-
 #define MAX_MEMORY_SIZE 64
 
 class MemoryPool;
@@ -45,7 +44,7 @@ public:
 			::free(_pBuf);
 		}
 	}
-	
+
 	// Allocate memory
 	void *alloc(size_t size) {
 		if (_pBuf == nullptr) {
@@ -97,6 +96,7 @@ public:
 		if (_pBuf != nullptr) return;
 
 		size_t size = (_blockSize + sizeof(MemoryBlock)) * _blockCount;
+
 		// Allocate memory
 		_pBuf = (char *)malloc(size);
 
@@ -110,7 +110,7 @@ public:
 
 		MemoryBlock *prev = _pHead;
 		for (size_t n = 1; n < _blockCount; n++) {
-			MemoryBlock *cur = (MemoryBlock *)(prev + _blockSize + sizeof(MemoryBlock));
+			MemoryBlock *cur = (MemoryBlock *)((char *)prev + _blockSize + sizeof(MemoryBlock));
 			prev->next = cur;
 			cur->inPool = true;
 			cur->id = n;
