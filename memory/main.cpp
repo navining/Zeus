@@ -8,5 +8,7 @@ int main() {
 	delete data2;
 	char *data3 = new char[64];
 	delete[] data3;
+	
+	while (true) {}
 	return 0;
 }

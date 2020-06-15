@@ -2,6 +2,15 @@
 #define _Memory_hpp_
 #include <stdlib.h>
 #include <assert.h>
+
+#ifdef _DEBUG
+#include <stdio.h>
+#define PRINT(...) printf(__VA_ARGS__)
+#else
+#define PRINT(...)
+#endif // _DEBUG
+
+
 #define MAX_MEMORY_SIZE 64
 
 class MemoryPool;
@@ -68,6 +77,7 @@ public:
 			block->refCount = 1;
 		}
 
+		PRINT("Allocate %lx, id = %d, size = %d\n", block, block->id, size);
 		return (char *)block + sizeof(MemoryBlock);
 	}
 
@@ -149,6 +159,7 @@ public:
 			block->refCount = 1;
 			block->pool = nullptr;
 			block->next = nullptr;
+			PRINT("Allocate %lx, id = %d, size = %d\n", block, block->id, size);
 			return (char*)block + sizeof(MemoryBlock);
 		}
 		return nullptr;
@@ -157,6 +168,7 @@ public:
 	// Free memory
 	void free(void *p) {
 		MemoryBlock *block = (MemoryBlock *)((char *)p - sizeof(MemoryBlock));
+		PRINT("Free %lx, id = %d\n", block, block->id);
 		if (block->inPool) {
 			block->pool->free(p);
 		}
