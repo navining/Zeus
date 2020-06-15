@@ -203,11 +203,11 @@ private:
 	}
 
 private:
-	MemoryPool _pool_64 = { 64, 10 };
-	MemoryPool _pool_128 = { 128, 10 };
-	MemoryPool _pool_256 = { 256, 10 };
-	MemoryPool _pool_512 = { 512, 10 };
-	MemoryPool _pool_1024 = { 1024, 10 };
+	MemoryPool _pool_64 = { 64, 100 };
+	MemoryPool _pool_128 = { 128, 100 };
+	MemoryPool _pool_256 = { 256, 100 };
+	MemoryPool _pool_512 = { 512, 100 };
+	MemoryPool _pool_1024 = { 1024, 100 };
 	MemoryPool* _pool[MAX_MEMORY_SIZE + 1];	// Mapping array for memory pool
 };
 
