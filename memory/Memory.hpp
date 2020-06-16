@@ -2,7 +2,7 @@
 #define _Memory_hpp_
 #include <stdlib.h>
 #include <assert.h>
-
+#include <mutex>
 #ifdef _DEBUG
 #include <stdio.h>
 #define PRINT(...) printf(__VA_ARGS__)
@@ -56,6 +56,7 @@ public:
 
 	// Allocate memory
 	void *alloc(size_t size) {
+		std::lock_guard<std::mutex> lock(_mutex);
 		if (_pBuf == nullptr) {
 			init();
 		}
@@ -87,11 +88,15 @@ public:
 	void free(void *p) {
 		MemoryBlock *block = (MemoryBlock *)((char *)p - sizeof(MemoryBlock));
 		assert(1 == block->refCount);
-		if (--block->refCount != 0) {
-			return;
+		{
+			std::lock_guard<std::mutex> lock(_mutex);
+			if (--block->refCount != 0) {
+				return;
+			}
 		}
 		if (block->inPool) {
 			// Return back to the pool
+			std::lock_guard<std::mutex> lock(_mutex);
 			block->next = _pHead;
 			_pHead = block;
 		}
@@ -136,6 +141,7 @@ private:
 	MemoryBlock *_pHead;	// Pointing to the first empty block
 	size_t _blockSize;	// Size of memory block
 	size_t _blockCount;	// Number of memory block
+	std::mutex _mutex;
 };
 
 // Memory Management (Singleton)
