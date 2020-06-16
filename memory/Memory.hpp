@@ -11,7 +11,7 @@
 #endif // _DEBUG
 
 
-#define MAX_MEMORY_SIZE 1024
+#define MAX_MEMORY_SIZE 128
 
 class MemoryPool;
 
@@ -194,9 +194,9 @@ private:
 	Memory() {
 		init(1, 64, &_pool_64);
 		init(65, 128, &_pool_128);
-		init(129, 256, &_pool_256);
-		init(257, 512, &_pool_512);
-		init(513, 1024, &_pool_1024);
+		// init(129, 256, &_pool_256);
+		// init(257, 512, &_pool_512);
+		// init(513, 1024, &_pool_1024);
 	};
 	Memory(const Memory &) = delete;
 	Memory& operator=(const Memory &) = delete;
@@ -209,11 +209,11 @@ private:
 	}
 
 private:
-	MemoryPool _pool_64 = { 64, 100 };
-	MemoryPool _pool_128 = { 128, 100 };
-	MemoryPool _pool_256 = { 256, 100 };
-	MemoryPool _pool_512 = { 512, 100 };
-	MemoryPool _pool_1024 = { 1024, 100 };
+	MemoryPool _pool_64 = { 64, 1000000 };
+	MemoryPool _pool_128 = { 128, 1000000 };
+	// MemoryPool _pool_256 = { 256, 10000 };
+	// MemoryPool _pool_512 = { 512, 10000 };
+	// MemoryPool _pool_1024 = { 1024, 10000 };
 	MemoryPool* _pool[MAX_MEMORY_SIZE + 1];	// Mapping array for memory pool
 };
 

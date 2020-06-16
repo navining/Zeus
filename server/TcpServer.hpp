@@ -24,6 +24,7 @@
 #include <mutex>
 #include <atomic>
 #include <unordered_map>
+#include "Allocator.h"
 #include "Message.hpp"
 #include "common.h"
 #include "Task.hpp"
