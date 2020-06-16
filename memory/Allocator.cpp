@@ -9,7 +9,7 @@ void *operator new[](size_t size) {
 	return Memory::Instance().alloc(size);
 }
 
-void operator delete(void *p, size_t size) {
+void operator delete(void *p) {
 	Memory::Instance().free(p);
 }
 
