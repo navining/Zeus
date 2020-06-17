@@ -23,12 +23,13 @@ private:
 
 };
 
+typedef std::shared_ptr<Task> TaskPtr;
 
 // Class handling the task (consumer)
 class TaskHandler {
 public:
 	// Put task into the buffer
-	void addTask(Task *task) {
+	void addTask(TaskPtr& task) {
 		std::lock_guard<std::mutex> lock(_mutex);
 		_tasksBuf.push_back(task);
 	}
@@ -60,15 +61,14 @@ protected:
 
 			for (auto task : _tasks) {
 				task->run();
-				delete task;
 			}
 
 			_tasks.clear();
 		}
 	}
 private:
-	std::list<Task *> _tasks;	// List storing tasks
-	std::list<Task *> _tasksBuf;	// List for buffering
+	std::list<TaskPtr> _tasks;	// List storing tasks
+	std::list<TaskPtr> _tasksBuf;	// List for buffering
 	std::mutex _mutex;
 };
 #endif // !_Task_hpp__
