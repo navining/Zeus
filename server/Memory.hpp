@@ -209,7 +209,7 @@ private:
 	}
 
 private:
-	MemoryPool _pool_64 = { 64, 1000000 };
+	MemoryPool _pool_64 = { 64, 4000000 };
 	MemoryPool _pool_128 = { 128, 1000000 };
 	// MemoryPool _pool_256 = { 256, 10000 };
 	// MemoryPool _pool_512 = { 512, 10000 };
