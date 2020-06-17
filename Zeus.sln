@@ -7,8 +7,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client", "client\client.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "server", "server\server.vcxproj", "{1E84AD50-7E80-42DE-92E2-6717EB007B14}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "memory", "memory\memory.vcxproj", "{D700E83F-16AA-4B1C-BA30-B5A58B50DEA3}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -33,14 +31,6 @@ Global
 		{1E84AD50-7E80-42DE-92E2-6717EB007B14}.Release|x64.Build.0 = Release|x64
 		{1E84AD50-7E80-42DE-92E2-6717EB007B14}.Release|x86.ActiveCfg = Release|Win32
 		{1E84AD50-7E80-42DE-92E2-6717EB007B14}.Release|x86.Build.0 = Release|Win32
-		{D700E83F-16AA-4B1C-BA30-B5A58B50DEA3}.Debug|x64.ActiveCfg = Debug|x64
-		{D700E83F-16AA-4B1C-BA30-B5A58B50DEA3}.Debug|x64.Build.0 = Debug|x64
-		{D700E83F-16AA-4B1C-BA30-B5A58B50DEA3}.Debug|x86.ActiveCfg = Debug|Win32
-		{D700E83F-16AA-4B1C-BA30-B5A58B50DEA3}.Debug|x86.Build.0 = Debug|Win32
-		{D700E83F-16AA-4B1C-BA30-B5A58B50DEA3}.Release|x64.ActiveCfg = Release|x64
-		{D700E83F-16AA-4B1C-BA30-B5A58B50DEA3}.Release|x64.Build.0 = Release|x64
-		{D700E83F-16AA-4B1C-BA30-B5A58B50DEA3}.Release|x86.ActiveCfg = Release|Win32
-		{D700E83F-16AA-4B1C-BA30-B5A58B50DEA3}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
