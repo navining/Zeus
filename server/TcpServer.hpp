@@ -42,6 +42,10 @@ public:
 		_sendLastPos = 0;
 	}
 
+	~TcpSocket() {
+		close();
+	}
+
 	SOCKET sockfd() {
 		return _sockfd;
 	}
@@ -87,6 +91,18 @@ public:
 		
 		return ret;
 	}
+
+	// Close socket
+	void close() {
+		if (_sockfd == INVALID_SOCKET) return;
+#ifdef _WIN32
+		closesocket(_sockfd);
+#else
+		::close(_sockfd);
+#endif
+		_sockfd = INVALID_SOCKET;
+	}
+
 private:
 	SOCKET _sockfd;	// socket fd_set			
 	char _msgBuf[MSG_BUFF_SIZE];	// Message Buffer (Secondary Buffer)
