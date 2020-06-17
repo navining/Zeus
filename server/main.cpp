@@ -4,15 +4,15 @@
 
 class MyServer : public TcpServer {
 public:
-	void onConnection(TcpSocket *pClient) {
+	void onConnection(TcpConnection pClient) {
 		TcpServer::onConnection(pClient);
 	}
 
-	void onDisconnection(TcpSocket *pClient) {
+	void onDisconnection(TcpConnection pClient) {
 		TcpServer::onDisconnection(pClient);
 	}
 
-	void onMessage(TcpSubserver *pServer, TcpSocket *pClient, Header *msg) {
+	void onMessage(TcpSubserver *pServer, TcpConnection pClient, Header *msg) {
 		TcpServer::onMessage(pServer, pClient, msg);
 		switch (msg->cmd) {
 		case CMD_LOGIN:

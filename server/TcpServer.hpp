@@ -24,6 +24,7 @@
 #include <mutex>
 #include <atomic>
 #include <unordered_map>
+#include <memory>
 #include "Allocator.h"
 #include "Message.hpp"
 #include "common.h"
@@ -94,24 +95,26 @@ private:
 	int _sendLastPos;	// Last position of the send buffer
 };
 
+typedef std::shared_ptr<TcpSocket> TcpConnection;
+
 class TcpSubserver;
 
 // Interface for handling events
 class Event {
 public:
 	// Client connect event
-	virtual void onConnection(TcpSocket *pClient) = 0;
+	virtual void onConnection(TcpConnection pClient) = 0;
 	// Client disconnect event
-	virtual void onDisconnection(TcpSocket *pClient) = 0;
+	virtual void onDisconnection(TcpConnection pClient) = 0;
 	// Recieve message event
-	virtual void onMessage(TcpSubserver *pServer, TcpSocket *pClient, Header *header) = 0;
+	virtual void onMessage(TcpSubserver *pServer, TcpConnection pClient, Header *header) = 0;	// TODO: Try to eliminate pointer to subserver.
 private:
 };
 
 // Task for sending messages
 class TcpSendTask : public Task {
 public:
-	TcpSendTask(TcpSocket *pClient, Header *header) {
+	TcpSendTask(TcpConnection pClient, Header *header) {
 		_pClient = pClient;
 		_pHeader = header;
 	}
@@ -121,9 +124,11 @@ public:
 		delete _pHeader;
 	}
 private:
-	TcpSocket *_pClient;
+	TcpConnection _pClient;
 	Header *_pHeader;
 };
+
+typedef std::shared_ptr<TcpSendTask> TcpSendTaskPtr;
 
 // Child thread responsible for handling messsages
 class TcpSubserver
@@ -137,9 +142,6 @@ public:
 	~TcpSubserver() {
 		close();
 	}
-
-	void onConnection(TcpSocket *pClient) {}
-	void onDisconnection(TcpSocket *pClient) {}
 
 	// If connected
 	inline bool isRun() {
@@ -211,19 +213,18 @@ public:
 			// Client socket response: handle request
 #ifdef _WIN32
 			for (int n = 0; n < fdRead.fd_count; n++) {
-				TcpSocket *pClient = _clients[fdRead.fd_array[n]];
+				TcpConnection pClient = _clients[fdRead.fd_array[n]];
 				if (-1 == recv(pClient)) {
 					// Client disconnected
 					if (_pMain != nullptr) {
 						_pMain->onDisconnection(pClient);
 					}
 					_clients.erase(pClient->sockfd());
-					// delete pClient;
 					_clientsChange = true;
 				}
 			}
 #else
-			std::vector<TcpSocket *> disconnected;
+			std::vector<TcpConnection > disconnected;
 			for (auto it : _clients) {
 				if (FD_ISSET(it.second->sockfd(), &fdRead)) {
 					if (-1 == recv(it.second)) {
@@ -239,9 +240,8 @@ public:
 			}
 
 			// Delete disconnected clients
-			for (TcpSocket *pClient : disconnected) {
+			for (TcpConnection pClient : disconnected) {
 				_clients.erase(pClient->sockfd());
-				// delete pClient;
 			}
 #endif
 			// Handle other services
@@ -252,7 +252,7 @@ public:
 	/// char _recvBuf[RECV_BUFF_SIZE] = {};
 
 	// Recieve data
-	int recv(TcpSocket *pClient) {
+	int recv(TcpConnection pClient) {
 		/// Receive header into system buffer first
 		/// int recvlen = (int)::recv(pClient->sockfd(), _recvBuf, RECV_BUFF_SIZE, 0);
 		int recvlen = (int)::recv(pClient->sockfd(), pClient->msgBuf() + pClient->getLastPos(), MSG_BUFF_SIZE - pClient->getLastPos(), 0);
@@ -285,7 +285,7 @@ public:
 	}
 
 	// Handle message
-	void onMessage(TcpSocket *pClient, Header *msg) {
+	void onMessage(TcpConnection pClient, Header *msg) {
 		if (_pMain != nullptr) {
 			_pMain->onMessage(this, pClient, msg);
 		}
@@ -298,14 +298,12 @@ public:
 #ifdef _WIN32
 		for (auto it : _clients) {
 			closesocket(it.second->sockfd());
-			delete it.second;
 		}
 		// Close Win Sock 2.x
 		closesocket(_sock);
 #else
 		for (auto it : _clients) {
 			::close(it.second->sockfd());
-			delete it.second;
 		}
 		::close(_sock);
 #endif
@@ -314,7 +312,7 @@ public:
 	}
 
 	// Add new clients into the buffer
-	void addClients(TcpSocket* pClient) {
+	void addClients(TcpConnection pClient) {
 		std::lock_guard<std::mutex> lock(_mutex);
 		_clientsBuf.push_back(pClient);
 	}
@@ -331,20 +329,22 @@ public:
 		return _clients.size() + _clientsBuf.size();
 	}
 
-	void send(TcpSocket *pClient, Header *header) {
-		TcpSendTask *task = new TcpSendTask(pClient, header);
-		_sendTaskHandler.addTask(task);
+	// Send message to the client
+	void send(TcpConnection pClient, Header *header) {
+		TcpSendTaskPtr task(new TcpSendTask(pClient, header));
+		_sendTaskHandler.addTask(static_cast<TaskPtr>(task));
 	}
 
 private:
 	SOCKET _sock;
-	std::unordered_map<SOCKET, TcpSocket*> _clients;
-	std::vector<TcpSocket*> _clientsBuf;	// Clients buffer
+	std::unordered_map<SOCKET, TcpConnection> _clients;
+	std::vector<TcpConnection> _clientsBuf;	// Clients buffer
 	std::mutex _mutex;	// Mutex for clients buffer
 	std::thread _thread;
 	Event *_pMain;	// Pointer to the main thread (for event callback)
 	TaskHandler _sendTaskHandler;	// Child thread for sending messages
 };
+
 
 // Main thread responsible for accepting connections
 class TcpServer : public Event {
@@ -455,7 +455,8 @@ public:
 			if (minHandler == nullptr) {
 				return INVALID_SOCKET;
 			}
-			TcpSocket *pClient = new TcpSocket(cli);	// TODO: memory leaking here!
+			
+			TcpConnection pClient(new TcpSocket(cli));
 			minHandler->addClients(pClient);
 
 			onConnection(pClient);
@@ -465,7 +466,7 @@ public:
 	}
 
 
-	virtual void onConnection(TcpSocket* pClient) {
+	virtual void onConnection(TcpConnection pClient) {
 		_clientCount++;
 		// cout << "<server " << _sock << "> " << "New connection: " << "<client " << cli << "> " << inet_ntoa(clientAddr.sin_addr) << "-" << clientAddr.sin_port << endl;
 	}
@@ -528,11 +529,11 @@ public:
 		}
 	}
 
-	virtual void onDisconnection(TcpSocket *pClient) {
+	virtual void onDisconnection(TcpConnection pClient) {
 		_clientCount--;
 	}
 
-	virtual void onMessage(TcpSubserver *pServer, TcpSocket *pClient, Header *header) {
+	virtual void onMessage(TcpSubserver *pServer, TcpConnection pClient, Header *header) {
 		_msgCount++;
 	}
 
@@ -557,7 +558,7 @@ public:
 	}
 
 private:
-	std::vector<TcpSubserver*> _subservers;
+	std::vector<TcpSubserver *> _subservers;
 	Timestamp _time;
 protected:
 	std::atomic_int _msgCount;	// Number of messages
