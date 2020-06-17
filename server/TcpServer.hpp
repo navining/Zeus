@@ -128,8 +128,6 @@ private:
 	Header *_pHeader;
 };
 
-typedef std::shared_ptr<TcpSendTask> TcpSendTaskPtr;
-
 // Child thread responsible for handling messsages
 class TcpSubserver
 {
@@ -331,8 +329,8 @@ public:
 
 	// Send message to the client
 	void send(TcpConnection pClient, Header *header) {
-		TcpSendTaskPtr task(new TcpSendTask(pClient, header));
-		_sendTaskHandler.addTask(static_cast<TaskPtr>(task));
+		Task *task = new TcpSendTask(pClient, header);
+		_sendTaskHandler.addTask(task);
 	}
 
 private:
