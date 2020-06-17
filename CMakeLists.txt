@@ -10,8 +10,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 # Header file include path
 include_directories(${PROJECT_SOURCE_DIR}/client)
 include_directories(${PROJECT_SOURCE_DIR}/server)
-include_directories(${PROJECT_SOURCE_DIR}/common/include)
-include_directories(${PROJECT_SOURCE_DIR}/memory)
+include_directories(${PROJECT_SOURCE_DIR}/common)
 
 # Add subdirectory
 add_subdirectory(client)

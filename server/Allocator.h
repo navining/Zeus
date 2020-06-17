@@ -1,13 +1,17 @@
 #ifndef _ALLOCATOR_H_
 #define _ALLOCATOR_H_
 
+#ifndef _WIN32
+typedef long unsigned int size_t;
+#endif
+
 void *operator new(size_t size);
 
 void *operator new[](size_t size);
 
-void operator delete(void *p, size_t size);
+void operator delete(void *p) noexcept;
 
-void operator delete[](void *p);
+void operator delete[](void *p) noexcept;
 
 void *mem_alloc(size_t size);
 
