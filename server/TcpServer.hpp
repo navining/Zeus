@@ -75,7 +75,12 @@ public:
 				sendData += copyLength;
 				sendLength -= copyLength;
 				// Send the entire buffer
-				ret = ::send(_sockfd, _sendBuf, SEND_BUFF_SIZE, 0);
+				try {
+					ret = ::send(_sockfd, _sendBuf, SEND_BUFF_SIZE, 0);
+				}
+				catch (...) {
+					// Do nothing here
+				}
 				_sendLastPos = 0;
 				if (SOCKET_ERROR == ret) {
 					return ret;
