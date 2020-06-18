@@ -140,11 +140,12 @@ public:
 		_pHeader = header;
 	}
 
-	void run() {
+	int run() {
 		TcpConnection pClient = _pClient.lock();
-		if (pClient != nullptr)
-			pClient->send(_pHeader);
+		if (pClient == nullptr) return -1;
+		int ret = pClient->send(_pHeader);
 		delete _pHeader;
+		return ret;
 	}
 private:
 	std::weak_ptr<TcpSocket> _pClient;

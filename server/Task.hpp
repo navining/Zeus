@@ -16,7 +16,7 @@ public:
 	}
 
 	// Run the task
-	virtual void run() {
+	virtual int run() {
 
 	}
 private:
