@@ -119,18 +119,18 @@ class TcpSubserver;
 class Event {
 public:
 	// Client connect event
-	virtual void onConnection(TcpConnection pClient) = 0;
+	virtual void onConnection(const TcpConnection& pClient) = 0;
 	// Client disconnect event
-	virtual void onDisconnection(TcpConnection pClient) = 0;
+	virtual void onDisconnection(const TcpConnection& pClient) = 0;
 	// Recieve message event
-	virtual void onMessage(TcpSubserver *pServer, TcpConnection pClient, Header *header) = 0;	// TODO: Try to eliminate pointer to subserver.
+	virtual void onMessage(TcpSubserver *pServer, const TcpConnection& pClient, Header *header) = 0;	// TODO: Try to eliminate pointer to subserver.
 private:
 };
 
 // Task for sending messages
 class TcpSendTask : public Task {
 public:
-	TcpSendTask(TcpConnection pClient, Header *header) {
+	TcpSendTask(const TcpConnection& pClient, Header *header) {
 		_pClient = pClient;
 		_pHeader = header;
 	}
@@ -228,7 +228,7 @@ public:
 			// Client socket response: handle request
 #ifdef _WIN32
 			for (int n = 0; n < fdRead.fd_count; n++) {
-				TcpConnection pClient = _clients[fdRead.fd_array[n]];
+				const TcpConnection& pClient = _clients[fdRead.fd_array[n]];
 				if (-1 == recv(pClient)) {
 					// Client disconnected
 					if (_pMain != nullptr) {
@@ -267,7 +267,7 @@ public:
 	/// char _recvBuf[RECV_BUFF_SIZE] = {};
 
 	// Recieve data
-	int recv(TcpConnection pClient) {
+	int recv(const TcpConnection& pClient) {
 		/// Receive header into system buffer first
 		/// int recvlen = (int)::recv(pClient->sockfd(), _recvBuf, RECV_BUFF_SIZE, 0);
 		int recvlen = (int)::recv(pClient->sockfd(), pClient->msgBuf() + pClient->getLastPos(), MSG_BUFF_SIZE - pClient->getLastPos(), 0);
@@ -300,7 +300,7 @@ public:
 	}
 
 	// Handle message
-	void onMessage(TcpConnection pClient, Header *msg) {
+	void onMessage(const TcpConnection& pClient, Header *msg) {
 		if (_pMain != nullptr) {
 			_pMain->onMessage(this, pClient, msg);
 		}
@@ -327,7 +327,7 @@ public:
 	}
 
 	// Add new clients into the buffer
-	void addClients(TcpConnection pClient) {
+	void addClients(const TcpConnection& pClient) {
 		std::lock_guard<std::mutex> lock(_mutex);
 		_clientsBuf.push_back(pClient);
 	}
@@ -345,7 +345,7 @@ public:
 	}
 
 	// Send message to the client
-	void send(TcpConnection pClient, Header *header) {
+	void send(const TcpConnection& pClient, Header *header) {
 		Task *task = new TcpSendTask(pClient, header);
 		_sendTaskHandler.addTask(task);
 	}
@@ -481,7 +481,7 @@ public:
 	}
 
 
-	virtual void onConnection(TcpConnection pClient) {
+	virtual void onConnection(const TcpConnection& pClient) {
 		_clientCount++;
 		// cout << "<server " << _sock << "> " << "New connection: " << "<client " << cli << "> " << inet_ntoa(clientAddr.sin_addr) << "-" << clientAddr.sin_port << endl;
 	}
@@ -544,11 +544,11 @@ public:
 		}
 	}
 
-	virtual void onDisconnection(TcpConnection pClient) {
+	virtual void onDisconnection(const TcpConnection& pClient) {
 		_clientCount--;
 	}
 
-	virtual void onMessage(TcpSubserver *pServer, TcpConnection pClient, Header *header) {
+	virtual void onMessage(TcpSubserver *pServer, const TcpConnection& pClient, Header *header) {
 		_msgCount++;
 	}
 
