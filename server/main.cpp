@@ -22,7 +22,7 @@ public:
 			// Judge username and password
 			// Send
 			LoginResult result;
-			pClient->send(&result);
+			//pClient->send(&result);
 			break;
 		}
 		case CMD_LOGOUT:
@@ -31,7 +31,7 @@ public:
 			//cout << "<server " << _sock << "> " << "From: " << "<client " << cli << "> " << "Command: " << _logout->cmd << " Data length: " << _logout->length << " Username: " << _logout->username << endl;
 			// Send
 			LogoutResult result;
-			pClient->send(&result);
+			//pClient->send(&result);
 			break;
 		}
 		case CMD_TEST:	// Send back the test data (echo)

@@ -32,6 +32,8 @@
 
 #define TCPSERVER_THREAD_COUNT 1
 
+
+
 class TcpSocket {
 public:
 	TcpSocket(SOCKET sockfd = INVALID_SOCKET) {
@@ -62,7 +64,7 @@ public:
 		_msgLastPos = pos;
 	}
 
-	int send(Header *msg) {
+	int send(std::weak_ptr<TcpSocket> pClient, Header *msg) {
 		int ret = SOCKET_ERROR;
 		int sendLength = msg->length;
 		const char *sendData = (const char *)msg;
@@ -75,7 +77,9 @@ public:
 				sendData += copyLength;
 				sendLength -= copyLength;
 				// Send the entire buffer
-				ret = ::send(_sockfd, _sendBuf, SEND_BUFF_SIZE, 0);
+				auto p = pClient.lock();
+				if (p != nullptr)	// Check the connection is valid or not
+					ret = ::send(_sockfd, _sendBuf, SEND_BUFF_SIZE, 0);
 				_sendLastPos = 0;
 				if (SOCKET_ERROR == ret) {
 					return ret;
@@ -138,7 +142,7 @@ public:
 	void run() {
 		TcpConnection pClient = _pClient.lock();
 		if (pClient != nullptr)
-			pClient->send(_pHeader);
+			pClient->send(_pClient, _pHeader);
 		delete _pHeader;
 	}
 private:
