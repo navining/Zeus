@@ -10,30 +10,6 @@ typedef long unsigned int size_t;
 #endif
 
 
-template<typename T>
-class ObjectPoolBase {
-public:
-	void *operator new(size_t size) {
-		return malloc(size);
-	}
-
-	void operator delete(void *p) noexcept {
-		free(p);
-	}
-
-	template<typename ...Args>
-	static T* create(Args ... args) {
-		T *obj = new T(args...);
-		return obj;
-	}
-
-	static void destroy(T *obj) {
-		delete obj;
-	}
-private:
-};
-
-
 class ObjectBlock {
 public:
 	int id;	// ID of current block
@@ -68,7 +44,7 @@ public:
 	}
 
 	// Create Object
-	void *create(size_t size) {
+	T* create() {
 		std::lock_guard<std::mutex> lock(_mutex);
 
 		ObjectBlock *block = nullptr;
@@ -87,12 +63,12 @@ public:
 			block->refCount = 1;
 		}
 
-		PRINT("Create %lx, id = %d, size = %d\n", block, block->id, size);
-		return (char *)block + sizeof(ObjectBlock);
+		PRINT("Create %lx, id = %d, size = %d\n", block, block->id, sizeof(T));
+		return (T*)((char *)block + sizeof(ObjectBlock));
 	}
 
 	// Destroy object
-	void destory(void *p) {
+	void destory(T *p) {
 		ObjectBlock *block = (ObjectBlock *)((char *)p - sizeof(ObjectBlock));
 		assert(1 == block->refCount);
 		{
@@ -101,6 +77,8 @@ public:
 				return;
 			}
 		}
+
+		PRINT("Destory %lx, id = %d, size = %d\n", block, block->id, sizeof(T));
 		if (block->inPool) {
 			// Return back to the pool
 			std::lock_guard<std::mutex> lock(_mutex);
@@ -108,7 +86,7 @@ public:
 			_pHead = block;
 		}
 		else {
-			delete p;
+			delete block;
 		}
 	}
 
@@ -148,3 +126,33 @@ private:
 };
 
 #endif // !_Object_hpp_
+
+
+// Object management (Singleton)
+template<typename T, size_t SIZE = 10>
+class Object {
+public:
+	static ObjectPool<T>& Pool() {
+		static ObjectPool<T> pool(SIZE);
+		return pool;
+	}
+
+	void *operator new(size_t size) {
+		return Pool().create();
+	}
+
+	void operator delete(void *p) noexcept {
+		Pool().destory((T *)p);
+	}
+
+	template<typename ...Args>
+	static T* create(Args ... args) {
+		T *obj = new T(args...);
+		return obj;
+	}
+
+	static void destroy(T *obj) {
+		delete obj;
+	}
+private:
+};
