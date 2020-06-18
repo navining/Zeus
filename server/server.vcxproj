@@ -151,6 +151,7 @@
     <ClInclude Include="..\common\Timestamp.hpp" />
     <ClInclude Include="Allocator.h" />
     <ClInclude Include="Memory.hpp" />
+    <ClInclude Include="Object.hpp" />
     <ClInclude Include="Task.hpp" />
     <ClInclude Include="TcpServer.hpp" />
   </ItemGroup>

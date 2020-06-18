@@ -1,4 +1,5 @@
 #ifndef _common_h_
+#define _common_h_
 
 #include "Timestamp.hpp"
 
@@ -11,4 +12,12 @@
 // Size of the send buffer
 #define SEND_BUFF_SIZE 10240
  
+
+#ifdef _DEBUG
+#include <stdio.h>
+#define PRINT(...) printf(__VA_ARGS__)
+#else
+#define PRINT(...)
+#endif // _DEBUG
+
 #endif // !_common_h_

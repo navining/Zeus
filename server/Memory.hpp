@@ -3,12 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <mutex>
-#ifdef _DEBUG
-#include <stdio.h>
-#define PRINT(...) printf(__VA_ARGS__)
-#else
-#define PRINT(...)
-#endif // _DEBUG
+#include "common.h"
 
 
 #define MAX_MEMORY_SIZE 128
@@ -83,8 +78,6 @@ public:
 	}
 
 	// Free memory
-	// This function only frees memory allocated from the memory pool
-	// The memory allocated from system (ie. no enough space in the pool) should be freed by the user himself!
 	void free(void *p) {
 		MemoryBlock *block = (MemoryBlock *)((char *)p - sizeof(MemoryBlock));
 		assert(1 == block->refCount);

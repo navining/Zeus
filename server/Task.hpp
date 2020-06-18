@@ -16,9 +16,7 @@ public:
 	}
 
 	// Run the task
-	virtual int run() {
-
-	}
+	virtual int run() = 0;
 private:
 
 };
