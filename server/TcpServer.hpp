@@ -136,12 +136,13 @@ public:
 	}
 
 	void run() {
-		if (_pClient != nullptr)
-			_pClient->send(_pHeader);
+		TcpConnection pClient = _pClient.lock();
+		if (pClient != nullptr)
+			pClient->send(_pHeader);
 		delete _pHeader;
 	}
 private:
-	TcpConnection _pClient;
+	std::weak_ptr<TcpSocket> _pClient;
 	Header *_pHeader;
 };
 
