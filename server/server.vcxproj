@@ -146,9 +146,9 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\include\common.h" />
+    <ClInclude Include="..\common\common.h" />
     <ClInclude Include="..\common\include\Message.hpp" />
-    <ClInclude Include="..\common\include\Timestamp.hpp" />
+    <ClInclude Include="..\common\Timestamp.hpp" />
     <ClInclude Include="Allocator.h" />
     <ClInclude Include="Memory.hpp" />
     <ClInclude Include="Task.hpp" />
