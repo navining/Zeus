@@ -12,7 +12,8 @@
 #define SEND_BUFF_SIZE 10240
 
 #ifndef _WIN32
-#include <signal.h>
+// Block SIGPIPE
+#include <sigaction.h>
 struct sigaction sa;
 sa.sa_handler = SIG_IGN;
 sigaction(SIGPIPE, &sa, 0);
