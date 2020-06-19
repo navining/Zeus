@@ -29,10 +29,11 @@
 #include "Message.hpp"
 #include "common.h"
 #include "Task.hpp"
+#include "Object.hpp"
 
 #define TCPSERVER_THREAD_COUNT 1
 
-class TcpSocket {
+class TcpSocket : public Object<TcpSocket, 10000>{
 public:
 	TcpSocket(SOCKET sockfd = INVALID_SOCKET) {
 		_sockfd = sockfd;
@@ -353,7 +354,7 @@ public:
 
 	// Send message to the client
 	void send(const TcpConnection& pClient, Header *header) {
-		Task *task = new TcpSendTask(pClient, header);
+		TaskPtr task(new TcpSendTask(pClient, header));
 		_sendTaskHandler.addTask(task);
 	}
 
