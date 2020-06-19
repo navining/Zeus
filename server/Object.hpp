@@ -36,6 +36,7 @@ template<typename T>
 class ObjectPool {
 public:
 	ObjectPool(int size) {
+		_pBuf = nullptr;
 		init(size);
 	}
 
