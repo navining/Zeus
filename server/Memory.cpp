@@ -24,7 +24,7 @@ void * MemoryPool::alloc(size_t size) {
 	MemoryBlock *block = nullptr;
 	if (_pHead == nullptr) {
 		// No extra space - allocate from the system
-		printf("WARNING: Memory pool exceed limit: size = %d\n", size);
+		printf("WARNING: Memory pool exceed limit: size = %d\n", (int)size);
 		block = (MemoryBlock *)malloc(size + sizeof(MemoryBlock));
 		block->inPool = false;
 		block->id = -1;
