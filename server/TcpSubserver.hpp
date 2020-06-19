@@ -153,7 +153,8 @@ public:
 	int recv(const TcpConnection& pClient) {
 		/// Receive header into system buffer first
 		/// int recvlen = (int)::recv(pClient->sockfd(), _recvBuf, RECV_BUFF_SIZE, 0);
-		int recvlen = (int)::recv(pClient->sockfd(), pClient->msgBuf() + pClient->getLastPos(), MSG_BUFF_SIZE - pClient->getLastPos(), 0);
+		// Use each buffer of the client directly, no need to copy here
+		int recvlen = (int)::recv(pClient->sockfd(), pClient->msgBuf() + pClient->getLastPos(), RECV_BUFF_SIZE - pClient->getLastPos(), 0);
 		if (recvlen <= 0) {
 			// printf("<server %d> <client %d> Disconnected...\n", _sock, pClient->sockfd());
 			return -1;

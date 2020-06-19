@@ -127,7 +127,7 @@ public:
 	char _recvBuf[RECV_BUFF_SIZE] = {};
 
 	// Message Buffer (Secondary Buffer)
-	char _msgBuf[MSG_BUFF_SIZE] = {};
+	char _msgBuf[RECV_BUFF_SIZE * 5] = {};
 
 	// Last position of the message buffer
 	int _lastPos = 0;

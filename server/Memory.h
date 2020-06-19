@@ -88,7 +88,7 @@ private:
 private:
 	MemoryPool _pool_16 = { 16, 8000000 };
 	MemoryPool _pool_64 = { 64, 4000000 };
-	MemoryPool _pool_128 = { 128, 3000000 };
+	MemoryPool _pool_128 = { 128, 4000000 };
 	// MemoryPool _pool_256 = { 256, 10000 };
 	// MemoryPool _pool_512 = { 512, 10000 };
 	// MemoryPool _pool_1024 = { 1024, 10000 };

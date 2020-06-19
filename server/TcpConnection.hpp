@@ -8,7 +8,7 @@ class TcpSocket : public Object<TcpSocket, 10000> {
 public:
 	TcpSocket(SOCKET sockfd = INVALID_SOCKET) {
 		_sockfd = sockfd;
-		memset(_msgBuf, 0, MSG_BUFF_SIZE);
+		memset(_msgBuf, 0, RECV_BUFF_SIZE);
 		_msgLastPos = 0;
 		memset(_sendBuf, 0, SEND_BUFF_SIZE);
 		_sendLastPos = 0;
@@ -82,7 +82,7 @@ public:
 
 private:
 	SOCKET _sockfd;	// socket fd_set			
-	char _msgBuf[MSG_BUFF_SIZE];	// Message Buffer (Secondary Buffer)
+	char _msgBuf[RECV_BUFF_SIZE];	// Message Buffer
 	int _msgLastPos;	// Last position of the message buffer
 	char _sendBuf[SEND_BUFF_SIZE];	// Send Buffer
 	int _sendLastPos;	// Last position of the send buffer
