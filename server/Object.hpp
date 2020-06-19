@@ -1,5 +1,6 @@
 #ifndef _Object_hpp_
 #define _Object_hpp_
+
 #include <stdlib.h>
 #include <mutex>
 #include <assert.h>
@@ -126,9 +127,6 @@ private:
 	std::mutex _mutex;
 };
 
-#endif // !_Object_hpp_
-
-
 // Object management (Singleton)
 template<typename T, size_t SIZE = 10>
 class Object {
@@ -157,3 +155,5 @@ public:
 	}
 private:
 };
+
+#endif // !_Object_hpp_

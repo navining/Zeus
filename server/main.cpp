@@ -1,6 +1,9 @@
+#define SERVER_MAIN
+
 #include <iostream>
 
 #include "TcpServer.hpp"
+#include "Allocator.hpp"
 
 class MyServer : public TcpServer {
 public:
@@ -12,28 +15,9 @@ public:
 		TcpServer::onDisconnection(pClient);
 	}
 
-	void onMessage(TcpSubserver *pServer, const TcpConnection& pClient, Header *msg) {
+	void onMessage(TcpSubserver *pServer, const TcpConnection& pClient, Message *msg) {
 		TcpServer::onMessage(pServer, pClient, msg);
 		switch (msg->cmd) {
-		case CMD_LOGIN:
-		{
-			Login* login = (Login *)msg;
-			//cout << "<server " << _sock << "> " << "From: " << "<client " << cli << "> " << "Command: " << _login->cmd << " Data length: " << _login->length << " Username: " << _login->username << " Password: " << _login->password << endl;
-			// Judge username and password
-			// Send
-			LoginResult result;
-			pClient->send(&result);
-			break;
-		}
-		case CMD_LOGOUT:
-		{
-			Logout* logout = (Logout *)msg;
-			//cout << "<server " << _sock << "> " << "From: " << "<client " << cli << "> " << "Command: " << _logout->cmd << " Data length: " << _logout->length << " Username: " << _logout->username << endl;
-			// Send
-			LogoutResult result;
-			pClient->send(&result);
-			break;
-		}
 		case CMD_TEST:	// Send back the test data (echo)
 		{
 			Test* _test = (Test *)msg;

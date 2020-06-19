@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\Timestamp.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TcpClient.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\include\common.h" />
-    <ClInclude Include="..\common\include\Message.hpp" />
+    <ClInclude Include="..\common\common.h" />
+    <ClInclude Include="..\common\Message.hpp" />
+    <ClInclude Include="..\common\Timestamp.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4BA25A30-7101-4F1A-8149-7B8785F6AAA4}</ProjectGuid>

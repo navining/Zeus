@@ -1,7 +1,27 @@
 #ifndef _common_h_
 #define _common_h_
 
-#include "Timestamp.hpp"
+#ifdef _WIN32
+#define FD_SETSIZE	2048	// Size of FD_SET
+#define WIN32_LEAN_AND_MEAN
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#include <WinSock2.h>
+#include <windows.h>
+#pragma comment(lib, "ws2_32.lib")
+#else
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <limits.h>
+#define SOCKET int
+#define INVALID_SOCKET    (SOCKET)(~0)
+#define SOCKET_ERROR        (-1)
+typedef long unsigned int size_t;
+#endif
+
+#include "Message.hpp"
+#include "Timestamp.h"
 
 // Size of the recieve buffer
 #define RECV_BUFF_SIZE 10240

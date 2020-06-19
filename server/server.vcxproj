@@ -72,18 +72,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
+    <IncludePath>$(SolutionDir)/common/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
+    <IncludePath>$(SolutionDir)/common/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
+    <IncludePath>$(SolutionDir)/common/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
+    <IncludePath>$(SolutionDir)/common/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -142,18 +146,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Allocator.cpp" />
+    <ClCompile Include="..\common\Timestamp.cpp" />
+    <ClCompile Include="Allocator.hpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Memory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\common.h" />
-    <ClInclude Include="..\common\include\Message.hpp" />
-    <ClInclude Include="..\common\Timestamp.hpp" />
-    <ClInclude Include="Allocator.h" />
-    <ClInclude Include="Memory.hpp" />
+    <ClInclude Include="..\common\Message.hpp" />
+    <ClInclude Include="..\common\Timestamp.h" />
+    <ClInclude Include="Event.h" />
+    <ClInclude Include="Memory.h" />
     <ClInclude Include="Object.hpp" />
     <ClInclude Include="Task.hpp" />
+    <ClInclude Include="TcpConnection.hpp" />
     <ClInclude Include="TcpServer.hpp" />
+    <ClInclude Include="TcpSubserver.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,25 +1,11 @@
 #ifndef _TcpClient_hpp_
 #define _TcpClient_hpp_
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#include <WinSock2.h>
-#include <windows.h>
-#pragma comment(lib, "ws2_32.lib")
-#else
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <string.h>
-#define SOCKET int
-#define INVALID_SOCKET    (SOCKET)(~0)
-#define SOCKET_ERROR        (-1)
-#endif
 
+#include "common.h"
 #include <iostream>
 #include "Message.hpp"
-#include "common.h"
+
 
 class TcpClient {
 public:
@@ -160,9 +146,9 @@ public:
 		memcpy(_msgBuf + _lastPos, _recvBuf, recvlen);
 		_lastPos += recvlen;
 
-		while (_lastPos >= sizeof(Header)) {
+		while (_lastPos >= sizeof(Message)) {
 			// Get header
-			Header *header = (Header *)_msgBuf;
+			Message *header = (Message *)_msgBuf;
 			if (_lastPos >= header->length) {
 				// Size of remaining messages
 				int nSize = _lastPos - header->length;
@@ -180,26 +166,8 @@ public:
 	}
 
 	// Process data
-	virtual int onMessage(Header *msg) {
+	virtual int onMessage(Message *msg) {
 		switch (msg->cmd) {
-		case CMD_LOGIN_RESULT:
-		{
-			LoginResult* _loginResult = (LoginResult *)msg;
-			//cout << "<client " << _sock << "> " << "Recieve Message: " << _loginResult->cmd << " Data Length: " << _loginResult->length << " Result: " << _loginResult->result << endl;
-			break;
-		}
-		case CMD_LOGOUT_RESULT:
-		{
-			LogoutResult* _logoutResult = (LogoutResult *)msg;
-			//cout << "<client " << _sock << "> " << "Recieve Message: " << _logoutResult->cmd << " Data Length: " << _logoutResult->length << " Result: " << _logoutResult->result << endl;
-			break;
-		}
-		case CMD_NEW_USER_JOIN:
-		{
-			NewUserJoin* _userJoin = (NewUserJoin *)msg;
-			//cout << "<client " << _sock << "> " << "Recieve Message: " << _userJoin->cmd << " Data Length: " << _userJoin->length << " New User: " << _userJoin->sock << endl;
-			break;
-		}
 		case CMD_TEST:
 		{
 			Test* test = (Test *)msg;
@@ -221,7 +189,7 @@ public:
 	}
 
 	// Send data
-	int send(Header *_msg, int length) {
+	int send(Message *_msg, int length) {
 		if (!isRun() || _msg == NULL)
 			return SOCKET_ERROR;
 		int ret = ::send(_sock, (const char *)_msg, length, 0);

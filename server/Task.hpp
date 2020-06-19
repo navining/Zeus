@@ -1,4 +1,6 @@
 #ifndef _Task_hpp_
+#define _Task_hpp_
+
 #include <thread>
 #include <mutex>
 #include <list>
@@ -7,13 +9,9 @@
 // The task in producer-consumer pattern
 class Task {
 public:
-	Task() {
+	Task(){}
 
-	}
-
-	virtual ~Task() {
-
-	}
+	virtual ~Task(){}
 
 	// Run the task
 	virtual int run() = 0;
