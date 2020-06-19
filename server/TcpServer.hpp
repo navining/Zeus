@@ -133,24 +133,24 @@ public:
 private:
 };
 
+typedef std::unique_ptr<Header> HeaderPtr;
+
 // Task for sending messages
 class TcpSendTask : public Task {
 public:
-	TcpSendTask(const TcpConnection& pClient, Header *header) {
+	TcpSendTask(const TcpConnection& pClient, Header *header) : _pHeader(header) {
 		_pClient = pClient;
-		_pHeader = header;
 	}
 
 	int run() {
 		TcpConnection pClient = _pClient.lock();
 		if (pClient == nullptr) return -1;
-		int ret = pClient->send(_pHeader);
-		delete _pHeader;
+		int ret = pClient->send(_pHeader.get());
 		return ret;
 	}
 private:
 	std::weak_ptr<TcpSocket> _pClient;
-	Header *_pHeader;
+	HeaderPtr _pHeader;
 };
 
 // Child thread responsible for handling messsages
@@ -355,7 +355,7 @@ public:
 	// Send message to the client
 	void send(const TcpConnection& pClient, Header *header) {
 		TaskPtr task(new TcpSendTask(pClient, header));
-		_sendTaskHandler.addTask(task);
+		_sendTaskHandler.addTask(std::move(task));
 	}
 
 private:
