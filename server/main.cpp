@@ -36,7 +36,7 @@ public:
 private:
 };
 
-
+#ifndef _WIN32
 void blockSignal() {
 	struct sigaction sa;
         sa.sa_handler = SIG_IGN;
@@ -55,9 +55,12 @@ void blockSignal() {
             printf("block sigpipe error\n");
         }
 }
+#endif // !_WIN32
 
 int main(int argc, char* argv[]) {
+#ifndef _WIN32
 	blockSignal();
+#endif // !_WIN32
 	
 	const char *ip;
 	u_short port;

@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <thread>
-
+#include "Timestamp.h"
 #include "TcpClient.hpp"
 
 using std::thread;
@@ -13,7 +13,7 @@ using std::thread;
 const int numOfClients = 1000;
 
 // Number of threads
-const int numOfThreads = 4;
+const int numOfThreads = 2;
 
 // Server IP
 const char *ip;
@@ -27,7 +27,38 @@ TcpClient* clients[numOfClients];
 // Data to be sent
 Test data[10];	// 100*10Byte
 
-void IOThread(int id) {
+
+bool g_isRun = true;
+
+void cmdThread() {
+	while (true)
+	{
+		char cmdBuf[256] = {};
+		scanf("%s", cmdBuf);
+		if (0 == strcmp(cmdBuf, "exit"))
+		{
+			g_isRun = false;
+			break;
+		}
+		else {
+			printf("Invalid input!\n");
+		}
+	}
+}
+
+void recvThread(int begin, int end)
+{
+	while (g_isRun)
+	{
+		for (int n = begin; n < end; n++)
+		{
+			clients[n]->onRun();
+		}
+	}
+}
+
+void sendThread(int id) {
+	printf("thread<%d> start...\n", id);
 	int count = numOfClients / numOfThreads;
 	int begin = (id - 1) * count;
 	int end = id * count;
@@ -37,41 +68,27 @@ void IOThread(int id) {
 	}
 
 	for (int i = begin; i < end; i++) {
-		clients[i]->connect("127.0.0.1", 4567);
+		clients[i]->connect(ip, port);
 	}
+	printf("thread<%d> connected...\n", id);
 
-	while (true) {
+	std::thread t1(recvThread, begin, end);
+	t1.detach();
+
+	while (g_isRun) {
 		for (int i = begin; i < end; i++) {
 			clients[i]->send(data, 10 * sizeof(Test));
-			clients[i]->onRun();
 		}
 	}
-}
 
-/*void cmdThread(TcpClient* client) {
-char cmdBuf[256] = {};
-while (true) {
-int ret = scanf("%s", cmdBuf);
-if (0 == strcmp(cmdBuf, "quit")) {
-client->close();
-return;
+	for (int n = begin; n < end; n++)
+	{
+		clients[n]->close();
+		delete clients[n];
+	}
+
+	printf("thread<%d> exit..\n", id);
 }
-else if (0 == strcmp(cmdBuf, "login")) {
-Login _login;
-strcpy(_login.username, "Navi");
-strcpy(_login.password, "123456");
-client->send(&_login);
-}
-else if (0 == strcmp(cmdBuf, "logout")) {
-Logout _logout;
-strcpy(_logout.username, "Navi");
-client->send(&_logout);
-}
-else {
-cout << "Invalid input!" << endl;
-}
-}
-}*/
 
 int main(int argc, char* argv[]) {
 	if (argc == 1) {
@@ -87,14 +104,20 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
+	thread t1(cmdThread);
+	t1.detach();
+
 	printf("Number of clients: %d\nThreads: %d\n", numOfClients, numOfThreads);
 	printf("Size per package: %d Bytes\n", (int)sizeof(data));
+	printf("----------------------------------------------\n");
 	for (int i = 0; i < numOfThreads; i++) {
-		thread t(IOThread, i + 1);
+		thread t(sendThread, i + 1);
 		t.detach();
 	}
 
-	getchar();
+	while (g_isRun) {
+
+	}
 
 	return 0;
 }

@@ -68,7 +68,7 @@ public:
 	// Close socket
 	void close() {
 		if (_sock == INVALID_SOCKET) return;
-		printf("<client %d> Quit...\n", _sock);
+		//printf("<client %d> Quit...\n", _sock);
 #ifdef _WIN32
 		// Close Win Sock 2.x
 		closesocket(_sock);
