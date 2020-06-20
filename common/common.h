@@ -2,7 +2,7 @@
 #define _common_h_
 
 #ifdef _WIN32
-#define FD_SETSIZE	2048	// Size of FD_SET
+#define FD_SETSIZE	4096	// Size of FD_SET
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
@@ -31,7 +31,7 @@ typedef long unsigned int size_t;
 
 // Heartbeat detection (in millisecond)
 // Define a negative number to disable it
-#define CLIENT_DEAD_TIME 5000
+#define CLIENT_DEAD_TIME -1
 
 #ifdef _DEBUG
 #include <stdio.h>
