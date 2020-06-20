@@ -8,26 +8,6 @@
 #include "Event.h"
 #include "Task.hpp"
 
-typedef std::unique_ptr<Message> HeaderPtr;
-
-// Task for sending messages
-class TcpSendTask : public Task {
-public:
-	TcpSendTask(const TcpConnection& pClient, Message *header) : _pHeader(header) {
-		_pClient = pClient;
-	}
-
-	int run() {
-		TcpConnection pClient = _pClient.lock();
-		if (pClient == nullptr) return -1;
-		int ret = pClient->send(_pHeader.get());
-		return ret;
-	}
-private:
-	std::weak_ptr<TcpSocket> _pClient;
-	HeaderPtr _pHeader;
-};
-
 // Child thread responsible for handling messsages
 class TcpSubserver
 {
@@ -230,8 +210,10 @@ public:
 
 	// Send message to the client
 	void send(const TcpConnection& pClient, Message *header) {
-		TaskPtr task(new TcpSendTask(pClient, header));
-		_sendTaskHandler.addTask(std::move(task));
+		_sendTaskHandler.addTask([=]() {
+			pClient->send(header);
+			delete header;
+		});
 	}
 
 private:

@@ -5,29 +5,17 @@
 #include <mutex>
 #include <list>
 #include <memory>
+#include <functional>
 
-// The task in producer-consumer pattern
-class Task {
-public:
-	Task(){}
-
-	virtual ~Task(){}
-
-	// Run the task
-	virtual int run() = 0;
-private:
-
-};
-
-typedef std::unique_ptr<Task> TaskPtr;
 
 // Class handling the task (consumer)
 class TaskHandler {
+	typedef std::function<void()> Task;
 public:
 	// Put task into the buffer
-	void addTask(TaskPtr&& task) {
+	void addTask(Task task) {
 		std::lock_guard<std::mutex> lock(_mutex);
-		_tasksBuf.push_back(std::move(task));
+		_tasksBuf.push_back(task);
 	}
 
 	// Start the thread
@@ -43,7 +31,7 @@ protected:
 				std::lock_guard<std::mutex> lock(_mutex);
 				// Get task from the buffer and put into the list
 				for (auto &task : _tasksBuf) {
-					_tasks.push_back(std::move(task));
+					_tasks.push_back(task);
 				}
 				_tasksBuf.clear();
 			}
@@ -56,15 +44,15 @@ protected:
 			}
 
 			for (auto &task : _tasks) {
-				task->run();
+				task();
 			}
 
 			_tasks.clear();
 		}
 	}
 private:
-	std::list<TaskPtr> _tasks;	// List storing tasks
-	std::list<TaskPtr> _tasksBuf;	// List for buffering
+	std::list<Task> _tasks;	// List storing tasks
+	std::list<Task> _tasksBuf;	// List for buffering
 	std::mutex _mutex;
 };
 #endif // !_Task_hpp__
