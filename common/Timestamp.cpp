@@ -1,5 +1,7 @@
 #include "Timestamp.h"
 
+using namespace std::chrono;
+
 Timestamp::Timestamp()
 {
 	update();
@@ -31,4 +33,9 @@ double Timestamp::getElapsedTimeInMilliSec()
 long long Timestamp::getElapsedTimeInMicroSec()
 {
 	return duration_cast<microseconds>(high_resolution_clock::now() - _begin).count();
+}
+
+time_t Time::getCurrentTimeInMilliSec()
+{
+	return duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count();
 }

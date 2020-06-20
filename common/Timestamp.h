@@ -2,7 +2,12 @@
 #define _Timestamp_h_
 
 #include<chrono>
-using namespace std::chrono;
+
+class Time {
+public:
+	// Get current time in millisecond
+	static time_t getCurrentTimeInMilliSec();
+};
 
 class Timestamp
 {
@@ -22,7 +27,7 @@ public:
 	// Get microsecond
 	long long getElapsedTimeInMicroSec();
 protected:
-	time_point<high_resolution_clock> _begin;
+	std::chrono::time_point<std::chrono::high_resolution_clock> _begin;
 };
 
 #endif // !_Timestamp_h_

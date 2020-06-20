@@ -28,7 +28,10 @@ typedef long unsigned int size_t;
 
 // Size of the send buffer
 #define SEND_BUFF_SIZE 10240
- 
+
+// Heartbeat detection (in millisecond)
+// Define a negative number to disable it
+#define CLIENT_DEAD_TIME 5000
 
 #ifdef _DEBUG
 #include <stdio.h>

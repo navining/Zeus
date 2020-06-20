@@ -4,6 +4,7 @@
 #include "common.h"
 #include "Object.hpp"
 
+
 class TcpSocket : public Object<TcpSocket, 10000> {
 public:
 	TcpSocket(SOCKET sockfd = INVALID_SOCKET) {
@@ -12,6 +13,7 @@ public:
 		_msgLastPos = 0;
 		memset(_sendBuf, 0, SEND_BUFF_SIZE);
 		_sendLastPos = 0;
+		resetHeartbeat();
 	}
 
 	~TcpSocket() {
@@ -80,12 +82,22 @@ public:
 		_sockfd = INVALID_SOCKET;
 	}
 
+	void resetHeartbeat() {
+		_tHeartbeat = 0;
+	}
+
+	bool isAlive(time_t t) {
+		_tHeartbeat += t;
+		return CLIENT_DEAD_TIME < 0 || _tHeartbeat < CLIENT_DEAD_TIME;
+	}
+
 private:
 	SOCKET _sockfd;	// socket fd_set			
 	char _msgBuf[RECV_BUFF_SIZE];	// Message Buffer
 	int _msgLastPos;	// Last position of the message buffer
 	char _sendBuf[SEND_BUFF_SIZE];	// Send Buffer
 	int _sendLastPos;	// Last position of the send buffer
+	time_t _tHeartbeat;
 };
 
 typedef std::shared_ptr<TcpSocket> TcpConnection;

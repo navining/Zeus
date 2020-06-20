@@ -15,6 +15,7 @@ public:
 	TcpSubserver(SOCKET sock = INVALID_SOCKET, Event *pEvent = nullptr) {
 		_sock = sock;
 		_pMain = pEvent;
+		_tCurrent = Time::getCurrentTimeInMilliSec();;
 	}
 
 	~TcpSubserver() {
@@ -41,6 +42,7 @@ public:
 			if (getClientCount() == 0) {
 				std::chrono::milliseconds t(1);
 				std::this_thread::sleep_for(t);
+				_tCurrent = Time::getCurrentTimeInMilliSec();
 				continue;
 			}
 
@@ -80,7 +82,8 @@ public:
 				memcpy(&fdRead, &_fdRead, sizeof(fd_set));
 			}
 
-			int ret = select(_maxSock + 1, &fdRead, nullptr, nullptr, nullptr);
+			timeval t{ 0, 1 };
+			int ret = select(_maxSock + 1, &fdRead, nullptr, nullptr, &t);
 
 			if (ret < 0) {
 				printf("<server %d> Select - Fail...\n", _sock);
@@ -88,41 +91,67 @@ public:
 				return;
 			}
 
-			// Client socket response: handle request
+			respond(fdRead);
+
+			// Do other things here...
+			checkAlive();
+		}
+	}
+
+	// Client socket response: handle request
+	void respond(fd_set &fdRead) {
 #ifdef _WIN32
-			for (int n = 0; n < fdRead.fd_count; n++) {
-				const TcpConnection& pClient = _clients[fdRead.fd_array[n]];
-				if (-1 == recv(pClient)) {
+		for (int n = 0; n < fdRead.fd_count; n++) {
+			const TcpConnection& pClient = _clients[fdRead.fd_array[n]];
+			if (-1 == recv(pClient)) {
+				// Client disconnected
+				if (_pMain != nullptr) {
+					_pMain->onDisconnection(pClient);
+				}
+				_clients.erase(pClient->sockfd());
+				_clientsChange = true;
+			}
+		}
+#else
+		std::vector<TcpConnection > disconnected;
+		for (auto it : _clients) {
+			if (FD_ISSET(it.second->sockfd(), &fdRead)) {
+				if (-1 == recv(it.second)) {
 					// Client disconnected
 					if (_pMain != nullptr) {
-						_pMain->onDisconnection(pClient);
+						_pMain->onDisconnection(it.second);
 					}
-					_clients.erase(pClient->sockfd());
+
+					disconnected.push_back(it.second);
 					_clientsChange = true;
 				}
 			}
-#else
-			std::vector<TcpConnection > disconnected;
-			for (auto it : _clients) {
-				if (FD_ISSET(it.second->sockfd(), &fdRead)) {
-					if (-1 == recv(it.second)) {
-						// Client disconnected
-						if (_pMain != nullptr) {
-							_pMain->onDisconnection(it.second);
-						}
+		}
 
-						disconnected.push_back(it.second);
-						_clientsChange = true;
-					}
-				}
-			}
-
-			// Delete disconnected clients
-			for (TcpConnection pClient : disconnected) {
-				_clients.erase(pClient->sockfd());
-			}
+		// Delete disconnected clients
+		for (TcpConnection pClient : disconnected) {
+			_clients.erase(pClient->sockfd());
+		}
 #endif
-			// Handle other services
+	}
+
+	// Check if the client is alive
+	void checkAlive() {
+		time_t current = Time::getCurrentTimeInMilliSec();
+		time_t dt = current - _tCurrent;
+		_tCurrent = current;
+		for (auto it = _clients.begin(); it != _clients.end();) {
+			if (!it->second->isAlive(dt)) {
+				// Client disconnected
+				if (_pMain != nullptr) {
+					_pMain->onDisconnection(it->second);
+				}
+				it = _clients.erase(it);
+				_clientsChange = true;
+			}
+			else {
+				++it;
+			}
 		}
 	}
 
@@ -139,7 +168,7 @@ public:
 			// printf("<server %d> <client %d> Disconnected...\n", _sock, pClient->sockfd());
 			return -1;
 		}
-
+	
 		/// Copy data from the system buffer into the message buffer
 		/// memcpy(pClient->msgBuf() + pClient->getLastPos(), _recvBuf, recvlen);
 		pClient->setLastPos(pClient->getLastPos() + recvlen);
@@ -165,6 +194,7 @@ public:
 
 	// Handle message
 	void onMessage(const TcpConnection& pClient, Message *msg) {
+		pClient->resetHeartbeat();
 		if (_pMain != nullptr) {
 			_pMain->onMessage(this, pClient, msg);
 		}
@@ -224,5 +254,6 @@ private:
 	std::thread _thread;
 	Event *_pMain;	// Pointer to the main thread (for event callback)
 	TaskHandler _sendTaskHandler;	// Child thread for sending messages
+	time_t _tCurrent;
 };
 #endif // !_TcpSubserver_hpp_
