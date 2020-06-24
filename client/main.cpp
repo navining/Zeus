@@ -25,7 +25,8 @@ u_short port;
 TcpClient* clients[numOfClients];
 
 // Data to be sent
-Test data[10];	// 100*10Byte
+const int numOfData = 10;
+Test data[numOfData];	// 100*10Byte
 
 
 bool g_isRun = true;
@@ -76,8 +77,10 @@ void sendThread(int id) {
 	t1.detach();
 
 	while (g_isRun) {
+		//std::chrono::milliseconds t(100);
+		//std::this_thread::sleep_for(t);
 		for (int i = begin; i < end; i++) {
-			clients[i]->send(data, 10 * sizeof(Test));
+			clients[i]->send(data, numOfData * sizeof(Test));
 		}
 	}
 

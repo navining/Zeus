@@ -95,6 +95,10 @@ public:
 
 			// Do other things here...
 			checkAlive();
+			checkSendBuffer();
+
+			// Update current timestamp
+			_tCurrent = Time::getCurrentTimeInMilliSec();
 		}
 	}
 
@@ -139,7 +143,6 @@ public:
 	void checkAlive() {
 		time_t current = Time::getCurrentTimeInMilliSec();
 		time_t dt = current - _tCurrent;
-		_tCurrent = current;
 		for (auto it = _clients.begin(); it != _clients.end();) {
 			if (!it->second->isAlive(dt)) {
 				// Client disconnected
@@ -151,6 +154,22 @@ public:
 			}
 			else {
 				++it;
+			}
+		}
+	}
+
+	// Check if the send buffer is ready to be cleared
+	void checkSendBuffer() {
+		time_t current = Time::getCurrentTimeInMilliSec();
+		time_t dt = current - _tCurrent;
+		_tCurrent = current;
+		for (auto it = _clients.begin(); it != _clients.end(); ++it) {
+			if (it->second->canSend(dt)) {
+				// Add a task to clear the client buffer
+				_sendTaskHandler.addTask( [=]()->void {
+					it->second->clearBuffer();
+					it->second->resetSendBuf();
+				});
 			}
 		}
 	}
@@ -254,6 +273,6 @@ private:
 	std::thread _thread;
 	Event *_pMain;	// Pointer to the main thread (for event callback)
 	TaskHandler _sendTaskHandler;	// Child thread for sending messages
-	time_t _tCurrent;
+	time_t _tCurrent;	// Current timestamp
 };
 #endif // !_TcpSubserver_hpp_

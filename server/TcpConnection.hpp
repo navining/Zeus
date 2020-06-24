@@ -14,6 +14,7 @@ public:
 		memset(_sendBuf, 0, SEND_BUFF_SIZE);
 		_sendLastPos = 0;
 		resetHeartbeat();
+		resetSendBuf();
 	}
 
 	~TcpSocket() {
@@ -36,6 +37,7 @@ public:
 		_msgLastPos = pos;
 	}
 
+	// Send message (put into the send buffer)
 	int send(Message *msg) {
 		int ret = SOCKET_ERROR;
 		int sendLength = msg->length;
@@ -49,13 +51,9 @@ public:
 				sendData += copyLength;
 				sendLength -= copyLength;
 				// Send the entire buffer
-				try {
-					ret = ::send(_sockfd, _sendBuf, SEND_BUFF_SIZE, 0);
-				}
-				catch (...) {
-					// Do nothing here
-				}
+				ret = ::send(_sockfd, _sendBuf, SEND_BUFF_SIZE, 0);
 				_sendLastPos = 0;
+				resetSendBuf();
 				if (SOCKET_ERROR == ret) {
 					return ret;
 				}
@@ -68,6 +66,16 @@ public:
 			}
 		}
 
+		return ret;
+	}
+
+	// Clear the buffer (send everything out)
+	int clearBuffer() {
+		int ret = SOCKET_ERROR;
+		if (_sendLastPos > 0) {
+			ret = ::send(_sockfd, _sendBuf, _sendLastPos, 0);
+			_sendLastPos = 0;
+		}
 		return ret;
 	}
 
@@ -86,9 +94,18 @@ public:
 		_tHeartbeat = 0;
 	}
 
+	void resetSendBuf() {
+		_tSendBuf = 0;
+	}
+
 	bool isAlive(time_t t) {
 		_tHeartbeat += t;
 		return CLIENT_DEAD_TIME < 0 || _tHeartbeat < CLIENT_DEAD_TIME;
+	}
+
+	bool canSend(time_t t) {
+		_tSendBuf += t;
+		return CLIENT_SEND_TIME > 0 && _tSendBuf > CLIENT_SEND_TIME;
 	}
 
 private:
@@ -97,7 +114,8 @@ private:
 	int _msgLastPos;	// Last position of the message buffer
 	char _sendBuf[SEND_BUFF_SIZE];	// Send Buffer
 	int _sendLastPos;	// Last position of the send buffer
-	time_t _tHeartbeat;
+	time_t _tHeartbeat;	// For heartbeat detection
+	time_t _tSendBuf;	// For clearing send buffer
 };
 
 typedef std::shared_ptr<TcpSocket> TcpConnection;
