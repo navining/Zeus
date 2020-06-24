@@ -149,15 +149,15 @@
     <ClCompile Include="..\common\Timestamp.cpp" />
     <ClCompile Include="Allocator.hpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="MemoryPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\common.h" />
     <ClInclude Include="..\common\Message.hpp" />
     <ClInclude Include="..\common\Timestamp.h" />
     <ClInclude Include="Event.h" />
-    <ClInclude Include="Memory.h" />
-    <ClInclude Include="Object.hpp" />
+    <ClInclude Include="MemoryPool.h" />
+    <ClInclude Include="ObjectPool.hpp" />
     <ClInclude Include="Task.hpp" />
     <ClInclude Include="TcpConnection.hpp" />
     <ClInclude Include="TcpServer.hpp" />

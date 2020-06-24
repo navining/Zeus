@@ -1,5 +1,5 @@
-#ifndef _Memory_h_
-#define _Memory_h_
+#ifndef _MemoryPool_h_
+#define _MemoryPool_h_
 #include <stdlib.h>
 #include <assert.h>
 #include <mutex>
@@ -95,4 +95,4 @@ private:
 	MemoryPool* _pool[MAX_MEMORY_SIZE + 1];	// Mapping array for memory pool
 };
 
-#endif // !_Memory_h_
+#endif // !_MemoryPool_h_

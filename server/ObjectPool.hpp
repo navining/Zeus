@@ -1,5 +1,5 @@
-#ifndef _Object_hpp_
-#define _Object_hpp_
+#ifndef _ObjectPool_hpp_
+#define _ObjectPool_hpp_
 
 #include <stdlib.h>
 #include <mutex>
@@ -34,14 +34,14 @@ private:
 //		| Block |    Object    |
 //		------------------------
 template<typename T>
-class ObjectPool {
+class _ObjectPool {
 public:
-	ObjectPool(int size) {
+	_ObjectPool(int size) {
 		_pBuf = nullptr;
 		init(size);
 	}
 
-	~ObjectPool() {
+	~_ObjectPool() {
 		delete[] _pBuf;
 	}
 
@@ -129,10 +129,10 @@ private:
 
 // Object management (Singleton)
 template<typename T, size_t SIZE = 10>
-class Object {
+class ObjectPool {
 public:
-	static ObjectPool<T>& Pool() {
-		static ObjectPool<T> pool(SIZE);
+	static _ObjectPool<T>& Pool() {
+		static _ObjectPool<T> pool(SIZE);
 		return pool;
 	}
 
@@ -156,4 +156,4 @@ public:
 private:
 };
 
-#endif // !_Object_hpp_
+#endif // !_ObjectPool_hpp_

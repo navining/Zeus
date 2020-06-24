@@ -1,4 +1,4 @@
-#include "Memory.h"
+#include "MemoryPool.h"
 
 MemoryPool::MemoryPool(int blockSize, int blockCount) {
 	_pBuf = nullptr;

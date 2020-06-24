@@ -2,7 +2,7 @@
 #ifndef _ALLOCATOR_HPP_
 #define _ALLOCATOR_HPP_
 
-#include "Memory.h"
+#include "MemoryPool.h"
 
 void *operator new(size_t size) {
 	return Memory::Instance().alloc(size);

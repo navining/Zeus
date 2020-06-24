@@ -2,10 +2,10 @@
 #define _TcpConnection_hpp_
 
 #include "common.h"
-#include "Object.hpp"
+#include "ObjectPool.hpp"
 
 
-class TcpSocket : public Object<TcpSocket, 10000> {
+class TcpSocket : public ObjectPool<TcpSocket, 10000> {
 public:
 	TcpSocket(SOCKET sockfd = INVALID_SOCKET) {
 		_sockfd = sockfd;
