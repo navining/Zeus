@@ -154,6 +154,7 @@ public:
 		for (auto it = _clients.begin(); it != _clients.end(); ++it) {
 			if (it->second->canSend(dt)) {
 				// Add a task to clear the client buffer
+				// TODO: Have bugs here! Need a way to check iterator validity
 				_sendTaskHandler.addTask( [=]()->void {
 					it->second->clearBuffer();
 					it->second->resetSendBuf();

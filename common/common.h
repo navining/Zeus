@@ -35,9 +35,9 @@ typedef long unsigned int size_t;
 
 // Interval to clear the send buffer (in millisecond)
 // Define a negative number to disable it
-#define CLIENT_SEND_TIME 200
+#define CLIENT_SEND_TIME -1
 
-#ifdef _DEBUG
+#ifdef DEBUG
 #include <stdio.h>
 #define PRINT(...) printf(__VA_ARGS__)
 #else
