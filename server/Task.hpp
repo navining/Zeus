@@ -20,13 +20,18 @@ public:
 
 	// Start the thread
 	void start() {
+		_isRun = true;
 		std::thread t(std::mem_fun(&TaskHandler::onRun), this);
 		t.detach();
+	}
+
+	void close() {
+		_isRun = false;
 	}
 protected:
 	// Run the task
 	void onRun() {
-		while (true) {
+		while (_isRun) {
 			if (!_tasksBuf.empty()) {
 				std::lock_guard<std::mutex> lock(_mutex);
 				// Get task from the buffer and put into the list
@@ -54,5 +59,6 @@ private:
 	std::list<Task> _tasks;	// List storing tasks
 	std::list<Task> _tasksBuf;	// List for buffering
 	std::mutex _mutex;
+	bool _isRun = false;
 };
 #endif // !_Task_hpp__

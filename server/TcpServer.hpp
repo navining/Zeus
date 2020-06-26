@@ -145,7 +145,7 @@ public:
 	// Start child threads
 	void start(int numOfThreads = TCPSERVER_THREAD_COUNT) {
 		for (int i = 0; i < numOfThreads; i++) {
-			TcpSubserver *subserver = new TcpSubserver(_sock, this);
+			TcpSubserver *subserver = new TcpSubserver(i, this);
 			_subservers.push_back(subserver);
 			subserver->start();
 		}
@@ -217,6 +217,12 @@ public:
 	void close() {
 		if (_sock == INVALID_SOCKET) return;
 		printf("<server %d> Quit...\n", _sock);
+
+		for (TcpSubserver *server : _subservers) {
+			delete server;
+		}
+		_subservers.clear();
+
 #ifdef _WIN32
 		// Close Win Sock 2.x
 		closesocket(_sock);
@@ -225,7 +231,7 @@ public:
 		::close(_sock);
 #endif
 		_sock = INVALID_SOCKET;
-		_subservers.clear();
+		
 	}
 
 private:

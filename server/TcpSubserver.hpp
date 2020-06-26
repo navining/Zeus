@@ -12,8 +12,8 @@
 class TcpSubserver
 {
 public:
-	TcpSubserver(SOCKET sock = INVALID_SOCKET, Event *pEvent = nullptr) {
-		_sock = sock;
+	TcpSubserver(int id, Event *pEvent = nullptr) {
+		_id = id;
 		_pMain = pEvent;
 		_tCurrent = Time::getCurrentTimeInMilliSec();;
 	}
@@ -22,22 +22,10 @@ public:
 		close();
 	}
 
-	// If connected
-	inline bool isRun() {
-		return _sock != INVALID_SOCKET;
-	}
-
-	// A cache of fd_set
-	fd_set _fdRead;
-	// If the clients array changes
-	bool _clientsChange;
-	// Record current max socket
-	SOCKET _maxSock;
-
 	// Start server service
 	void onRun() {
 		_clientsChange = false;
-		while (isRun()) {
+		while (_isRun) {
 			// Sleep if there's no clients
 			if (getClientCount() == 0) {
 				std::chrono::milliseconds t(1);
@@ -86,7 +74,7 @@ public:
 			int ret = select(_maxSock + 1, &fdRead, nullptr, nullptr, &t);
 
 			if (ret < 0) {
-				printf("<server %d> Select - Fail...\n", _sock);
+				printf("<subserver %d> Select - Fail...\n", _id);
 				close();
 				return;
 			}
@@ -221,22 +209,10 @@ public:
 
 	// Close socket
 	void close() {
-		if (_sock == INVALID_SOCKET) return;
-		printf("<server %d> Quit...\n", _sock);
-#ifdef _WIN32
-		for (auto it : _clients) {
-			closesocket(it.second->sockfd());
-		}
-		// Close Win Sock 2.x
-		closesocket(_sock);
-#else
-		for (auto it : _clients) {
-			::close(it.second->sockfd());
-		}
-		::close(_sock);
-#endif
-		_sock = INVALID_SOCKET;
+		printf("<subserver %d> Quit...\n", _id);
 		_clients.clear();
+		_clientsBuf.clear();
+		_sendTaskHandler.close();
 	}
 
 	// Add new clients into the buffer
@@ -247,8 +223,10 @@ public:
 
 	// Start the server
 	void start() {
+		if (_isRun) return;
+		_isRun = true;
 		_thread = std::thread(std::mem_fun(&TcpSubserver::onRun), this);
-		// _thread.detach();
+		_thread.detach();
 		_sendTaskHandler.start();
 	}
 
@@ -266,13 +244,17 @@ public:
 	}
 
 private:
-	SOCKET _sock;
 	std::unordered_map<SOCKET, TcpConnection> _clients;
 	std::vector<TcpConnection> _clientsBuf;	// Clients buffer
 	std::mutex _mutex;	// Mutex for clients buffer
 	std::thread _thread;
 	Event *_pMain;	// Pointer to the main thread (for event callback)
 	TaskHandler _sendTaskHandler;	// Child thread for sending messages
-	time_t _tCurrent;	// Current timestamp
+	time_t _tCurrent;	// Current timestamp				
+	fd_set _fdRead;	// A cache of fd_set
+	bool _clientsChange;	// If the clients array changes
+	SOCKET _maxSock;	// Record current max socket
+	bool _isRun = false;
+	int _id;
 };
 #endif // !_TcpSubserver_hpp_
