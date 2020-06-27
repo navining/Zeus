@@ -1,5 +1,5 @@
-#ifndef _Task_hpp_
-#define _Task_hpp_
+#ifndef _TaskHandler_hpp_
+#define _TaskHandler_hpp_
 
 #include <thread>
 #include <mutex>
@@ -26,7 +26,9 @@ public:
 	}
 
 	void close() {
+		if (!_isRun) return;
 		_isRun = false;
+		printf("TaskHandler Quit...\n");
 	}
 protected:
 	// Run the task
@@ -61,4 +63,4 @@ private:
 	std::mutex _mutex;
 	bool _isRun = false;
 };
-#endif // !_Task_hpp__
+#endif // !_TaskHandler_hpp_
