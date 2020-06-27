@@ -1,24 +1,35 @@
 #ifndef _Semaphore_hpp_
 #define _Semaphore_hpp_
 
-#include <chrono>
-#include <thread>
+#include <condition_variable>
 
 class Semaphore {
 public:
+	// Block current thread
 	void wait() {
-		_wait = true;
-		while (_wait) {
-			std::chrono::milliseconds t(1);
-			std::this_thread::sleep_for(t);
+		std::unique_lock<std::mutex> lock(_mutex);
+		if (--_wait < 0) {
+			_cv.wait(lock, [this]()->bool {
+				return _wakeup > 0; 
+			});
+			--_wakeup;
 		}
 	}
 
+	// Wake up target thread
 	void wakeup() {
-		_wait = false;
+		std::unique_lock<std::mutex> lock(_mutex);
+		if (++_wait <= 0) {
+			++_wakeup;
+			_cv.notify_one();
+		}
+
 	}
 private:
-	bool _wait = false;
+	std::mutex _mutex;
+	std::condition_variable _cv;
+	int _wait = 0;
+	int _wakeup = 0;
 };
 
 #endif // !_Semaphore_hpp_
