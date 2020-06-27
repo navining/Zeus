@@ -158,7 +158,8 @@
     <ClInclude Include="Event.h" />
     <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="ObjectPool.hpp" />
-    <ClInclude Include="Task.hpp" />
+    <ClInclude Include="Semaphore.hpp" />
+    <ClInclude Include="TaskHandler.hpp" />
     <ClInclude Include="TcpConnection.hpp" />
     <ClInclude Include="TcpServer.hpp" />
     <ClInclude Include="TcpSubserver.hpp" />

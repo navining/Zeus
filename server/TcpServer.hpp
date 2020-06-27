@@ -12,7 +12,7 @@
 #include "common.h"
 #include "TcpConnection.hpp"
 #include "TcpSubserver.hpp"
-#include "Task.hpp"
+#include "TaskHandler.hpp"
 #include "Event.h"
 
 #define TCPSERVER_THREAD_COUNT 1
@@ -149,7 +149,7 @@ public:
 			_subservers.push_back(subserver);
 			subserver->start();
 		}
-		this->onRun();
+		// this->onRun();
 	}
 
 	// Start server service
@@ -160,7 +160,7 @@ public:
 			return;
 		};
 
-		while (isRun()) {
+		//while (isRun()) {
 			// Select
 			fd_set fdRead;
 			FD_ZERO(&fdRead);
@@ -187,7 +187,7 @@ public:
 			// Handle other services here...
 			// Benchmark
 			benchmark();
-		}
+		//}
 	}
 
 	// Benchmark
@@ -216,8 +216,7 @@ public:
 	// Close socket
 	void close() {
 		if (_sock == INVALID_SOCKET) return;
-		printf("<server %d> Quit...\n", _sock);
-
+		
 		for (TcpSubserver *server : _subservers) {
 			delete server;
 		}
@@ -230,8 +229,9 @@ public:
 #else
 		::close(_sock);
 #endif
+		printf("<server %d> Quit...\n", _sock);
+
 		_sock = INVALID_SOCKET;
-		
 	}
 
 private:

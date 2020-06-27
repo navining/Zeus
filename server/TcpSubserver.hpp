@@ -6,7 +6,8 @@
 
 #include "common.h"
 #include "Event.h"
-#include "Task.hpp"
+#include "TaskHandler.hpp"
+#include "Semaphore.hpp"
 
 // Child thread responsible for handling messsages
 class TcpSubserver
@@ -88,6 +89,7 @@ public:
 			// Update current timestamp
 			_tCurrent = Time::getCurrentTimeInMilliSec();
 		}
+		_semaphore.wakeup();
 	}
 
 	// Client socket response: handle request
@@ -210,10 +212,14 @@ public:
 
 	// Close socket
 	void close() {
-		printf("<subserver %d> Quit...\n", _id);
+		if (!_isRun) return;
+
+		_sendTaskHandler.close();
+		_isRun = false;
+		_semaphore.wait();	// Wait till onRun() finishes
 		_clients.clear();
 		_clientsBuf.clear();
-		_sendTaskHandler.close();
+		printf("<subserver %d> Quit...\n", _id);
 	}
 
 	// Add new clients into the buffer
@@ -257,5 +263,6 @@ private:
 	SOCKET _maxSock;	// Record current max socket
 	bool _isRun = false;
 	int _id;
+	Semaphore _semaphore;
 };
 #endif // !_TcpSubserver_hpp_

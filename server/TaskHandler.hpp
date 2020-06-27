@@ -6,7 +6,7 @@
 #include <list>
 #include <memory>
 #include <functional>
-
+#include "Semaphore.hpp"
 
 // Class handling the task (consumer)
 class TaskHandler {
@@ -28,7 +28,8 @@ public:
 	void close() {
 		if (!_isRun) return;
 		_isRun = false;
-		printf("TaskHandler Quit...\n");
+		_semaphore.wait();
+		// printf("TaskHandler Quit...\n");
 	}
 protected:
 	// Run the task
@@ -56,11 +57,13 @@ protected:
 
 			_tasks.clear();
 		}
+		_semaphore.wakeup();
 	}
 private:
 	std::list<Task> _tasks;	// List storing tasks
 	std::list<Task> _tasksBuf;	// List for buffering
 	std::mutex _mutex;
 	bool _isRun = false;
+	Semaphore _semaphore;
 };
 #endif // !_TaskHandler_hpp_
