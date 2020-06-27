@@ -1,7 +1,9 @@
 #define SERVER_MAIN
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
 #include <signal.h>
+#include <thread>
 #include "TcpServer.hpp"
 //#include "Allocator.hpp"
 
@@ -57,11 +59,31 @@ void blockSignal() {
 }
 #endif // !_WIN32
 
+MyServer server;
+
+void cmdThread() {
+	while (true)
+	{
+		char cmdBuf[256] = {};
+		scanf("%s", cmdBuf);
+		if (0 == strcmp(cmdBuf, "exit"))
+		{
+			server.close();
+			break;
+		}
+		else {
+			printf("Invalid input!\n");
+		}
+	}
+}
+
+
+
 int main(int argc, char* argv[]) {
 #ifndef _WIN32
 	blockSignal();
 #endif // !_WIN32
-	
+
 	const char *ip;
 	u_short port;
 	if (argc == 1) {
@@ -81,11 +103,17 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	MyServer server;
+	std::thread t1(cmdThread);
+	t1.detach();
+
 	server.init();
 	server.bind(ip, port);
 	server.listen(5);
 	server.start(4);
+
+	while (true) {
+
+	}
 
     return 0;
 }
