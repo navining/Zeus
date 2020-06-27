@@ -59,7 +59,7 @@ void blockSignal() {
 }
 #endif // !_WIN32
 
-MyServer server;
+bool g_isRun = true;
 
 void cmdThread() {
 	while (true)
@@ -68,7 +68,7 @@ void cmdThread() {
 		scanf("%s", cmdBuf);
 		if (0 == strcmp(cmdBuf, "exit"))
 		{
-			server.close();
+			g_isRun = false;
 			break;
 		}
 		else {
@@ -106,10 +106,17 @@ int main(int argc, char* argv[]) {
 	std::thread t1(cmdThread);
 	t1.detach();
 
-	server.init();
-	server.bind(ip, port);
-	server.listen(5);
-	server.start(4);
+	{
+		MyServer server;
+		server.init();
+		server.bind(ip, port);
+		server.listen(5);
+		server.start(4);
+
+		while (g_isRun) {
+			server.onRun();
+		}
+	}
 
 	while (true) {
 
