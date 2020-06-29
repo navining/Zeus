@@ -7,10 +7,11 @@ class Thread;
 
 typedef std::function<void(const Thread &)> ThreadFunc;
 
+const ThreadFunc EmptyThreadFunc = [](const Thread &) {};
 
 class Thread {
 public:
-	void start(ThreadFunc onStart = ThreadFunc(), ThreadFunc onRun = ThreadFunc(), ThreadFunc onClose = ThreadFunc()) {
+	void start(ThreadFunc onStart = EmptyThreadFunc, ThreadFunc onRun = EmptyThreadFunc, ThreadFunc onClose = EmptyThreadFunc) {
 		if (_isRun) return;
 		_isRun = true;
 

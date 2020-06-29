@@ -21,11 +21,11 @@ public:
 	// Start the thread
 	void start() {
 		_thread.start(
-			ThreadFunc(),	// start
+			EmptyThreadFunc,	// start
 			[this](const Thread & thread) {	// run
 				onRun(thread);
 			},
-			ThreadFunc());	// close
+			EmptyThreadFunc);	// close
 	}
 
 	void close() {
