@@ -126,7 +126,7 @@ public:
 			if (minHandler == nullptr) {
 				return INVALID_SOCKET;
 			}
-			
+
 			TcpConnection pClient(new TcpSocket(cli));
 			minHandler->addClients(pClient);
 
@@ -160,34 +160,32 @@ public:
 			return;
 		};
 
-		//while (isRun()) {
-			// Select
-			fd_set fdRead;
-			FD_ZERO(&fdRead);
-			// Put server sockets inside fd_set
-			FD_SET(_sock, &fdRead);
+		// Select
+		fd_set fdRead;
+		FD_ZERO(&fdRead);
+		// Put server sockets inside fd_set
+		FD_SET(_sock, &fdRead);
 
-			// Timeval
-			timeval t = { 0, 10 };
+		// Timeval
+		timeval t = { 0, 10 };
 
-			int ret = select(_sock + 1, &fdRead, 0, 0, &t);
+		int ret = select(_sock + 1, &fdRead, 0, 0, &t);
 
-			if (ret < 0) {
-				printf("<server %d> Select - Fail...\n", _sock);
-				close();
-				return;
-			}
+		if (ret < 0) {
+			printf("<server %d> Select - Fail...\n", _sock);
+			close();
+			return;
+		}
 
-			// Server socket response: accept connection
-			if (FD_ISSET(_sock, &fdRead)) {
-				FD_CLR(_sock, &fdRead);
-				accept();
-			}
+		// Server socket response: accept connection
+		if (FD_ISSET(_sock, &fdRead)) {
+			FD_CLR(_sock, &fdRead);
+			accept();
+		}
 
-			// Handle other services here...
-			// Benchmark
-			benchmark();
-		//}
+		// Handle other services here...
+		// Benchmark
+		benchmark();
 	}
 
 	// Benchmark
@@ -216,7 +214,7 @@ public:
 	// Close socket
 	void close() {
 		if (_sock == INVALID_SOCKET) return;
-		
+
 		for (TcpSubserver *server : _subservers) {
 			delete server;
 		}
