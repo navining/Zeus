@@ -6,7 +6,7 @@
 #include <list>
 #include <memory>
 #include <functional>
-#include "Semaphore.hpp"
+#include "Thread.hpp"
 
 // Class handling the task (consumer)
 class TaskHandler {
@@ -20,21 +20,21 @@ public:
 
 	// Start the thread
 	void start() {
-		_isRun = true;
-		std::thread t(std::mem_fun(&TaskHandler::onRun), this);
-		t.detach();
+		_thread.start(
+			ThreadFunc(),	// start
+			[this](const Thread & thread) {	// run
+				onRun(thread);
+			},
+			ThreadFunc());	// close
 	}
 
 	void close() {
-		if (!_isRun) return;
-		_isRun = false;
-		_semaphore.wait();
-		// printf("TaskHandler Quit...\n");
+		_thread.close();
 	}
 protected:
 	// Run the task
-	void onRun() {
-		while (_isRun) {
+	void onRun(const Thread &thread) {
+		while (thread.isRun()) {
 			if (!_tasksBuf.empty()) {
 				std::lock_guard<std::mutex> lock(_mutex);
 				// Get task from the buffer and put into the list
@@ -57,13 +57,11 @@ protected:
 
 			_tasks.clear();
 		}
-		_semaphore.wakeup();
 	}
 private:
 	std::list<Task> _tasks;	// List storing tasks
 	std::list<Task> _tasksBuf;	// List for buffering
 	std::mutex _mutex;
-	bool _isRun = false;
-	Semaphore _semaphore;
+	Thread _thread;
 };
 #endif // !_TaskHandler_hpp_
