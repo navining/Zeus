@@ -13,7 +13,7 @@
 class TcpSubserver
 {
 public:
-	TcpSubserver(int id, Event *pEvent = nullptr) {
+	TcpSubserver(int id, Event *pEvent = nullptr) : _sendTaskHandler(id) {
 		_id = id;
 		_pMain = pEvent;
 		_tCurrent = Time::getCurrentTimeInMilliSec();;

@@ -59,26 +59,6 @@ void blockSignal() {
 }
 #endif // !_WIN32
 
-bool g_isRun = true;
-
-void cmdThread() {
-	while (true)
-	{
-		char cmdBuf[256] = {};
-		scanf("%s", cmdBuf);
-		if (0 == strcmp(cmdBuf, "exit"))
-		{
-			g_isRun = false;
-			break;
-		}
-		else {
-			printf("Invalid input!\n");
-		}
-	}
-}
-
-
-
 int main(int argc, char* argv[]) {
 #ifndef _WIN32
 	blockSignal();
@@ -103,18 +83,25 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	std::thread t1(cmdThread);
-	t1.detach();
+	
+	MyServer server;
+	server.init();
+	server.bind(ip, port);
+	server.listen(5);
+	server.start(4);
+	
 
+	while (true)
 	{
-		MyServer server;
-		server.init();
-		server.bind(ip, port);
-		server.listen(5);
-		server.start(4);
-
-		while (g_isRun) {
-			server.onRun();
+		char cmdBuf[256] = {};
+		scanf("%s", cmdBuf);
+		if (0 == strcmp(cmdBuf, "exit"))
+		{
+			server.close();
+			break;
+		}
+		else {
+			printf("Invalid input!\n");
 		}
 	}
 

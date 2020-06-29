@@ -12,6 +12,8 @@
 class TaskHandler {
 	typedef std::function<void()> Task;
 public:
+	TaskHandler(int id) : _id(id) {}
+
 	// Put task into the buffer
 	void addTask(Task task) {
 		std::lock_guard<std::mutex> lock(_mutex);
@@ -30,6 +32,7 @@ public:
 
 	void close() {
 		_thread.close();
+		//printf("<TaskHandler %d> Quit...\n", _id);
 	}
 protected:
 	// Run the task
@@ -63,5 +66,6 @@ private:
 	std::list<Task> _tasksBuf;	// List for buffering
 	std::mutex _mutex;
 	Thread _thread;
+	int _id;
 };
 #endif // !_TaskHandler_hpp_

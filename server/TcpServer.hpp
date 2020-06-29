@@ -149,42 +149,53 @@ public:
 			_subservers.push_back(subserver);
 			subserver->start();
 		}
+		_thread.start(
+			EMPTY_THREAD_FUNC,		// onStart
+			[this](Thread & thread) {	// onRun
+				onRun(thread);
+			},
+			EMPTY_THREAD_FUNC	// onClose
+		);
 	}
 
 	// Start server service
-	void onRun() {
+	void onRun(Thread & thread) {
 		if (!isRun())
 		{
 			printf("<server %d> Start - Fail...\n", _sock);
 			return;
 		};
 
-		// Select
-		fd_set fdRead;
-		FD_ZERO(&fdRead);
-		// Put server sockets inside fd_set
-		FD_SET(_sock, &fdRead);
+		while (thread.isRun()) {
 
-		// Timeval
-		timeval t = { 0, 10 };
+			// Select
+			fd_set fdRead;
+			FD_ZERO(&fdRead);
+			// Put server sockets inside fd_set
+			FD_SET(_sock, &fdRead);
 
-		int ret = select(_sock + 1, &fdRead, 0, 0, &t);
+			// Timeval
+			timeval t = { 0, 10 };
 
-		if (ret < 0) {
-			printf("<server %d> Select - Fail...\n", _sock);
-			close();
-			return;
+			int ret = select(_sock + 1, &fdRead, 0, 0, &t);
+
+			if (ret < 0) {
+				printf("<server %d> Select - Fail...\n", _sock);
+				thread.exit();
+				return;
+			}
+
+			// Server socket response: accept connection
+			if (FD_ISSET(_sock, &fdRead)) {
+				FD_CLR(_sock, &fdRead);
+				accept();
+			}
+
+			// Handle other services here...
+			// Benchmark
+			benchmark();
+
 		}
-
-		// Server socket response: accept connection
-		if (FD_ISSET(_sock, &fdRead)) {
-			FD_CLR(_sock, &fdRead);
-			accept();
-		}
-
-		// Handle other services here...
-		// Benchmark
-		benchmark();
 	}
 
 	// Benchmark
@@ -219,6 +230,8 @@ public:
 		}
 		_subservers.clear();
 
+		_thread.close();
+
 #ifdef _WIN32
 		// Close Win Sock 2.x
 		closesocket(_sock);
@@ -234,6 +247,7 @@ public:
 private:
 	std::vector<TcpSubserver *> _subservers;
 	Timestamp _time;
+	Thread _thread;
 protected:
 	std::atomic_int _msgCount;	// Number of messages
 	std::atomic_int _clientCount;	// Number of clients
