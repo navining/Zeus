@@ -7,7 +7,7 @@
 #include "common.h"
 #include "Event.h"
 #include "TaskHandler.hpp"
-#include "Semaphore.hpp"
+#include "Thread.hpp"
 
 // Child thread responsible for handling messsages
 class TcpSubserver
@@ -24,9 +24,9 @@ public:
 	}
 
 	// Start server service
-	void onRun() {
+	void onRun(Thread & thread) {
 		_clientsChange = false;
-		while (_isRun) {
+		while (thread.isRun()) {
 			// Sleep if there's no clients
 			if (getClientCount() == 0) {
 				std::chrono::milliseconds t(1);
@@ -76,7 +76,7 @@ public:
 
 			if (ret < 0) {
 				printf("<subserver %d> Select - Fail...\n", _id);
-				close();
+				thread.exit();
 				return;
 			}
 
@@ -89,7 +89,6 @@ public:
 			// Update current timestamp
 			_tCurrent = Time::getCurrentTimeInMilliSec();
 		}
-		_semaphore.wakeup();
 	}
 
 	// Client socket response: handle request
@@ -212,13 +211,8 @@ public:
 
 	// Close socket
 	void close() {
-		if (!_isRun) return;
-
 		_sendTaskHandler.close();
-		_isRun = false;
-		_semaphore.wait();	// Wait till onRun() finishes
-		_clients.clear();
-		_clientsBuf.clear();
+		_thread.close();
 		printf("<subserver %d> Quit...\n", _id);
 	}
 
@@ -230,10 +224,13 @@ public:
 
 	// Start the server
 	void start() {
-		if (_isRun) return;
-		_isRun = true;
-		_thread = std::thread(std::mem_fun(&TcpSubserver::onRun), this);
-		_thread.detach();
+		_thread.start(
+			EMPTY_THREAD_FUNC,	// onStart
+			[this](Thread & thread) {		// onRun
+				onRun(thread);
+			},
+			EMPTY_THREAD_FUNC
+		);
 		_sendTaskHandler.start();
 	}
 
@@ -254,15 +251,13 @@ private:
 	std::unordered_map<SOCKET, TcpConnection> _clients;
 	std::vector<TcpConnection> _clientsBuf;	// Clients buffer
 	std::mutex _mutex;	// Mutex for clients buffer
-	std::thread _thread;
 	Event *_pMain;	// Pointer to the main thread (for event callback)
 	TaskHandler _sendTaskHandler;	// Child thread for sending messages
 	time_t _tCurrent;	// Current timestamp				
 	fd_set _fdRead;	// A cache of fd_set
 	bool _clientsChange;	// If the clients array changes
 	SOCKET _maxSock;	// Record current max socket
-	bool _isRun = false;
 	int _id;
-	Semaphore _semaphore;
+	Thread _thread;
 };
 #endif // !_TcpSubserver_hpp_

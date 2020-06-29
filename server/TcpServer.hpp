@@ -149,7 +149,6 @@ public:
 			_subservers.push_back(subserver);
 			subserver->start();
 		}
-		// this->onRun();
 	}
 
 	// Start server service

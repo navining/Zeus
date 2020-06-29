@@ -5,14 +5,16 @@
 
 class Thread;
 
-typedef std::function<void(const Thread &)> ThreadFunc;
+typedef std::function<void(Thread &)> ThreadFunc;
 
-const ThreadFunc EmptyThreadFunc = [](const Thread &) {};
+#define EMPTY_THREAD_FUNC [](Thread &) {}
 
 class Thread {
 public:
-	void start(ThreadFunc onStart = EmptyThreadFunc, ThreadFunc onRun = EmptyThreadFunc, ThreadFunc onClose = EmptyThreadFunc) {
+	void start(ThreadFunc onStart = EMPTY_THREAD_FUNC, ThreadFunc onRun = EMPTY_THREAD_FUNC, ThreadFunc onClose = EMPTY_THREAD_FUNC) {
 		if (_isRun) return;
+		
+		std::lock_guard<std::mutex> lock(_mutex);
 		_isRun = true;
 
 		_onStart = onStart;
@@ -23,11 +25,22 @@ public:
 		t.detach();
 	}
 
+	// Close the thread. This function should be called from other threads (otherwise will cause dead lock)
 	void close() {
-		if (_isRun) return;
+		if (!_isRun) return;
+
+		std::lock_guard<std::mutex> lock(_mutex);
 		_isRun = false;
 
 		_semaphore.wait();	// Wait till onRun() finishes
+	}
+
+	// Exit the thread. This function should be called by current thread
+	void exit() {
+		if (!_isRun) return;
+
+		std::lock_guard<std::mutex> lock(_mutex);
+		_isRun = false;
 	}
 
 	bool isRun() const {
@@ -49,6 +62,8 @@ private:
 	ThreadFunc _onStart;
 	ThreadFunc _onRun;
 	ThreadFunc _onClose;
+
+	std::mutex _mutex;
 };
 
 #endif // !_Thread_hpp_

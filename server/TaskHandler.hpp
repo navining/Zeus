@@ -21,11 +21,11 @@ public:
 	// Start the thread
 	void start() {
 		_thread.start(
-			EmptyThreadFunc,	// start
-			[this](const Thread & thread) {	// run
+			EMPTY_THREAD_FUNC,	// start
+			[this](Thread & thread) {	// run
 				onRun(thread);
 			},
-			EmptyThreadFunc);	// close
+			EMPTY_THREAD_FUNC);	// close
 	}
 
 	void close() {
@@ -33,7 +33,7 @@ public:
 	}
 protected:
 	// Run the task
-	void onRun(const Thread &thread) {
+	void onRun(Thread &thread) {
 		while (thread.isRun()) {
 			if (!_tasksBuf.empty()) {
 				std::lock_guard<std::mutex> lock(_mutex);
