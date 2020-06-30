@@ -18,9 +18,13 @@ public:
 		}
 	}
 
+	char* data() {
+		return _pBuf;
+	}
+
 	// Add data into the buffer
 	// Retern false if the buffer is full
-	bool add(const char * pData, int length) {
+	bool push(const char * pData, int length) {
 		if (_last + length > SEND_BUFF_SIZE) {
 			return false;
 		}
@@ -31,6 +35,13 @@ public:
 		return true;
 	}
 
+	// Pop data from the buffer
+	void pop(int length) {
+		if (_last - length >= 0) {
+			memcpy(_pBuf, _pBuf + length, _last - length);
+			_last -= length;
+		}
+	}
 
 	// Send the entire buffer to the client
 	int send(SOCKET client) {
@@ -40,6 +51,20 @@ public:
 			clear();
 		}
 		return ret;
+	}
+
+	// Receive data into the buffer
+	// Return the length of received data
+	int recv(SOCKET client) {
+		if (_size - _last <= 0) return 0;
+
+		int recvlen = (int)::recv(client, _pBuf + _last, _size - _last, 0);
+		if (recvlen <= 0) {
+			return recvlen;
+		}
+
+		_last += recvlen;
+		return recvlen;
 	}
 
 	// Clear the buffer
@@ -53,6 +78,10 @@ public:
 
 	int last() {
 		return _last;
+	}
+
+	bool empty() {
+		return _last == 0;
 	}
 private:
 	char* _pBuf = nullptr;	// Buffer

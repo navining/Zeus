@@ -23,7 +23,7 @@ typedef long unsigned int size_t;
 #include "Message.hpp"
 #include "Timestamp.h"
 
-// Size of the recieve buffer
+// Size of the receive buffer
 #define RECV_BUFF_SIZE 10240
 
 // Size of the send buffer

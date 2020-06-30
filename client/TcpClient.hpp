@@ -123,7 +123,7 @@ public:
 		return _sock != INVALID_SOCKET && isConnect;
 	}
 
-	// Recieve Buffer (System Buffer)
+	// Receive Buffer (System Buffer)
 	char _recvBuf[RECV_BUFF_SIZE] = {};
 
 	// Message Buffer (Secondary Buffer)
@@ -134,7 +134,7 @@ public:
 
 	// Receive data and unpack
 	int recv() {
-		// Receive data into the recieve buffer
+		// Receive data into the receive buffer
 		int recvlen = (int)::recv(_sock, _recvBuf, RECV_BUFF_SIZE, 0);
 
 		if (recvlen <= 0) {
@@ -171,17 +171,17 @@ public:
 		case CMD_TEST:
 		{
 			Test* test = (Test *)msg;
-			// printf("<client %d> Recieve Message: Test\n", _sock);
+			// printf("<client %d> Receive Message: Test\n", _sock);
 			break;
 		}
 		case CMD_ERROR:
 		{
-			printf("<client %d> Recieve Message: ERROR\n", _sock);
+			printf("<client %d> Receive Message: ERROR\n", _sock);
 			break;
 		}
 		default:
 		{
-			printf("<client %d> Recieve Message: UNDIFINED\n", _sock);
+			printf("<client %d> Receive Message: UNDIFINED\n", _sock);
 		}
 		}
 

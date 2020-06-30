@@ -29,7 +29,7 @@ public:
 		}
 		default:
 		{
-			printf("<server %d> From: <client %d> Recieve Message: UNDIFINED\n", _sock, pClient->sockfd());
+			printf("<server %d> From: <client %d> Receive Message: UNDIFINED\n", _sock, pClient->sockfd());
 		}
 		}
 

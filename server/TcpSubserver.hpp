@@ -154,50 +154,31 @@ public:
 		_tCurrent = current;
 		for (auto it = _clients.begin(); it != _clients.end(); ++it) {
 			if (it->second->canSend(dt)) {
-				// Add a task to clear the client buffer
-				// TODO: Have bugs here! Need a way to check iterator validity
+				// Add a task to clear the client buffer (send everything out)
 				_sendTaskHandler.addTask( [=]()->void {
-					it->second->clearBuffer();
-					it->second->reset_tSendBuf();
+					it->second->sendAll();
 				});
 			}
 		}
 	}
 
-	/// Recieve Buffer (System Buffer)
-	/// char _recvBuf[RECV_BUFF_SIZE] = {};
 
-	// Recieve data
+	// Receive data
 	int recv(const TcpConnection& pClient) {
-		/// Receive header into system buffer first
-		/// int recvlen = (int)::recv(pClient->sockfd(), _recvBuf, RECV_BUFF_SIZE, 0);
-		// Use each buffer of the client directly, no need to copy here
-		int recvlen = (int)::recv(pClient->sockfd(), pClient->msgBuf() + pClient->getLastPos(), RECV_BUFF_SIZE - pClient->getLastPos(), 0);
-		if (recvlen <= 0) {
-			// printf("<server %d> <client %d> Disconnected...\n", _sock, pClient->sockfd());
-			return -1;
-		}
-	
-		/// Copy data from the system buffer into the message buffer
-		/// memcpy(pClient->msgBuf() + pClient->getLastPos(), _recvBuf, recvlen);
-		pClient->setLastPos(pClient->getLastPos() + recvlen);
 
-		while (pClient->getLastPos() >= sizeof(Message)) {
-			// Get header
-			Message *header = (Message *)pClient->msgBuf();
-			if (pClient->getLastPos() >= header->length) {
-				// Size of remaining messages
-				int nSize = pClient->getLastPos() - header->length;
-				// Process message
-				onMessage(pClient, header);
-				// Move remaining messages forward.
-				memcpy(pClient->msgBuf(), pClient->msgBuf() + header->length, nSize);
-				pClient->setLastPos(nSize);
-			}
-			else {
-				break;
-			}
+		// Use each buffer of the client directly, no need to copy here
+		int ret = pClient->recv();
+		if (ret <= 0) {
+			return ret;
 		}
+		
+		while (pClient->hasMessage()) {
+			// Pop one message from the client buffer
+			Message *msg = pClient->popMessage();
+			// Process message
+			onMessage(pClient, msg);
+		}
+
 		return 0;
 	}
 

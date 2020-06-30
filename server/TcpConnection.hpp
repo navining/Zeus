@@ -7,10 +7,9 @@
 
 class TcpSocket : public ObjectPool<TcpSocket, 10000> {
 public:
-	TcpSocket(SOCKET sockfd = INVALID_SOCKET) : _sendBuf(SEND_BUFF_SIZE) {
+	TcpSocket(SOCKET sockfd = INVALID_SOCKET) 
+		: _sendBuf(SEND_BUFF_SIZE), _recvBuf(RECV_BUFF_SIZE) {
 		_sockfd = sockfd;
-		memset(_msgBuf, 0, RECV_BUFF_SIZE);
-		_msgLastPos = 0;
 		reset_tHeartbeat();
 		reset_tSendBuf();
 	}
@@ -23,16 +22,35 @@ public:
 		return _sockfd;
 	}
 
-	char* msgBuf() {
-		return _msgBuf;
+	// Receive message into the receive buffer
+	int recv() {
+		return _recvBuf.recv(_sockfd);
 	}
 
-	int getLastPos() {
-		return _msgLastPos;
+	// Whether there is a complete message inside the buffer
+	bool hasMessage() {
+		if (_recvBuf.last() >= sizeof(Message)) {
+			// Get header
+			Message *header = (Message *)_recvBuf.data();
+			if (_recvBuf.last() >= header->length) {
+				return true;
+			}
+		}
+		return false;
 	}
 
-	void setLastPos(int pos) {
-		_msgLastPos = pos;
+	// Return the first message in the buffer
+	// Must be called after check with hasMessage()
+	Message* getMessage() {
+		return (Message *)_recvBuf.data();
+	}
+
+	// Pop and return the first message in the buffer
+	// Must be called after check with hasMessage()
+	Message* popMessage() {
+		Message *msg = getMessage();
+		_recvBuf.pop(msg->length);
+		return msg;
 	}
 
 	// Send message (put into the send buffer)
@@ -42,17 +60,16 @@ public:
 		const char *sendData = (const char *)msg;
 
 		while (true) {
-			if (_sendBuf.add(sendData, sendLength)) {
+			if (_sendBuf.push(sendData, sendLength)) {
 				return sendLength;
 			}
 			else {
 				// Data reaches the limitation of send buffer
 				int copyLength = _sendBuf.size() - _sendBuf.last();
-				_sendBuf.add(sendData, copyLength);
+				_sendBuf.push(sendData, copyLength);
 				sendLength -= copyLength;
 				// Send the entire buffer
-				ret = _sendBuf.send(_sockfd);
-				reset_tSendBuf();
+				ret = sendAll();
 				if (SOCKET_ERROR == ret) {
 					return ret;
 				}
@@ -63,7 +80,8 @@ public:
 	}
 
 	// Clear the buffer (send everything out)
-	int clearBuffer() {
+	int sendAll() {
+		reset_tSendBuf();
 		return _sendBuf.send(_sockfd);
 	}
 
@@ -78,10 +96,12 @@ public:
 		_sockfd = INVALID_SOCKET;
 	}
 
+	// Reset timeclock for heartbeat checking
 	void reset_tHeartbeat() {
 		_tHeartbeat = 0;
 	}
 
+	// Reset timeclock for send checking
 	void reset_tSendBuf() {
 		_tSendBuf = 0;
 	}
@@ -98,8 +118,7 @@ public:
 
 private:
 	SOCKET _sockfd;	// socket fd_set			
-	char _msgBuf[RECV_BUFF_SIZE];	// Message Buffer
-	int _msgLastPos;	// Last position of the message buffer
+	Buffer _recvBuf;	// Receive buffer
 	Buffer _sendBuf;	// Send buffer
 	time_t _tHeartbeat;	// For heartbeat detection
 	time_t _tSendBuf;	// For clearing send buffer
