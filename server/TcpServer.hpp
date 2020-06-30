@@ -37,7 +37,10 @@ public:
 		WORD version = MAKEWORD(2, 2);
 		WSADATA data;
 		WSAStartup(version, &data);
-#endif
+#else
+		blockSignal();
+#endif // !_WIN32
+
 		// Create socket
 		if (isRun()) {
 			printf("<server %d> Close old connection...\n", _sock);
