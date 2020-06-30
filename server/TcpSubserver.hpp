@@ -153,10 +153,11 @@ public:
 		time_t dt = current - _tCurrent;
 		_tCurrent = current;
 		for (auto it = _clients.begin(); it != _clients.end(); ++it) {
-			if (it->second->canSend(dt)) {
+			const TcpConnection &pClient = it->second;
+			if (pClient->canSend(dt)) {
 				// Add a task to clear the client buffer (send everything out)
 				_sendTaskHandler.addTask( [=]()->void {
-					it->second->sendAll();
+					pClient->sendAll();
 				});
 			}
 		}
