@@ -27,9 +27,8 @@ public:
 
 	// Close the thread. This function should be called from other threads (otherwise will cause dead lock)
 	void close() {
-		if (!_isRun) return;
-
 		std::lock_guard<std::mutex> lock(_mutex);
+		if (!_isRun) return;
 		_isRun = false;
 
 		_semaphore.wait();	// Wait till onRun() finishes
@@ -37,9 +36,8 @@ public:
 
 	// Exit the thread. This function should be called by current thread
 	void exit() {
-		if (!_isRun) return;
-
 		std::lock_guard<std::mutex> lock(_mutex);
+		if (!_isRun) return;
 		_isRun = false;
 	}
 
