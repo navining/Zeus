@@ -2,7 +2,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
-#include <signal.h>
 #include <thread>
 #include "TcpServer.hpp"
 //#include "Allocator.hpp"
