@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\common.cpp" />
     <ClCompile Include="..\common\Timestamp.cpp" />
     <ClCompile Include="Allocator.hpp" />
     <ClCompile Include="main.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="..\common\common.h" />
     <ClInclude Include="..\common\Message.hpp" />
     <ClInclude Include="..\common\Timestamp.h" />
+    <ClInclude Include="Buffer.hpp" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="ObjectPool.hpp" />

@@ -3,18 +3,16 @@
 
 #include "common.h"
 #include "ObjectPool.hpp"
-
+#include "Buffer.hpp"
 
 class TcpSocket : public ObjectPool<TcpSocket, 10000> {
 public:
-	TcpSocket(SOCKET sockfd = INVALID_SOCKET) {
+	TcpSocket(SOCKET sockfd = INVALID_SOCKET) : _sendBuf(SEND_BUFF_SIZE) {
 		_sockfd = sockfd;
 		memset(_msgBuf, 0, RECV_BUFF_SIZE);
 		_msgLastPos = 0;
-		memset(_sendBuf, 0, SEND_BUFF_SIZE);
-		_sendLastPos = 0;
-		resetHeartbeat();
-		resetSendBuf();
+		reset_tHeartbeat();
+		reset_tSendBuf();
 	}
 
 	~TcpSocket() {
@@ -44,25 +42,20 @@ public:
 		const char *sendData = (const char *)msg;
 
 		while (true) {
-			// Data reaches the limitation of send buffer
-			if (_sendLastPos + sendLength >= SEND_BUFF_SIZE) {
-				int copyLength = SEND_BUFF_SIZE - _sendLastPos;
-				memcpy(_sendBuf + _sendLastPos, sendData, copyLength);
-				sendData += copyLength;
+			if (_sendBuf.add(sendData, sendLength)) {
+				return sendLength;
+			}
+			else {
+				// Data reaches the limitation of send buffer
+				int copyLength = _sendBuf.size() - _sendBuf.last();
+				_sendBuf.add(sendData, copyLength);
 				sendLength -= copyLength;
 				// Send the entire buffer
-				ret = ::send(_sockfd, _sendBuf, SEND_BUFF_SIZE, 0);
-				_sendLastPos = 0;
-				resetSendBuf();
+				ret = _sendBuf.send(_sockfd);
+				reset_tSendBuf();
 				if (SOCKET_ERROR == ret) {
 					return ret;
 				}
-			}
-			else {
-				// Copy into the send buffer
-				memcpy(_sendBuf + _sendLastPos, sendData, sendLength);
-				_sendLastPos += sendLength;
-				return 0;
 			}
 		}
 
@@ -71,12 +64,7 @@ public:
 
 	// Clear the buffer (send everything out)
 	int clearBuffer() {
-		int ret = SOCKET_ERROR;
-		if (_sendLastPos > 0) {
-			ret = ::send(_sockfd, _sendBuf, _sendLastPos, 0);
-			_sendLastPos = 0;
-		}
-		return ret;
+		return _sendBuf.send(_sockfd);
 	}
 
 	// Close socket
@@ -90,11 +78,11 @@ public:
 		_sockfd = INVALID_SOCKET;
 	}
 
-	void resetHeartbeat() {
+	void reset_tHeartbeat() {
 		_tHeartbeat = 0;
 	}
 
-	void resetSendBuf() {
+	void reset_tSendBuf() {
 		_tSendBuf = 0;
 	}
 
@@ -112,8 +100,7 @@ private:
 	SOCKET _sockfd;	// socket fd_set			
 	char _msgBuf[RECV_BUFF_SIZE];	// Message Buffer
 	int _msgLastPos;	// Last position of the message buffer
-	char _sendBuf[SEND_BUFF_SIZE];	// Send Buffer
-	int _sendLastPos;	// Last position of the send buffer
+	Buffer _sendBuf;	// Send buffer
 	time_t _tHeartbeat;	// For heartbeat detection
 	time_t _tSendBuf;	// For clearing send buffer
 };

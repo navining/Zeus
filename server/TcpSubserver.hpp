@@ -158,7 +158,7 @@ public:
 				// TODO: Have bugs here! Need a way to check iterator validity
 				_sendTaskHandler.addTask( [=]()->void {
 					it->second->clearBuffer();
-					it->second->resetSendBuf();
+					it->second->reset_tSendBuf();
 				});
 			}
 		}
@@ -203,7 +203,7 @@ public:
 
 	// Handle message
 	void onMessage(const TcpConnection& pClient, Message *msg) {
-		pClient->resetHeartbeat();
+		pClient->reset_tHeartbeat();
 		if (_pMain != nullptr) {
 			_pMain->onMessage(this, pClient, msg);
 		}
