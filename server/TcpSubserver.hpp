@@ -6,7 +6,7 @@
 
 #include "common.h"
 #include "Event.h"
-#include "TaskHandler.hpp"
+#include "TaskHandler.h"
 #include "Thread.hpp"
 
 // Child thread responsible for handling messsages
