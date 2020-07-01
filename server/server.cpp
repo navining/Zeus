@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	
+	LOG::setPath("zeus.log", "w");
 	MyServer server;
 	server.init();
 	server.bind(ip, port);
@@ -77,10 +77,6 @@ int main(int argc, char* argv[]) {
 		else {
 			printf("Invalid input!\n");
 		}
-	}
-
-	while (true) {
-
 	}
 
     return 0;

@@ -38,5 +38,8 @@
 *.opendb
 *.user
 
+# Log files
+*.log
+
 build/
 bin/
