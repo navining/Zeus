@@ -1,10 +1,12 @@
 #ifndef _LOG_HPP_
 #define _LOG_HPP_
-#define _CRT_SECURE_NO_WARNINGS
 
 #include "common.h"
 #include "TaskHandler.h"
 #include <stdio.h>
+#include <chrono>
+
+using std::chrono::system_clock;
 
 class LOG {
 public:
@@ -14,28 +16,36 @@ public:
 	}
 
 	static void INFO(const char *msg) {
-		printf("[INFO] %s", msg);
+		Instance()._logTaskHandler.addTask([=]() {
+			printf("[INFO] %s", msg);
 
-		if (Instance()._pFile == nullptr) {
-			return;
-		}
-
-		fprintf(Instance()._pFile, "[INFO] %s", msg);
-		fflush(Instance()._pFile);
+			FILE *pFile = Instance()._pFile;
+			if (pFile != nullptr) {
+				time_t now = system_clock::to_time_t(system_clock::now());
+				std::tm *pNow = gmtime(&now);
+				fprintf(pFile, "[%d/%d/%d %d:%d:%d] ", pNow->tm_year + 1900, pNow->tm_mon + 1, pNow->tm_mday, pNow->tm_hour, pNow->tm_min, pNow->tm_sec);
+				fprintf(pFile, "[INFO] %s", msg);
+				fflush(pFile);
+			}
+		});
 	}
 
 	template<typename ...Args>
 	static void INFO(const char *format, Args... args) {
-		printf("[INFO] ");
-		printf(format, args...);
+		Instance()._logTaskHandler.addTask([=]() {
+			printf("[INFO] ");
+			printf(format, args...);
 
-		if (Instance()._pFile == nullptr) {
-			return;
-		}
-
-		fprintf(Instance()._pFile, "[INFO] ");
-		fprintf(Instance()._pFile, format, args...);
-		fflush(Instance()._pFile);
+			FILE *pFile = Instance()._pFile;
+			if (pFile != nullptr) {
+				time_t now = system_clock::to_time_t(system_clock::now());
+				std::tm *pNow = gmtime(&now);
+				fprintf(pFile, "[%d/%d/%d %d:%d:%d] ", pNow->tm_year + 1900, pNow->tm_mon + 1, pNow->tm_mday, pNow->tm_hour, pNow->tm_min, pNow->tm_sec);
+				fprintf(Instance()._pFile, "[INFO] ");
+				fprintf(Instance()._pFile, format, args...);
+				fflush(Instance()._pFile);
+			}
+		});
 	}
 
 	static void setPath(const char *path, const char *mode) {
