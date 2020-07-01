@@ -43,15 +43,15 @@ public:
 
 		// Create socket
 		if (isRun()) {
-			printf("<server %d> Close old connection...\n", _sock);
+			LOG::INFO("<server %d> Close old connection...\n", _sock);
 			close();
 		}
 		_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		if (!isRun()) {
-			printf("Create socket - Fail...\n");
+			LOG::INFO("Create socket - Fail...\n");
 		}
 		else {
-			printf("<server %d> Create socket - Success...\n", _sock);
+			LOG::INFO("<server %d> Create socket - Success...\n", _sock);
 		}
 		return _sock;
 	}
@@ -80,10 +80,10 @@ public:
 		}
 		int ret = ::bind(_sock, (sockaddr *)&_sin, sizeof(sockaddr_in));
 		if (SOCKET_ERROR == ret) {
-			printf("<server %d> Bind %d - Fail...\n", _sock, port);
+			LOG::INFO("<server %d> Bind %d - Fail...\n", _sock, port);
 		}
 		else {
-			printf("<server %d> Bind %d - Success...\n", _sock, port);
+			LOG::INFO("<server %d> Bind %d - Success...\n", _sock, port);
 		}
 
 		return ret;
@@ -93,10 +93,10 @@ public:
 	int listen(int n) {
 		int ret = ::listen(_sock, n);
 		if (SOCKET_ERROR == ret) {
-			printf("<server %d> Listen - Fail...\n", _sock);
+			LOG::INFO("<server %d> Listen - Fail...\n", _sock);
 		}
 		else {
-			printf("<server %d> Listen - Success...\n", _sock);
+			LOG::INFO("<server %d> Listen - Success...\n", _sock);
 		}
 
 		return ret;
@@ -114,7 +114,7 @@ public:
 		SOCKET cli = ::accept(_sock, (sockaddr *)&clientAddr, (socklen_t *)&addrlen);
 #endif
 		if (INVALID_SOCKET == cli) {
-			printf("<server %d> Invaild client socket...\n", _sock);
+			LOG::INFO("<server %d> Invaild client socket...\n", _sock);
 		}
 		else {
 			// Add new client into the buffer with least clients
@@ -165,7 +165,7 @@ public:
 	void onRun(Thread & thread) {
 		if (!isRun())
 		{
-			printf("<server %d> Start - Fail...\n", _sock);
+			LOG::INFO("<server %d> Start - Fail...\n", _sock);
 			return;
 		};
 
@@ -183,7 +183,7 @@ public:
 			int ret = select(_sock + 1, &fdRead, 0, 0, &t);
 
 			if (ret < 0) {
-				printf("<server %d> Select - Fail...\n", _sock);
+				LOG::INFO("<server %d> Select - Fail...\n", _sock);
 				thread.exit();
 				return;
 			}
@@ -205,7 +205,7 @@ public:
 	void benchmark() {
 		double t1 = _time.getElapsedSecond();
 		if (t1 >= 1.0) {
-			printf("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, (int)_subservers.size(), (int)_clientCount, (int)_msgCount);
+			LOG::INFO("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, (int)_subservers.size(), (int)_clientCount, (int)_msgCount);
 			_msgCount = 0;
 			_time.update();
 		}
@@ -242,7 +242,7 @@ public:
 #else
 		::close(_sock);
 #endif
-		printf("<server %d> Quit...\n", _sock);
+		LOG::INFO("<server %d> Quit...\n", _sock);
 
 		_sock = INVALID_SOCKET;
 	}

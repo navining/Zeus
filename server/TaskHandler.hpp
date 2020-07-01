@@ -32,7 +32,7 @@ public:
 
 	void close() {
 		_thread.close();
-		//printf("<TaskHandler %d> Quit...\n", _id);
+		//LOG::INFO("<TaskHandler %d> Quit...\n", _id);
 	}
 protected:
 	// Run the task

@@ -75,7 +75,7 @@ public:
 			int ret = select(_maxSock + 1, &fdRead, nullptr, nullptr, &t);
 
 			if (ret < 0) {
-				printf("<subserver %d> Select - Fail...\n", _id);
+				LOG::INFO("<subserver %d> Select - Fail...\n", _id);
 				thread.exit();
 				return;
 			}
@@ -195,7 +195,7 @@ public:
 	void close() {
 		_sendTaskHandler.close();
 		_thread.close();
-		printf("<subserver %d> Quit...\n", _id);
+		LOG::INFO("<subserver %d> Quit...\n", _id);
 	}
 
 	// Add new clients into the buffer

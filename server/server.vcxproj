@@ -154,11 +154,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\common.h" />
+    <ClInclude Include="..\common\Log.hpp" />
     <ClInclude Include="..\common\Message.hpp" />
     <ClInclude Include="..\common\Timestamp.h" />
     <ClInclude Include="Buffer.hpp" />
     <ClInclude Include="Event.h" />
-    <ClInclude Include="Log.hpp" />
     <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="ObjectPool.hpp" />
     <ClInclude Include="Semaphore.hpp" />
