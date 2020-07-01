@@ -51,4 +51,9 @@ void TaskHandler::onRun(Thread & thread) {
 
 		_tasks.clear();
 	}
+
+	// Execute remaining tasks in the buffer
+	for (auto &task : _tasksBuf) {
+		task();
+	}
 }
