@@ -2,6 +2,7 @@
 #define _LOG_HPP_
 
 #include "common.h"
+#include "TaskHandler.h"
 #include <stdio.h>
 
 class LOG {
@@ -23,6 +24,8 @@ private:
 	LOG() {}
 	LOG(const LOG &) = delete;
 	LOG &operator=(const LOG &) = delete;
+
+	//TaskHandler _logTask;
 };
 
 #endif // !_LOG_HPP_
