@@ -158,6 +158,7 @@
     <ClInclude Include="..\common\Timestamp.h" />
     <ClInclude Include="Buffer.hpp" />
     <ClInclude Include="Event.h" />
+    <ClInclude Include="Log.hpp" />
     <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="ObjectPool.hpp" />
     <ClInclude Include="Semaphore.hpp" />
