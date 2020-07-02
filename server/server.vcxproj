@@ -31,6 +31,7 @@
     <ClInclude Include="Allocator.hpp" />
     <ClInclude Include="Buffer.hpp" />
     <ClInclude Include="Event.h" />
+    <ClInclude Include="Network.h" />
     <ClInclude Include="TcpConnection.hpp" />
     <ClInclude Include="TcpServer.hpp" />
     <ClInclude Include="TcpSubserver.hpp" />
@@ -40,6 +41,7 @@
     <ClCompile Include="..\utils\MemoryPool.cpp" />
     <ClCompile Include="..\utils\TaskHandler.cpp" />
     <ClCompile Include="..\utils\Timestamp.cpp" />
+    <ClCompile Include="Network.cpp" />
     <ClCompile Include="server.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

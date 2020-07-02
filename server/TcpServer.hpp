@@ -14,6 +14,7 @@
 #include "TcpSubserver.hpp"
 #include "TaskHandler.h"
 #include "Event.h"
+#include "Network.h"
 
 #define TCPSERVER_THREAD_COUNT 1
 
@@ -21,6 +22,7 @@
 class TcpServer : public Event {
 public:
 	TcpServer() {
+		Network::Init();
 		_sock = INVALID_SOCKET;
 		_msgCount = 0;
 		_clientCount = 0;
@@ -32,15 +34,6 @@ public:
 
 	// Initialize socket
 	int init() {
-#ifdef _WIN32
-		// Start Win Sock 2.x
-		WORD version = MAKEWORD(2, 2);
-		WSADATA data;
-		WSAStartup(version, &data);
-#else
-		blockSignal();
-#endif // !_WIN32
-
 		// Create socket
 		if (isRun()) {
 			LOG::INFO("<server %d> Close old connection...\n", _sock);
@@ -220,7 +213,7 @@ public:
 	}
 
 	// If connected
-	inline bool isRun() {
+	bool isRun() {
 		return _sock != INVALID_SOCKET;
 	}
 
@@ -238,7 +231,6 @@ public:
 #ifdef _WIN32
 		// Close Win Sock 2.x
 		closesocket(_sock);
-		WSACleanup();
 #else
 		::close(_sock);
 #endif
