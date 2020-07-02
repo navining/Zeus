@@ -1,6 +1,6 @@
 #ifdef SERVER_MAIN
-#ifndef _ALLOCATOR_HPP_
-#define _ALLOCATOR_HPP_
+#ifndef _Allocator_h_
+#define _Allocator_h_
 
 #include "MemoryPool.h"
 
@@ -27,5 +27,5 @@ void *mem_alloc(size_t size) {
 void mem_free(void * p) {
 	free(p);
 }
-#endif // !_ALLOCATOR_HPP_
+#endif // !_Allocator_h_
 #endif

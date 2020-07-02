@@ -1,7 +1,6 @@
 #ifndef _MemoryPool_h_
 #define _MemoryPool_h_
-#include <stdlib.h>
-#include <assert.h>
+
 #include <mutex>
 #include "common.h"
 

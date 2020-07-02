@@ -4,7 +4,7 @@
 
 #include "common.h"
 #include <iostream>
-#include "Message.hpp"
+#include "Message.h"
 
 
 class TcpClient {
@@ -119,7 +119,7 @@ public:
 	}
 
 	// If connected
-	inline bool isRun() {
+	bool isRun() {
 		return _sock != INVALID_SOCKET && isConnect;
 	}
 

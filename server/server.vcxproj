@@ -20,29 +20,36 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\utils\common.h" />
-    <ClInclude Include="..\utils\Log.hpp" />
+    <ClInclude Include="..\utils\Log.h" />
     <ClInclude Include="..\utils\MemoryPool.h" />
-    <ClInclude Include="..\utils\Message.hpp" />
-    <ClInclude Include="..\utils\ObjectPool.hpp" />
-    <ClInclude Include="..\utils\Semaphore.hpp" />
+    <ClInclude Include="..\utils\Message.h" />
+    <ClInclude Include="..\utils\ObjectPool.h" />
+    <ClInclude Include="..\utils\Semaphore.h" />
     <ClInclude Include="..\utils\TaskHandler.h" />
-    <ClInclude Include="..\utils\Thread.hpp" />
+    <ClInclude Include="..\utils\Thread.h" />
     <ClInclude Include="..\utils\Timestamp.h" />
-    <ClInclude Include="Allocator.hpp" />
-    <ClInclude Include="Buffer.hpp" />
+    <ClInclude Include="Allocator.h" />
+    <ClInclude Include="Buffer.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="Network.h" />
-    <ClInclude Include="TcpConnection.hpp" />
-    <ClInclude Include="TcpServer.hpp" />
-    <ClInclude Include="TcpSubserver.hpp" />
+    <ClInclude Include="TcpConnection.h" />
+    <ClInclude Include="TcpServer.h" />
+    <ClInclude Include="TcpSubserver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\utils\common.cpp" />
+    <ClCompile Include="..\utils\Log.cpp" />
     <ClCompile Include="..\utils\MemoryPool.cpp" />
+    <ClCompile Include="..\utils\Semaphore.cpp" />
     <ClCompile Include="..\utils\TaskHandler.cpp" />
+    <ClCompile Include="..\utils\Thread.cpp" />
     <ClCompile Include="..\utils\Timestamp.cpp" />
+    <ClCompile Include="Buffer.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="TcpConnection.cpp" />
+    <ClCompile Include="TcpServer.cpp" />
+    <ClCompile Include="TcpSubserver.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1E84AD50-7E80-42DE-92E2-6717EB007B14}</ProjectGuid>

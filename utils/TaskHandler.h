@@ -5,7 +5,7 @@
 #include <mutex>
 #include <list>
 #include <functional>
-#include "Thread.hpp"
+#include "Thread.h"
 
 // Class handling the task (consumer)
 class TaskHandler {

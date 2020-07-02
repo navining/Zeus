@@ -1,7 +1,7 @@
 #ifndef _Event_h_
 #define _Event_h_
 
-#include "TcpConnection.hpp"
+#include "TcpConnection.h"
 
 class TcpSubserver;
 

@@ -1,9 +1,8 @@
 #define SERVER_MAIN
-#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
 #include <thread>
-#include "TcpServer.hpp"
+#include "TcpServer.h"
 //#include "Allocator.hpp"
 
 class MyServer : public TcpServer {

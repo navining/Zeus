@@ -1,4 +1,6 @@
 #include "MemoryPool.h"
+#include <stdlib.h>
+#include <assert.h>
 
 MemoryPool::MemoryPool(int blockSize, int blockCount) {
 	_pBuf = nullptr;

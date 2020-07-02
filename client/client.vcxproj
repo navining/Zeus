@@ -25,7 +25,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\utils\common.h" />
-    <ClInclude Include="..\utils\Message.hpp" />
     <ClInclude Include="..\utils\Timestamp.h" />
     <ClInclude Include="TcpClient.hpp" />
   </ItemGroup>
