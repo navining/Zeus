@@ -1,4 +1,5 @@
 #include "Thread.h"
+#include <thread>
 
 void Thread::start(ThreadFunc onStart, ThreadFunc onRun, ThreadFunc onClose) {
 	if (_isRun) return;

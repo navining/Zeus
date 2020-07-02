@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(Zeus)
 
 # Compile arguments
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -Wno-format-security -Wno-unused-result")
 
 # Check compiler flag
 include(CheckCXXCompilerFlag)

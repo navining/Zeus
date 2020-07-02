@@ -2,6 +2,7 @@
 #define _Thread_h_
 
 #include "Semaphore.h"
+#include <functional>
 
 class Thread;
 
