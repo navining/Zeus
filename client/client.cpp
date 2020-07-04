@@ -34,7 +34,7 @@ public:
 	}
 
 public:
-	std::atomic_int _msgCount = 0;	// Number of messages
+	std::atomic_int _msgCount;	// Number of messages
 };
 
 

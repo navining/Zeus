@@ -8,6 +8,11 @@
 
 class MyServer : public TcpServer {
 public:
+	MyServer() {
+		_clientCount = 0;
+		_msgCount = 0;
+	}
+
 	void onConnection(const TcpConnection& pClient) {
 		_clientCount++;
 	}
@@ -45,8 +50,8 @@ public:
 		}
 	}
 private:
-	std::atomic_int _msgCount = 0;	// Number of messages
-	std::atomic_int _clientCount = 0;	// Number of clients
+	std::atomic_int _msgCount;	// Number of messages
+	std::atomic_int _clientCount;	// Number of clients
 };
 
 int main(int argc, char* argv[]) {
