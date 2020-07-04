@@ -201,7 +201,7 @@ int TcpSubserver::recv(const TcpConnection & pClient) {
 void TcpSubserver::onMessage(const TcpConnection & pClient, Message * msg) {
 	pClient->reset_tHeartbeat();
 	if (_pMain != nullptr) {
-		_pMain->onMessage(this, pClient, msg);
+		_pMain->onMessage(pClient, msg);
 	}
 }
 

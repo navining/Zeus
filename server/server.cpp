@@ -21,7 +21,7 @@ public:
 		_clientCount--;
 	}
 
-	void onMessage(TcpSubserver *pServer, const TcpConnection& pClient, Message *msg) {
+	void onMessage(const TcpConnection& pClient, Message *msg) {
 		_msgCount++;
 		switch (msg->cmd) {
 		case CMD_TEST:	// Send back the test data (echo)

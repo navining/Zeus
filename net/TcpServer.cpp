@@ -184,7 +184,7 @@ void TcpServer::onDisconnection(const TcpConnection & pClient) {
 	
 }
 
-void TcpServer::onMessage(TcpSubserver * pServer, const TcpConnection & pClient, Message * header) {
+void TcpServer::onMessage(const TcpConnection & pClient, Message * msg) {
 	
 }
 
