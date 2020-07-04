@@ -19,6 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\net\Allocator.h" />
+    <ClInclude Include="..\net\Buffer.h" />
+    <ClInclude Include="..\net\Event.h" />
+    <ClInclude Include="..\net\Network.h" />
+    <ClInclude Include="..\net\TcpClient.h" />
+    <ClInclude Include="..\net\TcpConnection.h" />
+    <ClInclude Include="..\net\TcpServer.h" />
+    <ClInclude Include="..\net\TcpSubserver.h" />
     <ClInclude Include="..\utils\common.h" />
     <ClInclude Include="..\utils\Log.h" />
     <ClInclude Include="..\utils\MemoryPool.h" />
@@ -28,15 +36,14 @@
     <ClInclude Include="..\utils\TaskHandler.h" />
     <ClInclude Include="..\utils\Thread.h" />
     <ClInclude Include="..\utils\Timestamp.h" />
-    <ClInclude Include="Allocator.h" />
-    <ClInclude Include="Buffer.h" />
-    <ClInclude Include="Event.h" />
-    <ClInclude Include="Network.h" />
-    <ClInclude Include="TcpConnection.h" />
-    <ClInclude Include="TcpServer.h" />
-    <ClInclude Include="TcpSubserver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\net\Buffer.cpp" />
+    <ClCompile Include="..\net\Network.cpp" />
+    <ClCompile Include="..\net\TcpClient.cpp" />
+    <ClCompile Include="..\net\TcpConnection.cpp" />
+    <ClCompile Include="..\net\TcpServer.cpp" />
+    <ClCompile Include="..\net\TcpSubserver.cpp" />
     <ClCompile Include="..\utils\common.cpp" />
     <ClCompile Include="..\utils\Log.cpp" />
     <ClCompile Include="..\utils\MemoryPool.cpp" />
@@ -44,12 +51,7 @@
     <ClCompile Include="..\utils\TaskHandler.cpp" />
     <ClCompile Include="..\utils\Thread.cpp" />
     <ClCompile Include="..\utils\Timestamp.cpp" />
-    <ClCompile Include="Buffer.cpp" />
-    <ClCompile Include="Network.cpp" />
     <ClCompile Include="server.cpp" />
-    <ClCompile Include="TcpConnection.cpp" />
-    <ClCompile Include="TcpServer.cpp" />
-    <ClCompile Include="TcpSubserver.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1E84AD50-7E80-42DE-92E2-6717EB007B14}</ProjectGuid>
@@ -127,7 +129,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;$(SolutionDir)/net/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -140,7 +142,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;$(SolutionDir)/net/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -155,7 +157,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;$(SolutionDir)/net/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -172,7 +174,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;$(SolutionDir)/net/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

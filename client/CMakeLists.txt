@@ -1,9 +1,10 @@
 # Include source files
 aux_source_directory(. SRC_CLIENT)
-aux_source_directory(../utils SRC_COMMON)
+aux_source_directory(../utils SRC_UTILS)
+aux_source_directory(../net SRC_NET)
 
 # Generate executable file
-add_executable(client ${SRC_CLIENT} ${SRC_COMMON})
+add_executable(client ${SRC_CLIENT} ${SRC_UTILS} ${SRC_NET})
 
 # Link libraries
 target_link_libraries(client pthread)
