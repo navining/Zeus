@@ -73,7 +73,6 @@ void sendThread(int id) {
 	printf("thread<%d> connected...\n", id);
 
 	std::thread t1(recvThread, begin, end);
-	t1.detach();
 
 	while (g_isRun) {
 		//std::chrono::milliseconds t(100);
@@ -83,12 +82,13 @@ void sendThread(int id) {
 		}
 	}
 
+	t1.join();
+
 	for (int n = begin; n < end; n++)
 	{
-		clients[n]->close();
+		//clients[n]->close();
 		delete clients[n];
 	}
-
 	printf("thread<%d> exit..\n", id);
 }
 
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
 		t.detach();
 	}
 
-	while (g_isRun) {
+	while (true) {
 
 	}
 

@@ -36,12 +36,6 @@ public:
 
 private:
 	bool isConnect;
-	// Receive Buffer (System Buffer)
-	char _recvBuf[RECV_BUFF_SIZE] = {};
-	// Message Buffer (Secondary Buffer)
-	char _msgBuf[RECV_BUFF_SIZE * 5] = {};
-	// Last position of the message buffer
-	int _lastPos = 0;
 	TcpSocket *_pClient;
 };
 

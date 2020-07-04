@@ -61,6 +61,7 @@ int TcpClient::connect(const char * ip, unsigned short port) {
 void TcpClient::close() {
 	if (_pClient == nullptr) return;
 	delete _pClient;
+	_pClient = nullptr;
 	isConnect = false;
 }
 
