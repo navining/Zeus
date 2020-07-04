@@ -6,12 +6,14 @@
 #include <thread>
 #include "Timestamp.h"
 #include "TcpClient.h"
+#include <atomic>
 
 using std::thread;
 
 class MyClient : public TcpClient {
 public:
-	int onMessage(Message *msg) {
+	void onMessage(Message *msg) {
+		_msgCount++;
 		switch (msg->cmd) {
 		case CMD_TEST:
 		{
@@ -29,9 +31,10 @@ public:
 			LOG::INFO("<client %d> Receive Message: UNDIFINED\n", _pClient->sockfd());
 		}
 		}
-
-		return 0;
 	}
+
+public:
+	std::atomic_int _msgCount = 0;	// Number of messages
 };
 
 
@@ -48,11 +51,12 @@ const char *ip;
 u_short port;
 
 // Array of clients
-TcpClient* clients[numOfClients];
+MyClient* clients[numOfClients];
 
 // Data to be sent
 Test data;	// 1000 Byte
 
+int msgCount = 0;
 
 bool g_isRun = true;
 
@@ -98,17 +102,18 @@ void sendThread(int id) {
 	}
 	LOG::INFO("thread<%d> connected...\n", id);
 
-	std::thread t1(recvThread, begin, end);
+	//std::thread t1(recvThread, begin, end);
 
 	while (g_isRun) {
 		//std::chrono::milliseconds t(100);
 		//std::this_thread::sleep_for(t);
 		for (int i = begin; i < end; i++) {
 			clients[i]->send(&data);
+			clients[i]->onRun();
 		}
 	}
 
-	t1.join();
+	//t1.join();
 
 	for (int n = begin; n < end; n++)
 	{
@@ -135,12 +140,32 @@ int main(int argc, char* argv[]) {
 	thread t1(cmdThread);
 	t1.detach();
 
-	LOG::INFO("Number of clients: %d\nThreads: %d\n", numOfClients, numOfThreads);
+	LOG::setPath("zeus-client.log", "w");
+
+	LOG::INFO("Number of clients: %d\n", numOfClients);
+	LOG::INFO("Number of Threads: %d\n", numOfThreads);
 	LOG::INFO("Size per package: %d Bytes\n", (int)sizeof(data));
-	LOG::INFO("----------------------------------------------\n");
 	for (int i = 0; i < numOfThreads; i++) {
 		thread t(sendThread, i + 1);
 		t.detach();
+	}
+
+	Timestamp _time;
+
+	while (g_isRun) {
+		// Benchmark
+		double t1 = _time.getElapsedSecond();
+		if (t1 >= 1.0) {
+
+			for (int i = 0; i < numOfClients; i++) {
+				msgCount += clients[i]->_msgCount;
+				clients[i]->_msgCount = 0;
+			}
+
+			LOG::INFO("Time: %f Threads: %d Clients: %d Packages: %d\n", t1, numOfThreads, numOfClients, msgCount);
+			msgCount = 0;
+			_time.update();
+		}
 	}
 
 	while (true) {

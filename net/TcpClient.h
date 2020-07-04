@@ -29,7 +29,10 @@ public:
 	int recv();
 
 	// Process data
-	virtual int onMessage(Message *msg) = 0;
+	virtual void onMessage(Message *msg);
+
+	// Handle other services
+	virtual void onIdle();
 
 	// Send data
 	int send(Message *_msg);

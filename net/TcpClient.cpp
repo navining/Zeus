@@ -81,7 +81,7 @@ bool TcpClient::onRun() {
 
 	fd_set fdWrite;
 	FD_ZERO(&fdWrite);
-	
+
 	int ret = 0;
 
 	timeval t = { 0, 1 };
@@ -121,7 +121,7 @@ bool TcpClient::onRun() {
 	}
 
 	// Handle other services
-	//cout << "Other services..." << endl;
+	onIdle();
 
 	return true;
 }
@@ -149,6 +149,16 @@ int TcpClient::recv() {
 	}
 
 	return ret;
+}
+
+void TcpClient::onMessage(Message * msg)
+{
+
+}
+
+void TcpClient::onIdle()
+{
+
 }
 
 // Send data
