@@ -83,7 +83,6 @@ void recvThread(int begin, int end)
 	{
 		for (int n = begin; n < end; n++)
 		{
-			if (t.getElapsedSecond() > 3.0) continue;
 			clients[n]->onRun();
 		}
 	}
@@ -107,12 +106,10 @@ void sendThread(int id) {
 	std::thread t1(recvThread, begin, end);
 
 	while (g_isRun) {
-		//std::chrono::milliseconds t(100);
+		//std::chrono::milliseconds t(1);
 		//std::this_thread::sleep_for(t);
 		for (int i = begin; i < end; i++) {
 			clients[i]->send(&data);
-			clients[i]->sendAll();
-			// clients[i]->onRun();
 		}
 	}
 

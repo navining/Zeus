@@ -1,6 +1,6 @@
 #include "TcpSubserver.h"
 
-TcpSubserver::TcpSubserver(int id, Event * pEvent) : _sendTaskHandler(id) {
+TcpSubserver::TcpSubserver(int id, Event * pEvent) /*: _sendTaskHandler(id)*/ {
 	_id = id;
 	_pMain = pEvent;
 	_tCurrent = Time::getCurrentTimeInMilliSec();;
@@ -39,7 +39,6 @@ void TcpSubserver::onRun(Thread & thread) {
 		fd_set fdRead;	// Set of sockets
 		FD_ZERO(&fdRead);
 		fd_set fdWrite;
-		FD_ZERO(&fdWrite);
 
 		if (_clientsChange) {
 			_maxSock = INVALID_SOCKET;
@@ -160,7 +159,7 @@ void TcpSubserver::checkAlive() {
 }
 
 // Check if the send buffer is ready to be cleared
-
+/*
 void TcpSubserver::checkSendBuffer() {
 	time_t current = Time::getCurrentTimeInMilliSec();
 	time_t dt = current - _tCurrent;
@@ -175,6 +174,7 @@ void TcpSubserver::checkSendBuffer() {
 		}
 	}
 }
+*/
 
 // Receive data
 
@@ -207,22 +207,22 @@ void TcpSubserver::onMessage(const TcpConnection & pClient, Message * msg) {
 
 void TcpSubserver::onDisconnection(const TcpConnection & pClient)
 {
+	_clientsChange = true;
 	if (_pMain != nullptr) {
 		_pMain->onDisconnection(pClient);
 	}
-	_clientsChange = true;
 }
 
 void TcpSubserver::onIdle()
 {
 	checkAlive();
-	checkSendBuffer();
+	// checkSendBuffer();
 }
 
 // Close socket
 
 void TcpSubserver::close() {
-	_sendTaskHandler.close();
+	// _sendTaskHandler.close();
 	_thread.close();
 	LOG::INFO("<subserver %d> Quit...\n", _id);
 }
@@ -244,7 +244,7 @@ void TcpSubserver::start() {
 	},
 		EMPTY_THREAD_FUNC
 		);
-	_sendTaskHandler.start();
+	// _sendTaskHandler.start();
 }
 
 // Get number of clients in the current subserver
@@ -253,11 +253,3 @@ size_t TcpSubserver::getClientCount() {
 	return _clients.size() + _clientsBuf.size();
 }
 
-// Send message to the client
-
-void TcpSubserver::send(const TcpConnection & pClient, Message * header) {
-	_sendTaskHandler.addTask([=]() {
-		pClient->send(header);
-		delete header;
-	});
-}

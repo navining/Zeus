@@ -41,16 +41,13 @@ public:
 	void checkAlive();
 
 	// Check if the send buffer is ready to be cleared
-	void checkSendBuffer();
+	// void checkSendBuffer();
 
 	// Add new clients into the buffer
 	void addClients(const TcpConnection& pClient);
 
 	// Get number of clients in the current subserver
 	size_t getClientCount();
-
-	// Send message to the client
-	void send(const TcpConnection& pClient, Message *header);
 
 	// Receive data
 	int recv(const TcpConnection& pClient);
@@ -63,7 +60,7 @@ private:
 	std::vector<TcpConnection> _clientsBuf;	// Clients buffer
 	std::mutex _mutex;	// Mutex for clients buffer
 	Event *_pMain;	// Pointer to the main thread (for event callback)
-	TaskHandler _sendTaskHandler;	// Child thread for sending messages
+	//TaskHandler _sendTaskHandler;	// Child thread for sending messages
 	time_t _tCurrent;	// Current timestamp				
 	fd_set _fdRead;	// A cache of fd_set
 	bool _clientsChange;	// If the clients array changes

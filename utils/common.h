@@ -27,7 +27,7 @@ typedef long unsigned int size_t;
 #define RECV_BUFF_SIZE 10240
 
 // Size of the send buffer
-#define SEND_BUFF_SIZE 10240
+#define SEND_BUFF_SIZE 102400
 
 // Heartbeat detection (in millisecond)
 // Define a negative number to disable it
