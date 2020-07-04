@@ -22,11 +22,12 @@
     <ClCompile Include="..\utils\common.cpp" />
     <ClCompile Include="..\utils\Timestamp.cpp" />
     <ClCompile Include="client.cpp" />
+    <ClCompile Include="TcpClient.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\utils\common.h" />
     <ClInclude Include="..\utils\Timestamp.h" />
-    <ClInclude Include="TcpClient.hpp" />
+    <ClInclude Include="TcpClient.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4BA25A30-7101-4F1A-8149-7B8785F6AAA4}</ProjectGuid>
