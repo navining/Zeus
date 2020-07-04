@@ -44,7 +44,7 @@ void Buffer::pop(int length) {
 // Send the entire buffer to the client
 
 int Buffer::send(SOCKET client) {
-	int ret = SOCKET_ERROR;
+	int ret = 0;
 	if (_last > 0) {
 		ret = ::send(client, _pBuf, _last, 0);
 		clear();

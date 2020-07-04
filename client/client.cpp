@@ -9,6 +9,32 @@
 
 using std::thread;
 
+class MyClient : public TcpClient {
+public:
+	int onMessage(Message *msg) {
+		switch (msg->cmd) {
+		case CMD_TEST:
+		{
+			Test* test = (Test *)msg;
+			// LOG::INFO("<client %d> Receive Message: Test\n", _pClient->sockfd());
+			break;
+		}
+		case CMD_ERROR:
+		{
+			LOG::INFO("<client %d> Receive Message: ERROR\n", _pClient->sockfd());
+			break;
+		}
+		default:
+		{
+			LOG::INFO("<client %d> Receive Message: UNDIFINED\n", _pClient->sockfd());
+		}
+		}
+
+		return 0;
+	}
+};
+
+
 // Number of clients
 const int numOfClients = 1000;
 
@@ -41,7 +67,7 @@ void cmdThread() {
 			break;
 		}
 		else {
-			printf("Invalid input!\n");
+			LOG::INFO("Invalid input!\n");
 		}
 	}
 }
@@ -58,19 +84,19 @@ void recvThread(int begin, int end)
 }
 
 void sendThread(int id) {
-	printf("thread<%d> start...\n", id);
+	LOG::INFO("thread<%d> start...\n", id);
 	int count = numOfClients / numOfThreads;
 	int begin = (id - 1) * count;
 	int end = id * count;
 
 	for (int i = begin; i < end; i++) {
-		clients[i] = new TcpClient();
+		clients[i] = new MyClient();
 	}
 
 	for (int i = begin; i < end; i++) {
 		clients[i]->connect(ip, port);
 	}
-	printf("thread<%d> connected...\n", id);
+	LOG::INFO("thread<%d> connected...\n", id);
 
 	std::thread t1(recvThread, begin, end);
 
@@ -89,7 +115,7 @@ void sendThread(int id) {
 		//clients[n]->close();
 		delete clients[n];
 	}
-	printf("thread<%d> exit..\n", id);
+	LOG::INFO("thread<%d> exit..\n", id);
 }
 
 int main(int argc, char* argv[]) {
@@ -109,9 +135,9 @@ int main(int argc, char* argv[]) {
 	thread t1(cmdThread);
 	t1.detach();
 
-	printf("Number of clients: %d\nThreads: %d\n", numOfClients, numOfThreads);
-	printf("Size per package: %d Bytes\n", (int)sizeof(data));
-	printf("----------------------------------------------\n");
+	LOG::INFO("Number of clients: %d\nThreads: %d\n", numOfClients, numOfThreads);
+	LOG::INFO("Size per package: %d Bytes\n", (int)sizeof(data));
+	LOG::INFO("----------------------------------------------\n");
 	for (int i = 0; i < numOfThreads; i++) {
 		thread t(sendThread, i + 1);
 		t.detach();

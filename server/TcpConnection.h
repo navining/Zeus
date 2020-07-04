@@ -27,6 +27,9 @@ public:
 	// Must be called after check with hasMessage()
 	Message* popMessage();
 
+	// Wheter the send buffer is empty
+	bool isSendEmpty();
+
 	// Send message (put into the send buffer)
 	int send(Message *msg);
 

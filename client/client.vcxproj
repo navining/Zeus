@@ -23,6 +23,11 @@
     <ClCompile Include="..\server\Network.cpp" />
     <ClCompile Include="..\server\TcpConnection.cpp" />
     <ClCompile Include="..\utils\common.cpp" />
+    <ClCompile Include="..\utils\Log.cpp" />
+    <ClCompile Include="..\utils\MemoryPool.cpp" />
+    <ClCompile Include="..\utils\Semaphore.cpp" />
+    <ClCompile Include="..\utils\TaskHandler.cpp" />
+    <ClCompile Include="..\utils\Thread.cpp" />
     <ClCompile Include="..\utils\Timestamp.cpp" />
     <ClCompile Include="client.cpp" />
     <ClCompile Include="TcpClient.cpp" />

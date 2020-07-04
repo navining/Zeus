@@ -29,13 +29,15 @@ public:
 	int recv();
 
 	// Process data
-	virtual int onMessage(Message *msg);
+	virtual int onMessage(Message *msg) = 0;
 
 	// Send data
 	int send(Message *_msg);
 
 private:
 	bool isConnect;
+
+protected:
 	TcpSocket *_pClient;
 };
 

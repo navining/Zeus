@@ -17,15 +17,15 @@ SOCKET TcpClient::init() {
 
 	// Create socket
 	if (isRun()) {
-		printf("<client %d> Close old connection...\n", _pClient->sockfd());
+		LOG::INFO("<client %d> Close old connection...\n", _pClient->sockfd());
 		close();
 	}
 	SOCKET _sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (_sock == INVALID_SOCKET) {
-		printf("Create socket - Fail...\n");
+		LOG::INFO("Create socket - Fail...\n");
 	}
 	else {
-		// printf("<client %d> Create socket - Success...\n", _sock);
+		// LOG::INFO("<client %d> Create socket - Success...\n", _sock);
 		_pClient = new TcpSocket(_sock);
 	}
 	return _sock;
@@ -47,11 +47,11 @@ int TcpClient::connect(const char * ip, unsigned short port) {
 #endif
 	int ret = ::connect(_pClient->sockfd(), (sockaddr *)&_sin, sizeof(sockaddr_in));
 	if (SOCKET_ERROR == ret) {
-		printf("<client %d> Connect - Fail...\n", _pClient->sockfd());
+		LOG::INFO("<client %d> Connect - Fail...\n", _pClient->sockfd());
 	}
 	else {
 		isConnect = true;
-		// printf("<client %d> Connect - Success...\n", _pClient->sockfd());
+		// LOG::INFO("<client %d> Connect - Success...\n", _pClient->sockfd());
 	}
 	return ret;
 }
@@ -70,7 +70,7 @@ void TcpClient::close() {
 bool TcpClient::onRun() {
 	if (!isRun())
 	{
-		printf("<client %d> Start - Fail...\n", _pClient->sockfd());
+		LOG::INFO("<client %d> Start - Fail...\n", _pClient->sockfd());
 		return false;
 	};
 
@@ -78,21 +78,43 @@ bool TcpClient::onRun() {
 	fd_set fdRead;
 	FD_ZERO(&fdRead);
 	FD_SET(_pClient->sockfd(), &fdRead);
-	timeval t = { 0, 0 };
-	int ret = select(_pClient->sockfd() + 1, &fdRead, NULL, NULL, &t);
+
+	fd_set fdWrite;
+	FD_ZERO(&fdWrite);
+	
+	int ret = 0;
+
+	timeval t = { 0, 1 };
+
+	if (_pClient->isSendEmpty()) {
+		int ret = select(_pClient->sockfd() + 1, &fdRead, NULL, NULL, &t);
+	}
+	else {
+		// Only check fdWrite if there's something to be sent
+		FD_SET(_pClient->sockfd(), &fdWrite);
+		int ret = select(_pClient->sockfd() + 1, &fdRead, &fdWrite, NULL, &t);
+	}
 
 	if (ret < 0) {
-		printf("<client %d> Select - Fail...\n", _pClient->sockfd());
+		LOG::INFO("<client %d> Select - Fail...\n", _pClient->sockfd());
 		close();
 		return false;
 	}
 
 	// If socket is inside the set
 	if (FD_ISSET(_pClient->sockfd(), &fdRead)) {
-		FD_CLR(_pClient->sockfd(), &fdRead);
 		// Handle request
 		if (-1 == recv()) {
-			printf("<client %d> Process - Fail...\n", _pClient->sockfd());
+			LOG::INFO("<client %d> Read - Fail...\n", _pClient->sockfd());
+			close();
+			return false;
+		}
+	}
+
+	if (FD_ISSET(_pClient->sockfd(), &fdWrite)) {
+		// Handle request
+		if (-1 == _pClient->sendAll()) {
+			LOG::INFO("<client %d> Write - Fail...\n", _pClient->sockfd());
 			close();
 			return false;
 		}
@@ -109,6 +131,7 @@ bool TcpClient::onRun() {
 bool TcpClient::isRun() {
 	return _pClient != nullptr && isConnect;
 }
+
 
 // Receive data and unpack
 
@@ -128,32 +151,9 @@ int TcpClient::recv() {
 	return ret;
 }
 
-// Process data
-
-int TcpClient::onMessage(Message * msg) {
-	switch (msg->cmd) {
-	case CMD_TEST:
-	{
-		Test* test = (Test *)msg;
-		// printf("<client %d> Receive Message: Test\n", _pClient->sockfd());
-		break;
-	}
-	case CMD_ERROR:
-	{
-		printf("<client %d> Receive Message: ERROR\n", _pClient->sockfd());
-		break;
-	}
-	default:
-	{
-		printf("<client %d> Receive Message: UNDIFINED\n", _pClient->sockfd());
-	}
-	}
-
-	return 0;
-}
-
 // Send data
 
 int TcpClient::send(Message * _msg) {
 	return _pClient->send(_msg);
 }
+

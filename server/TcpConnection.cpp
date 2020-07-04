@@ -50,6 +50,12 @@ Message * TcpSocket::popMessage() {
 	return msg;
 }
 
+// Wheter the send buffer is empty
+
+bool TcpSocket::isSendEmpty() {
+	return _sendBuf.empty();
+}
+
 // Send message (put into the send buffer)
 
 int TcpSocket::send(Message * msg) {
