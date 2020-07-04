@@ -26,9 +26,15 @@ public:
 	// Handle message
 	void onMessage(const TcpConnection& pClient, Message *msg);
 
-	// Client socket response: handle request
+	void onDisconnection(const TcpConnection& pClient);
+
+	// Do extra things when the server is idle
+	void onIdle();
+
+	// Client socket response: handle read request
 	void respondRead(fd_set &fdRead);
 
+	// Client socket response: handle write request
 	void respondWrite(fd_set &fdWrite);
 
 	// Check if the client is alive

@@ -65,9 +65,6 @@ void TcpSubserver::onRun(Thread & thread) {
 
 		timeval t{ 0, 1 };
 		int ret = select(_maxSock + 1, &fdRead, &fdWrite, nullptr, &t);
-		
-		if (fdWrite.fd_count < 500)
-			printf("%d %d\n", fdRead.fd_count, fdWrite.fd_count);
 
 		if (ret < 0) {
 			LOG::INFO("<subserver %d> Select - Fail...\n", _id);
@@ -79,8 +76,7 @@ void TcpSubserver::onRun(Thread & thread) {
 		respondWrite(fdWrite);
 
 		// Do other things here...
-		checkAlive();
-		checkSendBuffer();
+		onIdle();
 
 		// Update current timestamp
 		_tCurrent = Time::getCurrentTimeInMilliSec();
@@ -92,35 +88,28 @@ void TcpSubserver::onRun(Thread & thread) {
 void TcpSubserver::respondRead(fd_set & fdRead) {
 #ifdef _WIN32
 	for (int n = 0; n < fdRead.fd_count; n++) {
-		const TcpConnection& pClient = _clients[fdRead.fd_array[n]];
+		auto it = _clients.find(fdRead.fd_array[n]);
+		if (it == _clients.end()) continue;
+		const TcpConnection& pClient = it->second;
 		if (-1 == recv(pClient)) {
 			// Client disconnected
-			if (_pMain != nullptr) {
-				_pMain->onDisconnection(pClient);
-			}
-			//_clients.erase(pClient->sockfd());
-			_clientsChange = true;
+			onDisconnection(pClient);
+			_clients.erase(pClient->sockfd());
+			
 		}
 	}
 #else
-	std::vector<TcpConnection > disconnected;
-	for (auto it : _clients) {
-		if (FD_ISSET(it.second->sockfd(), &fdRead)) {
-			if (-1 == recv(it.second)) {
+	for (auto it = _clients.begin(); it != _clients.end();) {
+		if (FD_ISSET(it->second->sockfd(), &fdRead)) {
+			if (-1 == recv(it->second)) {
 				// Client disconnected
-				if (_pMain != nullptr) {
-					_pMain->onDisconnection(it.second);
-				}
-
-				//disconnected.push_back(it.second);
-				_clientsChange = true;
+				onDisconnection(it->second);
+				it = _clients.erase(it);
+			}
+			else {
+				++it;
 			}
 		}
-	}
-
-	// Delete disconnected clients
-	for (TcpConnection pClient : disconnected) {
-		_clients.erase(pClient->sockfd());
 	}
 #endif
 }
@@ -128,35 +117,27 @@ void TcpSubserver::respondRead(fd_set & fdRead) {
 void TcpSubserver::respondWrite(fd_set & fdWrite) {
 #ifdef _WIN32
 	for (int n = 0; n < fdWrite.fd_count; n++) {
-		const TcpConnection& pClient = _clients[fdWrite.fd_array[n]];
+		auto it = _clients.find(fdWrite.fd_array[n]);
+		if (it == _clients.end()) continue;
+		const TcpConnection& pClient = it->second;
 		if (-1 == pClient->sendAll()) {
 			// Client disconnected
-			if (_pMain != nullptr) {
-				_pMain->onDisconnection(pClient);
-			}
+			onDisconnection(pClient);
 			_clients.erase(pClient->sockfd());
-			_clientsChange = true;
 		}
 	}
 #else
-	std::vector<TcpConnection > disconnected;
-	for (auto it : _clients) {
-		if (FD_ISSET(it.second->sockfd(), &fdRead)) {
-			if (-1 == pClient->sendAll()) {
+	for (auto it = _clients.begin(); it != _clients.end();) {
+		if (FD_ISSET(it->second->sockfd(), &fdWrite)) {
+			if (-1 == recv(it->second)) {
 				// Client disconnected
-				if (_pMain != nullptr) {
-					_pMain->onDisconnection(it.second);
-				}
-
-				disconnected.push_back(it.second);
-				_clientsChange = true;
+				onDisconnection(it->second);
+				it = _clients.erase(it);
+			}
+			else {
+				++it;
 			}
 		}
-	}
-
-	// Delete disconnected clients
-	for (TcpConnection pClient : disconnected) {
-		_clients.erase(pClient->sockfd());
 	}
 #endif
 }
@@ -169,11 +150,8 @@ void TcpSubserver::checkAlive() {
 	for (auto it = _clients.begin(); it != _clients.end();) {
 		if (!it->second->isAlive(dt)) {
 			// Client disconnected
-			if (_pMain != nullptr) {
-				_pMain->onDisconnection(it->second);
-			}
+			onDisconnection(it->second);
 			it = _clients.erase(it);
-			_clientsChange = true;
 		}
 		else {
 			++it;
@@ -225,6 +203,20 @@ void TcpSubserver::onMessage(const TcpConnection & pClient, Message * msg) {
 	if (_pMain != nullptr) {
 		_pMain->onMessage(this, pClient, msg);
 	}
+}
+
+void TcpSubserver::onDisconnection(const TcpConnection & pClient)
+{
+	if (_pMain != nullptr) {
+		_pMain->onDisconnection(pClient);
+	}
+	_clientsChange = true;
+}
+
+void TcpSubserver::onIdle()
+{
+	checkAlive();
+	checkSendBuffer();
 }
 
 // Close socket
