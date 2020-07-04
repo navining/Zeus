@@ -8,15 +8,15 @@
 class MyServer : public TcpServer {
 public:
 	void onConnection(const TcpConnection& pClient) {
-		TcpServer::onConnection(pClient);
+		_clientCount++;
 	}
 
 	void onDisconnection(const TcpConnection& pClient) {
-		TcpServer::onDisconnection(pClient);
+		_clientCount--;
 	}
 
 	void onMessage(TcpSubserver *pServer, const TcpConnection& pClient, Message *msg) {
-		TcpServer::onMessage(pServer, pClient, msg);
+		_msgCount++;
 		switch (msg->cmd) {
 		case CMD_TEST:	// Send back the test data (echo)
 		{
@@ -33,7 +33,19 @@ public:
 		}
 
 	}
+
+	void onIdle() {
+		// Benchmark
+		double t1 = _time.getElapsedSecond();
+		if (t1 >= 1.0) {
+			LOG::INFO("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, thread_count, (int)_clientCount, (int)_msgCount);
+			_msgCount = 0;
+			_time.update();
+		}
+	}
 private:
+	std::atomic_int _msgCount = 0;	// Number of messages
+	std::atomic_int _clientCount = 0;	// Number of clients
 };
 
 int main(int argc, char* argv[]) {
@@ -56,7 +68,7 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	LOG::setPath("zeus.log", "w");
+	LOG::setPath("zeus-server.log", "w");
 	MyServer server;
 	server.init();
 	server.bind(ip, port);

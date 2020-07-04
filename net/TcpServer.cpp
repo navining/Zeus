@@ -3,8 +3,7 @@
 TcpServer::TcpServer() {
 	Network::Init();
 	_sock = INVALID_SOCKET;
-	_msgCount = 0;
-	_clientCount = 0;
+	thread_count = 0;
 }
 
 TcpServer::~TcpServer() {
@@ -116,13 +115,13 @@ SOCKET TcpServer::accept() {
 }
 
 void TcpServer::onConnection(const TcpConnection & pClient) {
-	_clientCount++;
-	// cout << "<server " << _sock << "> " << "New connection: " << "<client " << cli << "> " << inet_ntoa(clientAddr.sin_addr) << "-" << clientAddr.sin_port << endl;
+
 }
 
 // Start child threads
 
 void TcpServer::start(int numOfThreads) {
+	thread_count = numOfThreads;
 	for (int i = 0; i < numOfThreads; i++) {
 		TcpSubserver *subserver = new TcpSubserver(i, this);
 		_subservers.push_back(subserver);
@@ -173,28 +172,20 @@ void TcpServer::onRun(Thread & thread) {
 
 		// Handle other services here...
 		// Benchmark
-		benchmark();
-
+		onIdle();
 	}
 }
 
-// Benchmark
+void TcpServer::onIdle() {
 
-void TcpServer::benchmark() {
-	double t1 = _time.getElapsedSecond();
-	if (t1 >= 1.0) {
-		LOG::INFO("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, (int)_subservers.size(), (int)_clientCount, (int)_msgCount);
-		_msgCount = 0;
-		_time.update();
-	}
 }
 
 void TcpServer::onDisconnection(const TcpConnection & pClient) {
-	_clientCount--;
+	
 }
 
 void TcpServer::onMessage(TcpSubserver * pServer, const TcpConnection & pClient, Message * header) {
-	_msgCount++;
+	
 }
 
 // If connected
@@ -225,3 +216,4 @@ void TcpServer::close() {
 
 	_sock = INVALID_SOCKET;
 }
+

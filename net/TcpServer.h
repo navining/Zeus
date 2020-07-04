@@ -28,6 +28,8 @@ public:
 
 	virtual void onMessage(TcpSubserver *pServer, const TcpConnection& pClient, Message *header);
 
+	virtual void onIdle();
+
 	// Initialize socket
 	int init();
 
@@ -46,9 +48,6 @@ public:
 	// Start server service
 	void onRun(Thread & thread);
 
-	// Benchmark
-	void benchmark();
-
 	// If connected
 	bool isRun();
 
@@ -57,12 +56,11 @@ public:
 
 private:
 	std::vector<TcpSubserver *> _subservers;
-	Timestamp _time;
 	Thread _thread;
 protected:
-	std::atomic_int _msgCount;	// Number of messages
-	std::atomic_int _clientCount;	// Number of clients
 	SOCKET _sock;
+	Timestamp _time;
+	int thread_count;
 };
 
 #endif // !_TcpServer_h_
