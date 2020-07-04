@@ -1,7 +1,8 @@
 #include "TcpClient.h"
+#include <stdio.h>
+#include "Network.h"
 
 TcpClient::TcpClient() {
-	_sock = INVALID_SOCKET;
 	isConnect = false;
 }
 
@@ -12,23 +13,20 @@ TcpClient::~TcpClient() {
 // Initialize socket
 
 SOCKET TcpClient::init() {
-#ifdef _WIN32
-	// Start Win Sock 2.x
-	WORD version = MAKEWORD(2, 2);
-	WSADATA data;
-	WSAStartup(version, &data);
-#endif
+	Network::Init();
+
 	// Create socket
 	if (isRun()) {
-		printf("<client %d> Close old connection...\n", _sock);
+		printf("<client %d> Close old connection...\n", _pClient->sockfd());
 		close();
 	}
-	_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	SOCKET _sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (_sock == INVALID_SOCKET) {
 		printf("Create socket - Fail...\n");
 	}
 	else {
 		// printf("<client %d> Create socket - Success...\n", _sock);
+		_pClient = new TcpSocket(_sock);
 	}
 	return _sock;
 }
@@ -47,13 +45,13 @@ int TcpClient::connect(const char * ip, unsigned short port) {
 #else
 	_sin.sin_addr.s_addr = inet_addr(ip);
 #endif
-	int ret = ::connect(_sock, (sockaddr *)&_sin, sizeof(sockaddr_in));
+	int ret = ::connect(_pClient->sockfd(), (sockaddr *)&_sin, sizeof(sockaddr_in));
 	if (SOCKET_ERROR == ret) {
-		printf("<client %d> Connect - Fail...\n", _sock);
+		printf("<client %d> Connect - Fail...\n", _pClient->sockfd());
 	}
 	else {
 		isConnect = true;
-		// printf("<client %d> Connect - Success...\n", _sock);
+		// printf("<client %d> Connect - Success...\n", _pClient->sockfd());
 	}
 	return ret;
 }
@@ -61,16 +59,8 @@ int TcpClient::connect(const char * ip, unsigned short port) {
 // Close socket
 
 void TcpClient::close() {
-	if (_sock == INVALID_SOCKET) return;
-	//printf("<client %d> Quit...\n", _sock);
-#ifdef _WIN32
-	// Close Win Sock 2.x
-	closesocket(_sock);
-	WSACleanup();
-#else
-	::close(_sock);
-#endif
-	_sock = INVALID_SOCKET;
+	if (_pClient == nullptr) return;
+	delete _pClient;
 	isConnect = false;
 }
 
@@ -79,29 +69,29 @@ void TcpClient::close() {
 bool TcpClient::onRun() {
 	if (!isRun())
 	{
-		printf("<client %d> Start - Fail...\n", _sock);
+		printf("<client %d> Start - Fail...\n", _pClient->sockfd());
 		return false;
 	};
 
 	// Select
 	fd_set fdRead;
 	FD_ZERO(&fdRead);
-	FD_SET(_sock, &fdRead);
+	FD_SET(_pClient->sockfd(), &fdRead);
 	timeval t = { 0, 0 };
-	int ret = select(_sock + 1, &fdRead, NULL, NULL, &t);
+	int ret = select(_pClient->sockfd() + 1, &fdRead, NULL, NULL, &t);
 
 	if (ret < 0) {
-		printf("<client %d> Select - Fail...\n", _sock);
+		printf("<client %d> Select - Fail...\n", _pClient->sockfd());
 		close();
 		return false;
 	}
 
 	// If socket is inside the set
-	if (FD_ISSET(_sock, &fdRead)) {
-		FD_CLR(_sock, &fdRead);
+	if (FD_ISSET(_pClient->sockfd(), &fdRead)) {
+		FD_CLR(_pClient->sockfd(), &fdRead);
 		// Handle request
 		if (-1 == recv()) {
-			printf("<client %d> Process - Fail...\n", _sock);
+			printf("<client %d> Process - Fail...\n", _pClient->sockfd());
 			close();
 			return false;
 		}
@@ -116,41 +106,25 @@ bool TcpClient::onRun() {
 // If connected
 
 bool TcpClient::isRun() {
-	return _sock != INVALID_SOCKET && isConnect;
+	return _pClient != nullptr && isConnect;
 }
 
 // Receive data and unpack
 
 int TcpClient::recv() {
-	// Receive data into the receive buffer
-	int recvlen = (int)::recv(_sock, _recvBuf, RECV_BUFF_SIZE, 0);
-
-	if (recvlen <= 0) {
-		printf("<client %d> Disconnected...\n", _sock);
-		return -1;
+	int ret = _pClient->recv();
+	if (ret <= 0) {
+		return ret;
 	}
 
-	// Copy data into the message buffer
-	memcpy(_msgBuf + _lastPos, _recvBuf, recvlen);
-	_lastPos += recvlen;
-
-	while (_lastPos >= sizeof(Message)) {
-		// Get header
-		Message *header = (Message *)_msgBuf;
-		if (_lastPos >= header->length) {
-			// Size of remaining messages
-			int nSize = _lastPos - header->length;
-			// Process message
-			onMessage(header);
-			// Move remaining messages forward.
-			memcpy(_msgBuf, _msgBuf + header->length, nSize);
-			_lastPos = nSize;
-		}
-		else {
-			break;
-		}
+	while (_pClient->hasMessage()) {
+		// Pop one message from the client buffer
+		Message *msg = _pClient->popMessage();
+		// Process message
+		onMessage(msg);
 	}
-	return 0;
+
+	return ret;
 }
 
 // Process data
@@ -160,17 +134,17 @@ int TcpClient::onMessage(Message * msg) {
 	case CMD_TEST:
 	{
 		Test* test = (Test *)msg;
-		// printf("<client %d> Receive Message: Test\n", _sock);
+		// printf("<client %d> Receive Message: Test\n", _pClient->sockfd());
 		break;
 	}
 	case CMD_ERROR:
 	{
-		printf("<client %d> Receive Message: ERROR\n", _sock);
+		printf("<client %d> Receive Message: ERROR\n", _pClient->sockfd());
 		break;
 	}
 	default:
 	{
-		printf("<client %d> Receive Message: UNDIFINED\n", _sock);
+		printf("<client %d> Receive Message: UNDIFINED\n", _pClient->sockfd());
 	}
 	}
 
@@ -179,12 +153,6 @@ int TcpClient::onMessage(Message * msg) {
 
 // Send data
 
-int TcpClient::send(Message * _msg, int length) {
-	if (!isRun() || _msg == NULL)
-		return SOCKET_ERROR;
-	int ret = ::send(_sock, (const char *)_msg, length, 0);
-	if (SOCKET_ERROR == ret) {
-		close();
-	}
-	return ret;
+int TcpClient::send(Message * _msg) {
+	return _pClient->send(_msg);
 }

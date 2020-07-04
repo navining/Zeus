@@ -19,14 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\server\Buffer.cpp" />
+    <ClCompile Include="..\server\Network.cpp" />
+    <ClCompile Include="..\server\TcpConnection.cpp" />
     <ClCompile Include="..\utils\common.cpp" />
     <ClCompile Include="..\utils\Timestamp.cpp" />
     <ClCompile Include="client.cpp" />
     <ClCompile Include="TcpClient.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\utils\common.h" />
-    <ClInclude Include="..\utils\Timestamp.h" />
+    <ClInclude Include="..\utils\ObjectPool.h" />
     <ClInclude Include="TcpClient.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -85,21 +87,25 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -109,7 +115,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;$(SolutionDir)/server/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -125,7 +131,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;$(SolutionDir)/server/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,7 +149,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;$(SolutionDir)/server/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -163,7 +169,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;$(SolutionDir)/server/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

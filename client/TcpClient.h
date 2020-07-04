@@ -1,11 +1,8 @@
 #ifndef _TcpClient_h_
 #define _TcpClient_h_
 
-
 #include "common.h"
-#include <iostream>
-#include "Message.h"
-
+#include "TcpConnection.h"
 
 class TcpClient {
 public:
@@ -35,10 +32,9 @@ public:
 	virtual int onMessage(Message *msg);
 
 	// Send data
-	int send(Message *_msg, int length);
+	int send(Message *_msg);
 
 private:
-	SOCKET _sock;
 	bool isConnect;
 	// Receive Buffer (System Buffer)
 	char _recvBuf[RECV_BUFF_SIZE] = {};
@@ -46,6 +42,7 @@ private:
 	char _msgBuf[RECV_BUFF_SIZE * 5] = {};
 	// Last position of the message buffer
 	int _lastPos = 0;
+	TcpSocket *_pClient;
 };
 
 #endif // !_TcpClient_h_
