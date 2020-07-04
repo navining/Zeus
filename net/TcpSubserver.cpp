@@ -38,6 +38,8 @@ void TcpSubserver::onRun(Thread & thread) {
 		// Select
 		fd_set fdRead;	// Set of sockets
 		FD_ZERO(&fdRead);
+		fd_set fdWrite;
+		FD_ZERO(&fdWrite);
 
 		if (_clientsChange) {
 			_maxSock = INVALID_SOCKET;
@@ -59,8 +61,13 @@ void TcpSubserver::onRun(Thread & thread) {
 			memcpy(&fdRead, &_fdRead, sizeof(fd_set));
 		}
 
+		memcpy(&fdWrite, &_fdRead, sizeof(fd_set));
+
 		timeval t{ 0, 1 };
-		int ret = select(_maxSock + 1, &fdRead, nullptr, nullptr, &t);
+		int ret = select(_maxSock + 1, &fdRead, &fdWrite, nullptr, &t);
+		
+		if (fdWrite.fd_count < 500)
+			printf("%d %d\n", fdRead.fd_count, fdWrite.fd_count);
 
 		if (ret < 0) {
 			LOG::INFO("<subserver %d> Select - Fail...\n", _id);
@@ -68,7 +75,8 @@ void TcpSubserver::onRun(Thread & thread) {
 			return;
 		}
 
-		respond(fdRead);
+		respondRead(fdRead);
+		respondWrite(fdWrite);
 
 		// Do other things here...
 		checkAlive();
@@ -81,11 +89,47 @@ void TcpSubserver::onRun(Thread & thread) {
 
 // Client socket response: handle request
 
-void TcpSubserver::respond(fd_set & fdRead) {
+void TcpSubserver::respondRead(fd_set & fdRead) {
 #ifdef _WIN32
 	for (int n = 0; n < fdRead.fd_count; n++) {
 		const TcpConnection& pClient = _clients[fdRead.fd_array[n]];
 		if (-1 == recv(pClient)) {
+			// Client disconnected
+			if (_pMain != nullptr) {
+				_pMain->onDisconnection(pClient);
+			}
+			//_clients.erase(pClient->sockfd());
+			_clientsChange = true;
+		}
+	}
+#else
+	std::vector<TcpConnection > disconnected;
+	for (auto it : _clients) {
+		if (FD_ISSET(it.second->sockfd(), &fdRead)) {
+			if (-1 == recv(it.second)) {
+				// Client disconnected
+				if (_pMain != nullptr) {
+					_pMain->onDisconnection(it.second);
+				}
+
+				//disconnected.push_back(it.second);
+				_clientsChange = true;
+			}
+		}
+	}
+
+	// Delete disconnected clients
+	for (TcpConnection pClient : disconnected) {
+		_clients.erase(pClient->sockfd());
+	}
+#endif
+}
+
+void TcpSubserver::respondWrite(fd_set & fdWrite) {
+#ifdef _WIN32
+	for (int n = 0; n < fdWrite.fd_count; n++) {
+		const TcpConnection& pClient = _clients[fdWrite.fd_array[n]];
+		if (-1 == pClient->sendAll()) {
 			// Client disconnected
 			if (_pMain != nullptr) {
 				_pMain->onDisconnection(pClient);
@@ -98,7 +142,7 @@ void TcpSubserver::respond(fd_set & fdRead) {
 	std::vector<TcpConnection > disconnected;
 	for (auto it : _clients) {
 		if (FD_ISSET(it.second->sockfd(), &fdRead)) {
-			if (-1 == recv(it.second)) {
+			if (-1 == pClient->sendAll()) {
 				// Client disconnected
 				if (_pMain != nullptr) {
 					_pMain->onDisconnection(it.second);

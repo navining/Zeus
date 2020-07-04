@@ -59,28 +59,17 @@ bool TcpSocket::isSendEmpty() {
 // Send message (put into the send buffer)
 
 int TcpSocket::send(Message * msg) {
-	int ret = SOCKET_ERROR;
 	int sendLength = msg->length;
 	const char *sendData = (const char *)msg;
 
-	while (true) {
-		if (_sendBuf.push(sendData, sendLength)) {
-			return sendLength;
-		}
-		else {
-			// Data reaches the limitation of send buffer
-			int copyLength = _sendBuf.size() - _sendBuf.last();
-			_sendBuf.push(sendData, copyLength);
-			sendLength -= copyLength;
-			// Send the entire buffer
-			ret = sendAll();
-			if (SOCKET_ERROR == ret) {
-				return ret;
-			}
-		}
+	if (_sendBuf.push(sendData, sendLength)) {
+		return sendLength;
+	}
+	else {
+		//printf("Buffer full\n");
 	}
 
-	return ret;
+	return SOCKET_ERROR;
 }
 
 // Clear the buffer (send everything out)

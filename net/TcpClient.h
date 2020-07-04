@@ -37,6 +37,8 @@ public:
 	// Send data
 	int send(Message *_msg);
 
+	int sendAll();
+
 private:
 	bool isConnect;
 

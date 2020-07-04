@@ -78,10 +78,12 @@ void cmdThread() {
 
 void recvThread(int begin, int end)
 {
+	Timestamp t;
 	while (g_isRun)
 	{
 		for (int n = begin; n < end; n++)
 		{
+			if (t.getElapsedSecond() > 3.0) continue;
 			clients[n]->onRun();
 		}
 	}
@@ -102,18 +104,19 @@ void sendThread(int id) {
 	}
 	LOG::INFO("thread<%d> connected...\n", id);
 
-	//std::thread t1(recvThread, begin, end);
+	std::thread t1(recvThread, begin, end);
 
 	while (g_isRun) {
 		//std::chrono::milliseconds t(100);
 		//std::this_thread::sleep_for(t);
 		for (int i = begin; i < end; i++) {
 			clients[i]->send(&data);
-			clients[i]->onRun();
+			clients[i]->sendAll();
+			// clients[i]->onRun();
 		}
 	}
 
-	//t1.join();
+	t1.join();
 
 	for (int n = begin; n < end; n++)
 	{

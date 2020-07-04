@@ -154,7 +154,7 @@ void TcpServer::onRun(Thread & thread) {
 		FD_SET(_sock, &fdRead);
 
 		// Timeval
-		timeval t = { 0, 10 };
+		timeval t = { 0, 1 };
 
 		int ret = select(_sock + 1, &fdRead, 0, 0, &t);
 

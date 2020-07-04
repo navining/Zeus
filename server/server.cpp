@@ -28,8 +28,8 @@ public:
 		{
 			Test* _test = (Test *)msg;
 			// Send
-			Test *result = new Test();
-			pServer->send(pClient, result);
+			Test result;
+			pClient->send(&result);
 			break;
 		}
 		default:
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
 	server.init();
 	server.bind(ip, port);
 	server.listen(5);
-	server.start(4);
+	server.start(1);
 	
 
 	while (true)

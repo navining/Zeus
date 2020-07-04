@@ -27,7 +27,9 @@ public:
 	void onMessage(const TcpConnection& pClient, Message *msg);
 
 	// Client socket response: handle request
-	void respond(fd_set &fdRead);
+	void respondRead(fd_set &fdRead);
+
+	void respondWrite(fd_set &fdWrite);
 
 	// Check if the client is alive
 	void checkAlive();
