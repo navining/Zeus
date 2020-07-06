@@ -74,6 +74,8 @@ private:
 private:
 	TaskHandler _logTaskHandler;
 	FILE *_pFile;
+
+	static void split(const char *whole_name, char *fname, char *ext);
 };
 
 #endif // !_Log_hpp_
