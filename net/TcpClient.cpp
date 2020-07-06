@@ -17,12 +17,12 @@ SOCKET TcpClient::init() {
 
 	// Create socket
 	if (isRun()) {
-		LOG::INFO("<client %d> Close old connection...\n", _pClient->sockfd());
+		LOG_INFO("<client %d> Close old connection...\n", _pClient->sockfd());
 		close();
 	}
 	SOCKET _sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (_sock == INVALID_SOCKET) {
-		LOG::INFO("Create socket - Fail...\n");
+		LOG_INFO("Create socket - Fail...\n");
 	}
 	else {
 		// LOG::INFO("<client %d> Create socket - Success...\n", _sock);
@@ -47,7 +47,7 @@ int TcpClient::connect(const char * ip, unsigned short port) {
 #endif
 	int ret = ::connect(_pClient->sockfd(), (sockaddr *)&_sin, sizeof(sockaddr_in));
 	if (SOCKET_ERROR == ret) {
-		LOG::INFO("<client %d> Connect - Fail...\n", _pClient->sockfd());
+		LOG_INFO("<client %d> Connect - Fail...\n", _pClient->sockfd());
 	}
 	else {
 		isConnect = true;
@@ -70,7 +70,7 @@ void TcpClient::close() {
 bool TcpClient::onRun() {
 	if (!isRun())
 	{
-		LOG::INFO("<client %d> Start - Fail...\n", _pClient->sockfd());
+		LOG_INFO("<client %d> Start - Fail...\n", _pClient->sockfd());
 		return false;
 	};
 
@@ -96,7 +96,7 @@ bool TcpClient::onRun() {
 	}
 
 	if (ret < 0) {
-		LOG::INFO("<client %d> Select - Fail...\n", _pClient->sockfd());
+		LOG_INFO("<client %d> Select - Fail...\n", _pClient->sockfd());
 		close();
 		return false;
 	}
@@ -105,7 +105,7 @@ bool TcpClient::onRun() {
 	if (FD_ISSET(_pClient->sockfd(), &fdRead)) {
 		// Handle request
 		if (-1 == recv()) {
-			LOG::INFO("<client %d> Read - Fail...\n", _pClient->sockfd());
+			LOG_INFO("<client %d> Read - Fail...\n", _pClient->sockfd());
 			close();
 			return false;
 		}
@@ -114,7 +114,7 @@ bool TcpClient::onRun() {
 	if (FD_ISSET(_pClient->sockfd(), &fdWrite)) {
 		// Handle request
 		if (-1 == _pClient->sendAll()) {
-			LOG::INFO("<client %d> Write - Fail...\n", _pClient->sockfd());
+			LOG_INFO("<client %d> Write - Fail...\n", _pClient->sockfd());
 			close();
 			return false;
 		}

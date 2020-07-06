@@ -8,27 +8,40 @@
 
 using std::chrono::system_clock;
 
-class LOG {
+class Log {
+#define LOG_INFO(...) Log::info(__VA_ARGS__);
+
+#define LOG_WARNING(...) Log::warning(__VA_ARGS__);
+
+#define LOG_ERROR(...) Log::error(__VA_ARGS__);
+
+#ifdef _DEBUG
+#define LOG_DEBUG(...) Log::debug(__VA_ARGS__);
+#else
+#define LOG_DEBUG(...)
+#endif
+
+#define LOG_SETPATH(...) Log::setPath(__VA_ARGS__);
 public:
-	static LOG& Instance();
+	static Log& Instance();
 
 	template<typename ...Args>
-	static void INFO(const char *format, Args... args) {
+	static void info(const char *format, Args... args) {
 		print("INFO", format, args...);
 	}
 
 	template<typename ...Args>
-	static void WARN(const char *format, Args... args) {
+	static void warning(const char *format, Args... args) {
 		print("WARNING", format, args...);
 	}
 
 	template<typename ...Args>
-	static void ERRO(const char *format, Args... args) {
+	static void error(const char *format, Args... args) {
 		print("ERROR", format, args...);
 	}
 
 	template<typename ...Args>
-	static void DEBUG(const char *format, Args... args) {
+	static void debug(const char *format, Args... args) {
 		print("DEBUG", format, args...);
 	}
 
@@ -52,12 +65,12 @@ public:
 
 	static void setPath(const char *path, const char *mode);
 private:
-	LOG();
+	Log();
 
-	~LOG();
+	~Log();
 
-	LOG(const LOG &) = delete;
-	LOG &operator=(const LOG &) = delete;
+	Log(const Log &) = delete;
+	Log &operator=(const Log &) = delete;
 private:
 	TaskHandler _logTaskHandler;
 	FILE *_pFile;

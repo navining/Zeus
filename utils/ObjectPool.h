@@ -108,7 +108,6 @@ T * _ObjectPool<T>::create() {
 		block->refCount = 1;
 	}
 
-	PRINT("Create %lx, id = %d, size = %d\n", block, block->id, sizeof(T));
 	return (T*)((char *)block + sizeof(ObjectBlock));
 }
 
@@ -124,7 +123,6 @@ void _ObjectPool<T>::destory(T * p) {
 		}
 	}
 
-	PRINT("Destory %lx, id = %d, size = %d\n", block, block->id, sizeof(T));
 	if (block->inPool) {
 		// Return back to the pool
 		std::lock_guard<std::mutex> lock(_mutex);

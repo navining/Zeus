@@ -19,7 +19,7 @@ void blockSignal() {
         sigaddset(&signal_mask, SIGPIPE);
         int rc = pthread_sigmask(SIG_BLOCK, &signal_mask, NULL);
         if (rc != 0) {
-                LOG::INFO("block sigpipe error\n");
+                LOG_INFO("block sigpipe error\n");
         }
 }
 #endif // !_WIN32

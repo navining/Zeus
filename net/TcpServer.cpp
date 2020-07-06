@@ -15,15 +15,15 @@ TcpServer::~TcpServer() {
 int TcpServer::init() {
 	// Create socket
 	if (isRun()) {
-		LOG::INFO("<server %d> Close old connection...\n", _sock);
+		LOG_INFO("<server %d> Close old connection...\n", _sock);
 		close();
 	}
 	_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (!isRun()) {
-		LOG::INFO("Create socket - Fail...\n");
+		LOG_INFO("Create socket - Fail...\n");
 	}
 	else {
-		LOG::INFO("<server %d> Create socket - Success...\n", _sock);
+		LOG_INFO("<server %d> Create socket - Success...\n", _sock);
 	}
 	return _sock;
 }
@@ -53,10 +53,10 @@ int TcpServer::bind(const char * ip, unsigned short port) {
 	}
 	int ret = ::bind(_sock, (sockaddr *)&_sin, sizeof(sockaddr_in));
 	if (SOCKET_ERROR == ret) {
-		LOG::INFO("<server %d> Bind %d - Fail...\n", _sock, port);
+		LOG_INFO("<server %d> Bind %d - Fail...\n", _sock, port);
 	}
 	else {
-		LOG::INFO("<server %d> Bind %d - Success...\n", _sock, port);
+		LOG_INFO("<server %d> Bind %d - Success...\n", _sock, port);
 	}
 
 	return ret;
@@ -67,10 +67,10 @@ int TcpServer::bind(const char * ip, unsigned short port) {
 int TcpServer::listen(int n) {
 	int ret = ::listen(_sock, n);
 	if (SOCKET_ERROR == ret) {
-		LOG::INFO("<server %d> Listen - Fail...\n", _sock);
+		LOG_INFO("<server %d> Listen - Fail...\n", _sock);
 	}
 	else {
-		LOG::INFO("<server %d> Listen - Success...\n", _sock);
+		LOG_INFO("<server %d> Listen - Success...\n", _sock);
 	}
 
 	return ret;
@@ -89,7 +89,7 @@ SOCKET TcpServer::accept() {
 	SOCKET cli = ::accept(_sock, (sockaddr *)&clientAddr, (socklen_t *)&addrlen);
 #endif
 	if (INVALID_SOCKET == cli) {
-		LOG::INFO("<server %d> Invaild client socket...\n", _sock);
+		LOG_INFO("<server %d> Invaild client socket...\n", _sock);
 	}
 	else {
 		// Add new client into the buffer with least clients
@@ -141,7 +141,7 @@ void TcpServer::start(int numOfThreads) {
 void TcpServer::onRun(Thread & thread) {
 	if (!isRun())
 	{
-		LOG::INFO("<server %d> Start - Fail...\n", _sock);
+		LOG_INFO("<server %d> Start - Fail...\n", _sock);
 		return;
 	};
 
@@ -159,7 +159,7 @@ void TcpServer::onRun(Thread & thread) {
 		int ret = select(_sock + 1, &fdRead, 0, 0, &t);
 
 		if (ret < 0) {
-			LOG::INFO("<server %d> Select - Fail...\n", _sock);
+			LOG_INFO("<server %d> Select - Fail...\n", _sock);
 			thread.exit();
 			return;
 		}
@@ -212,7 +212,7 @@ void TcpServer::close() {
 #else
 	::close(_sock);
 #endif
-	LOG::INFO("<server %d> Quit...\n", _sock);
+	LOG_INFO("<server %d> Quit...\n", _sock);
 
 	_sock = INVALID_SOCKET;
 }

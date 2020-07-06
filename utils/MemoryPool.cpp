@@ -26,7 +26,7 @@ void * MemoryPool::alloc(size_t size) {
 	MemoryBlock *block = nullptr;
 	if (_pHead == nullptr) {
 		// No extra space - allocate from the system
-		LOG::INFO("WARNING: Memory pool exceed limit: size = %d\n", (int)size);
+		LOG_INFO("WARNING: Memory pool exceed limit: size = %d\n", (int)size);
 		block = (MemoryBlock *)malloc(size + sizeof(MemoryBlock));
 		block->inPool = false;
 		block->id = -1;
@@ -41,7 +41,6 @@ void * MemoryPool::alloc(size_t size) {
 		block->refCount = 1;
 	}
 
-	PRINT("Allocate %lx, id = %d, size = %d\n", block, block->id, size);
 	return (char *)block + sizeof(MemoryBlock);
 }
 
@@ -119,7 +118,6 @@ void * Memory::alloc(size_t size) {
 		block->refCount = 1;
 		block->pool = nullptr;
 		block->next = nullptr;
-		PRINT("Allocate %lx, id = %d, size = %d\n", block, block->id, size);
 		return (char*)block + sizeof(MemoryBlock);
 	}
 	return nullptr;
@@ -129,7 +127,6 @@ void * Memory::alloc(size_t size) {
 
 void Memory::free(void * p) {
 	MemoryBlock *block = (MemoryBlock *)((char *)p - sizeof(MemoryBlock));
-	PRINT("Free %lx, id = %d\n", block, block->id);
 	if (block->inPool) {
 		block->pool->free(p);
 	}

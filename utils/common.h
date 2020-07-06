@@ -37,14 +37,6 @@ typedef long unsigned int size_t;
 // Define a negative number to disable it
 #define CLIENT_SEND_TIME -1
 
-#ifdef DEBUG
-#include <stdio.h>
-#define PRINT(...) printf(__VA_ARGS__)
-#else
-#define PRINT(...)
-#endif // _DEBUG
-
-
 #ifndef _WIN32
 void blockSignal();
 #endif // !_WIN32

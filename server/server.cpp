@@ -44,7 +44,7 @@ public:
 		// Benchmark
 		double t1 = _time.getElapsedSecond();
 		if (t1 >= 1.0) {
-			LOG::INFO("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, thread_count, (int)_clientCount, (int)_msgCount);
+			LOG_INFO("<server %d> Time: %f Threads: %d Clients: %d Packages: %d\n", _sock, t1, thread_count, (int)_clientCount, (int)_msgCount);
 			_msgCount = 0;
 			_time.update();
 		}
@@ -74,12 +74,12 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	LOG::setPath("zeus-server.log", "w");
+	LOG_SETPATH("zeus-server.log", "w");
 	MyServer server;
 	server.init();
 	server.bind(ip, port);
 	server.listen(5);
-	server.start(4);
+	server.start(8);
 	
 
 	while (true)

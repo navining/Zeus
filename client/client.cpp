@@ -1,5 +1,4 @@
 #ifdef _WIN32
-#define _CRT_SECURE_NO_WARNINGS
 #endif
 
 #include <iostream>
@@ -23,12 +22,12 @@ public:
 		}
 		case CMD_ERROR:
 		{
-			LOG::INFO("<client %d> Receive Message: ERROR\n", _pClient->sockfd());
+			LOG_INFO("<client %d> Receive Message: ERROR\n", _pClient->sockfd());
 			break;
 		}
 		default:
 		{
-			LOG::INFO("<client %d> Receive Message: UNDIFINED\n", _pClient->sockfd());
+			LOG_INFO("<client %d> Receive Message: UNDIFINED\n", _pClient->sockfd());
 		}
 		}
 	}
@@ -71,7 +70,7 @@ void cmdThread() {
 			break;
 		}
 		else {
-			LOG::INFO("Invalid input!\n");
+			LOG_INFO("Invalid input!\n");
 		}
 	}
 }
@@ -89,7 +88,7 @@ void recvThread(int begin, int end)
 }
 
 void sendThread(int id) {
-	LOG::INFO("thread<%d> start...\n", id);
+	LOG_INFO("thread<%d> start...\n", id);
 	int count = numOfClients / numOfThreads;
 	int begin = (id - 1) * count;
 	int end = id * count;
@@ -101,7 +100,7 @@ void sendThread(int id) {
 	for (int i = begin; i < end; i++) {
 		clients[i]->connect(ip, port);
 	}
-	LOG::INFO("thread<%d> connected...\n", id);
+	LOG_INFO("thread<%d> connected...\n", id);
 
 	std::thread t1(recvThread, begin, end);
 
@@ -120,7 +119,7 @@ void sendThread(int id) {
 		//clients[n]->close();
 		delete clients[n];
 	}
-	LOG::INFO("thread<%d> exit..\n", id);
+	LOG_INFO("thread<%d> exit..\n", id);
 }
 
 int main(int argc, char* argv[]) {
@@ -140,11 +139,11 @@ int main(int argc, char* argv[]) {
 	thread t1(cmdThread);
 	t1.detach();
 
-	LOG::setPath("zeus-client.log", "w");
+	LOG_SETPATH("zeus-client.log", "w");
 
-	LOG::INFO("Number of clients: %d\n", numOfClients);
-	LOG::INFO("Number of Threads: %d\n", numOfThreads);
-	LOG::INFO("Size per package: %d Bytes\n", (int)sizeof(data));
+	LOG_INFO("Number of clients: %d\n", numOfClients);
+	LOG_INFO("Number of Threads: %d\n", numOfThreads);
+	LOG_INFO("Size per package: %d Bytes\n", (int)sizeof(data));
 	for (int i = 0; i < numOfThreads; i++) {
 		thread t(sendThread, i + 1);
 		t.detach();
@@ -162,7 +161,7 @@ int main(int argc, char* argv[]) {
 				clients[i]->_msgCount = 0;
 			}
 
-			LOG::INFO("Time: %f Threads: %d Clients: %d Packages: %d\n", t1, numOfThreads, numOfClients, msgCount);
+			LOG_INFO("Time: %f Threads: %d Clients: %d Packages: %d\n", t1, numOfThreads, numOfClients, msgCount);
 			msgCount = 0;
 			_time.update();
 		}
