@@ -14,8 +14,28 @@ public:
 
 	template<typename ...Args>
 	static void INFO(const char *format, Args... args) {
+		print("INFO", format, args...);
+	}
+
+	template<typename ...Args>
+	static void WARN(const char *format, Args... args) {
+		print("WARNING", format, args...);
+	}
+
+	template<typename ...Args>
+	static void ERRO(const char *format, Args... args) {
+		print("ERROR", format, args...);
+	}
+
+	template<typename ...Args>
+	static void DEBUG(const char *format, Args... args) {
+		print("DEBUG", format, args...);
+	}
+
+	template<typename ...Args>
+	static void print(const char *type, const char *format, Args... args) {
 		Instance()._logTaskHandler.addTask([=]() {
-			printf("[INFO] ");
+			printf("[%s] ", type);
 			printf(format, args...);
 
 			FILE *pFile = Instance()._pFile;
@@ -23,7 +43,7 @@ public:
 				time_t now = system_clock::to_time_t(system_clock::now());
 				std::tm *pNow = localtime(&now);
 				fprintf(pFile, "[%d-%02d-%02d %02d:%02d:%02d] ", pNow->tm_year + 1900, pNow->tm_mon + 1, pNow->tm_mday, pNow->tm_hour, pNow->tm_min, pNow->tm_sec);
-				fprintf(Instance()._pFile, "[INFO] ");
+				fprintf(Instance()._pFile, "[%s] ", type);
 				fprintf(Instance()._pFile, format, args...);
 				fflush(Instance()._pFile);
 			}
