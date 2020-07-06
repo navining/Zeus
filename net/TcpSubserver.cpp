@@ -66,7 +66,7 @@ void TcpSubserver::onRun(Thread & thread) {
 		int ret = select(_maxSock + 1, &fdRead, &fdWrite, nullptr, &t);
 
 		if (ret < 0) {
-			LOG_INFO("<subserver %d> Select - Fail...\n", _id);
+			LOG_ERROR("<subserver %d> Select - Fail...\n", _id);
 			thread.exit();
 			return;
 		}

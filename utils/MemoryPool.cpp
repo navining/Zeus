@@ -26,7 +26,7 @@ void * MemoryPool::alloc(size_t size) {
 	MemoryBlock *block = nullptr;
 	if (_pHead == nullptr) {
 		// No extra space - allocate from the system
-		LOG_INFO("WARNING: Memory pool exceed limit: size = %d\n", (int)size);
+		LOG_WARNING("Memory pool exceed limit: size = %d\n", (int)size);
 		block = (MemoryBlock *)malloc(size + sizeof(MemoryBlock));
 		block->inPool = false;
 		block->id = -1;

@@ -16,7 +16,7 @@ void Log::setPath(const char * path, const char * mode) {
 	pFile = fopen(path, mode);
 
 	if (pFile == nullptr) {
-		LOG_INFO("Set log path - Fail! PATH=%s, MODE=%s\n", path, mode);
+		LOG_ERROR("Set log path - Fail! PATH=%s, MODE=%s\n", path, mode);
 	}
 	else {
 		LOG_INFO("Set log path - Success! PATH=%s, MODE=%s\n", path, mode);

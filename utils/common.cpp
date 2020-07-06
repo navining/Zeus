@@ -19,7 +19,7 @@ void blockSignal() {
         sigaddset(&signal_mask, SIGPIPE);
         int rc = pthread_sigmask(SIG_BLOCK, &signal_mask, NULL);
         if (rc != 0) {
-                LOG_INFO("block sigpipe error\n");
+                printf("block sigpipe error\n");
         }
 }
 #endif // !_WIN32
