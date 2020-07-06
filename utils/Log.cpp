@@ -55,7 +55,7 @@ void Log::split(const char *whole_name, char *fname, char *ext)
 		snprintf(fname, index - whole_name + 1, "%s", whole_name);
 	}
 	else {
-		ext = '\0';
+		*ext = '\0';
 		strcpy(fname, whole_name);
 	}
 }
