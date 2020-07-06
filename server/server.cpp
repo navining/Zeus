@@ -57,11 +57,7 @@ private:
 int main(int argc, char* argv[]) {
 	const char *ip;
 	u_short port;
-	if (argc == 1) {
-		ip = NULL;
-		port = 4567;
-	}
-	else if (argc == 2) {
+	if (argc == 2) {
 		ip = NULL;
 		port = atoi(argv[1]);
 	}
@@ -70,7 +66,7 @@ int main(int argc, char* argv[]) {
 		port = atoi(argv[2]);
 	}
 	else {
-		std::cout << "Invalid Input!" << std::endl;
+		std::cout << "Invalid Argument!" << std::endl;
 		return -1;
 	}
 
