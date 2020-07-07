@@ -28,6 +28,7 @@
     <ClInclude Include="..\net\TcpServer.h" />
     <ClInclude Include="..\net\TcpSubserver.h" />
     <ClInclude Include="..\utils\common.h" />
+    <ClInclude Include="..\utils\Config.h" />
     <ClInclude Include="..\utils\Log.h" />
     <ClInclude Include="..\utils\MemoryPool.h" />
     <ClInclude Include="..\utils\Message.h" />
@@ -45,6 +46,7 @@
     <ClCompile Include="..\net\TcpServer.cpp" />
     <ClCompile Include="..\net\TcpSubserver.cpp" />
     <ClCompile Include="..\utils\common.cpp" />
+    <ClCompile Include="..\utils\Config.cpp" />
     <ClCompile Include="..\utils\Log.cpp" />
     <ClCompile Include="..\utils\MemoryPool.cpp" />
     <ClCompile Include="..\utils\Semaphore.cpp" />

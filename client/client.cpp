@@ -6,6 +6,7 @@
 #include "Timestamp.h"
 #include "TcpClient.h"
 #include <atomic>
+#include "Config.h"
 
 using std::thread;
 
@@ -123,24 +124,17 @@ void sendThread(int id) {
 }
 
 int main(int argc, char* argv[]) {
-	if (argc == 1) {
-		ip = "127.0.0.1";
-		port = 4567;
-	}
-	else if (argc == 3) {
-		ip = argv[1];
-		port = atoi(argv[2]);
-	}
-	else {
-		std::cout << "Invalid Input!" << std::endl;
-		return -1;
-	}
+	Config::Init(argc, argv);
+	ip = Config::Instance().parseStr("IP", "127.0.0.1");
+	port = Config::Instance().parseInt("PORT", 4567);
 
 	thread t1(cmdThread);
 	t1.detach();
 
 	LOG_SETPATH("zeus-client.log", "w");
 
+	LOG_INFO("IP: %s\n", ip);
+	LOG_INFO("Port: %d\n", port);
 	LOG_INFO("Number of clients: %d\n", numOfClients);
 	LOG_INFO("Number of Threads: %d\n", numOfThreads);
 	LOG_INFO("Size per package: %d Bytes\n", (int)sizeof(data));
