@@ -28,6 +28,7 @@
     <ClInclude Include="..\net\TcpServer.h" />
     <ClInclude Include="..\net\TcpSubserver.h" />
     <ClInclude Include="..\utils\common.h" />
+    <ClInclude Include="..\utils\Config.h" />
     <ClInclude Include="..\utils\Log.h" />
     <ClInclude Include="..\utils\MemoryPool.h" />
     <ClInclude Include="..\utils\Message.h" />

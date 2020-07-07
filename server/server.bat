@@ -1,7 +1,7 @@
 @set IP=
-@set PORT=
+@set PORT=4567
 
 @cd ../bin/Win32/Release
-server %IP% %PORT%
+server IP=%IP% PORT=%PORT%
 
 @pause

@@ -43,6 +43,7 @@ int TcpServer::bind(const char * ip, unsigned short port) {
 #else
 		_sin.sin_addr.s_addr = inet_addr(ip);
 #endif
+		LOG_INFO("<server %d> IP - %s\n", _sock, ip);
 	}
 	else {
 #ifdef _WIN32
@@ -50,7 +51,9 @@ int TcpServer::bind(const char * ip, unsigned short port) {
 #else
 		_sin.sin_addr.s_addr = INADDR_ANY;
 #endif
+		LOG_INFO("<server %d> IP - ANY\n", _sock);
 	}
+
 	int ret = ::bind(_sock, (sockaddr *)&_sin, sizeof(sockaddr_in));
 	if (SOCKET_ERROR == ret) {
 		LOG_ERROR("<server %d> Bind %d - Fail...\n", _sock, port);

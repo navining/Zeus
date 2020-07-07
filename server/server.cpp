@@ -4,6 +4,7 @@
 #include <thread>
 #include <atomic>
 #include "TcpServer.h"
+#include "Config.h"
 //#include "Allocator.hpp"
 
 class MyServer : public TcpServer {
@@ -55,20 +56,9 @@ private:
 };
 
 int main(int argc, char* argv[]) {
-	const char *ip;
-	u_short port;
-	if (argc == 2) {
-		ip = NULL;
-		port = atoi(argv[1]);
-	}
-	else if (argc == 3) {
-		ip = argv[1];
-		port = atoi(argv[2]);
-	}
-	else {
-		std::cout << "Invalid Argument!" << std::endl;
-		return -1;
-	}
+	Config::Init(argc, argv);
+	const char *ip = Config::Instance().parseStr("IP", NULL);
+	u_short port = Config::Instance().parseInt("PORT", 4567);
 
 	LOG_SETPATH("zeus-server.log", "w");
 	MyServer server;
