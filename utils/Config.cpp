@@ -1,4 +1,5 @@
 #include "Config.h"
+#include <string.h>
 
 Config & Config::Instance() {
 	static Config _config;
@@ -12,20 +13,20 @@ void Config::Init(int argc, char * args[]) {
 	}
 }
 
-const char * Config::parseStr(const char * arg, const char * default) {
+const char * Config::parseStr(const char * arg, const char * def) {
 	auto it = _cmd.find(arg);
 	if (it != _cmd.end() && it->second != "") {
-		default = it->second.c_str();
+		def = it->second.c_str();
 	}
-	return default;
+	return def;
 }
 
-int Config::parseInt(const char * arg, int default) {
+int Config::parseInt(const char * arg, int def) {
 	auto it = _cmd.find(arg);
 	if (it != _cmd.end() && it->second != "") {
-		default = atoi(it->second.c_str());
+		def = atoi(it->second.c_str());
 	}
-	return default;
+	return def;
 }
 
 void Config::split(char * cmd) {

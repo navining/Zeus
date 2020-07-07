@@ -13,9 +13,9 @@ public:
 
 	static void Init(int argc, char* args[]);
 
-	const char * parseStr(const char * arg, const char * default = "");
+	const char * parseStr(const char * arg, const char * def = "");
 
-	int parseInt(const char * arg, int default = 0);
+	int parseInt(const char * arg, int def = 0);
 
 private:
 	std::string _path;

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-IP=
+IP=127.0.0.1
 PORT=4567
 
-../bin/server IP=$IP PORT=$PORT
+../bin/client IP=$IP PORT=$PORT
 
 read -p "Press any key to exit..." var
