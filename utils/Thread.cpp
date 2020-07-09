@@ -43,4 +43,5 @@ void Thread::run() {
 	_onClose(*this);
 
 	_semaphore.wakeup();	// Go on close()
+	_isRun = false;
 }
