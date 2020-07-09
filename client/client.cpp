@@ -8,8 +8,6 @@
 #include <atomic>
 #include "Config.h"
 
-using std::thread;
-
 class MyClient : public TcpClient {
 public:
 	void onMessage(Message *msg) {
@@ -39,10 +37,10 @@ public:
 
 
 // Number of clients
-const int numOfClients = 1000;
+int numOfClients;
 
 // Number of threads
-const int numOfThreads = 2;
+int numOfThreads;
 
 // Server IP
 const char *ip;
@@ -51,23 +49,22 @@ const char *ip;
 u_short port;
 
 // Array of clients
-MyClient* clients[numOfClients];
+MyClient** clients;
 
 // Data to be sent
 Test data;	// 1000 Byte
 
 int msgCount = 0;
 
-bool g_isRun = true;
+std::atomic_int clientsCount = 0;
 
-void cmdThread() {
-	while (true)
+void cmdThread(Thread &t) {
+	while (t.isRun())
 	{
 		char cmdBuf[256] = {};
 		scanf("%s", cmdBuf);
 		if (0 == strcmp(cmdBuf, "exit"))
 		{
-			g_isRun = false;
 			break;
 		}
 		else {
@@ -76,20 +73,9 @@ void cmdThread() {
 	}
 }
 
-void recvThread(int begin, int end)
-{
-	Timestamp t;
-	while (g_isRun)
-	{
-		for (int n = begin; n < end; n++)
-		{
-			clients[n]->onRun();
-		}
-	}
-}
-
-void sendThread(int id) {
+void workerThread(Thread &t, int id) {
 	LOG_INFO("thread<%d> start...\n", id);
+
 	int count = numOfClients / numOfThreads;
 	int begin = (id - 1) * count;
 	int end = id * count;
@@ -100,20 +86,24 @@ void sendThread(int id) {
 
 	for (int i = begin; i < end; i++) {
 		clients[i]->connect(ip, port);
+		clientsCount++;
 	}
+
 	LOG_INFO("thread<%d> connected...\n", id);
 
-	std::thread t1(recvThread, begin, end);
+	while (clientsCount < numOfClients) {
+		Thread::sleep(10);
+	}
 
-	while (g_isRun) {
-		//std::chrono::milliseconds t(1);
-		//std::this_thread::sleep_for(t);
+	while (t.isRun()) {
 		for (int i = begin; i < end; i++) {
 			clients[i]->send(&data);
 		}
-	}
 
-	t1.join();
+		for (int i = begin; i < end; i++) {
+			clients[i]->onRun();
+		}
+	}
 
 	for (int n = begin; n < end; n++)
 	{
@@ -127,9 +117,17 @@ int main(int argc, char* argv[]) {
 	Config::Init(argc, argv);
 	ip = Config::Instance().parseStr("IP", "127.0.0.1");
 	port = Config::Instance().parseInt("PORT", 4567);
+	numOfClients = Config::Instance().parseInt("CLIENT", 1000);
+	numOfThreads = Config::Instance().parseInt("THREAD", 2);
 
-	thread t1(cmdThread);
-	t1.detach();
+	clients = new MyClient*[numOfClients];
+
+	Thread cmd;
+	cmd.start(
+		EMPTY_THREAD_FUNC,
+		std::function<void(Thread &)>(cmdThread),
+		EMPTY_THREAD_FUNC
+	);
 
 	LOG_SETPATH("zeus-client.log", "w");
 
@@ -138,14 +136,22 @@ int main(int argc, char* argv[]) {
 	LOG_INFO("Number of clients: %d\n", numOfClients);
 	LOG_INFO("Number of Threads: %d\n", numOfThreads);
 	LOG_INFO("Size per package: %d Bytes\n", (int)sizeof(data));
-	for (int i = 0; i < numOfThreads; i++) {
-		thread t(sendThread, i + 1);
-		t.detach();
+
+	std::vector<Thread> threads(numOfThreads);
+	for (int n = 0; n < numOfThreads; n++)
+	{
+		threads[n].start(
+			EMPTY_THREAD_FUNC,
+			[n](Thread& p) {
+				workerThread(p, n + 1);
+			},
+			EMPTY_THREAD_FUNC
+			);
 	}
 
 	Timestamp _time;
 
-	while (g_isRun) {
+	while (cmd.isRun()) {
 		// Benchmark
 		double t1 = _time.getElapsedSecond();
 		if (t1 >= 1.0) {
@@ -161,5 +167,11 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	for (auto &t : threads) {
+		t.close();
+	}
+
+	delete[] clients;
+	cmd.close();
 	return 0;
 }

@@ -22,6 +22,7 @@ public:
 
 	bool isRun() const;
 	
+	static void sleep(time_t t);
 protected:
 	void run();
 private:
