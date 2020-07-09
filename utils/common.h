@@ -37,6 +37,10 @@ typedef long unsigned int size_t;
 // Define a negative number to disable it
 #define CLIENT_SEND_TIME -1
 
+// Maximum available connection
+// Define a negative number to disable it
+#define MAX_CLIENT -1
+
 #ifndef _WIN32
 void blockSignal();
 #endif // !_WIN32

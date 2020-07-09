@@ -5,6 +5,7 @@
 
 #include <mutex>
 #include <vector>
+#include <atomic>
 
 #include "common.h"
 #include "TcpConnection.h"
@@ -53,9 +54,12 @@ public:
 	// Close socket
 	void close();
 
+	int clientCount();
+
 private:
 	std::vector<TcpSubserver *> _subservers;
 	Thread _thread;
+	std::atomic_int _clientCount;	// Number of clients
 protected:
 	SOCKET _sock;
 	Timestamp _time;

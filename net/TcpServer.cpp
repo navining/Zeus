@@ -4,6 +4,7 @@ TcpServer::TcpServer() {
 	Network::Init();
 	_sock = INVALID_SOCKET;
 	thread_count = 0;
+	_clientCount = 0;
 }
 
 TcpServer::~TcpServer() {
@@ -93,32 +94,43 @@ SOCKET TcpServer::accept() {
 #endif
 	if (INVALID_SOCKET == cli) {
 		LOG_ERROR("<server %d> Invaild client socket...\n", _sock);
+		return INVALID_SOCKET;
 	}
-	else {
-		// Add new client into the buffer with least clients
-		int minCount = INT_MAX;
-		TcpSubserver *minHandler = nullptr;
-		for (auto subserver : _subservers) {
-			if (subserver->getClientCount() < minCount) {
-				minCount = subserver->getClientCount();
-				minHandler = subserver;
-			}
-		}
-		if (minHandler == nullptr) {
-			return INVALID_SOCKET;
-		}
 
-		TcpConnection pClient(new TcpSocket(cli));
-		minHandler->addClients(pClient);
-
-		onConnection(pClient);
+	if (MAX_CLIENT >= 0 && _clientCount > MAX_CLIENT) {
+#ifdef _WIN32
+		::closesocket(cli);
+#else
+		::close(cli);
+#endif
+		LOG_WARNING("Reach maximum connection limit: %d\n", MAX_CLIENT);
+		return INVALID_SOCKET;
 	}
+
+	// Add new client into the buffer with least clients
+	int minCount = INT_MAX;
+	TcpSubserver *minHandler = nullptr;
+	for (auto subserver : _subservers) {
+		if (subserver->getClientCount() < minCount) {
+			minCount = subserver->getClientCount();
+			minHandler = subserver;
+		}
+	}
+	if (minHandler == nullptr) {
+		return INVALID_SOCKET;
+	}
+
+	TcpConnection pClient(new TcpSocket(cli));
+	minHandler->addClients(pClient);
+
+	_clientCount++;
+	onConnection(pClient);
 
 	return cli;
 }
 
 void TcpServer::onConnection(const TcpConnection & pClient) {
-
+	
 }
 
 // Start child threads
@@ -184,11 +196,11 @@ void TcpServer::onIdle() {
 }
 
 void TcpServer::onDisconnection(const TcpConnection & pClient) {
-	
+
 }
 
 void TcpServer::onMessage(const TcpConnection & pClient, Message * msg) {
-	
+
 }
 
 // If connected
@@ -218,5 +230,10 @@ void TcpServer::close() {
 	LOG_INFO("<server %d> Quit...\n", _sock);
 
 	_sock = INVALID_SOCKET;
+}
+
+int TcpServer::clientCount()
+{
+	return _clientCount;
 }
 
