@@ -51,8 +51,11 @@ u_short port;
 // Array of clients
 MyClient** clients;
 
-// Data to be sent
-Test data;	// 1000 Byte
+// Message to be sent
+Test msg;	// 100 Byte
+
+// Number of messages sent by each client
+int numOfMsg;
 
 int msgCount = 0;
 
@@ -96,20 +99,23 @@ void workerThread(Thread &t, int id) {
 	}
 
 	while (t.isRun()) {
-		for (int i = begin; i < end; i++) {
-			clients[i]->send(&data);
+		for (int n = 0; n < numOfMsg; n++) {
+			for (int i = begin; i < end; i++) {
+				clients[i]->send(&msg);
+			}
 		}
 
 		for (int i = begin; i < end; i++) {
 			clients[i]->onRun();
 		}
+
 	}
 
 	for (int n = begin; n < end; n++)
 	{
-		//clients[n]->close();
 		delete clients[n];
 	}
+
 	LOG_INFO("thread<%d> exit..\n", id);
 }
 
@@ -119,6 +125,7 @@ int main(int argc, char* argv[]) {
 	port = Config::Instance().parseInt("PORT", 4567);
 	numOfClients = Config::Instance().parseInt("CLIENT", 1000);
 	numOfThreads = Config::Instance().parseInt("THREAD", 2);
+	numOfMsg = Config::Instance().parseInt("MSG", 100);
 
 	clients = new MyClient*[numOfClients];
 
@@ -134,8 +141,9 @@ int main(int argc, char* argv[]) {
 	LOG_INFO("IP: %s\n", ip);
 	LOG_INFO("Port: %d\n", port);
 	LOG_INFO("Number of clients: %d\n", numOfClients);
-	LOG_INFO("Number of Threads: %d\n", numOfThreads);
-	LOG_INFO("Size per package: %d Bytes\n", (int)sizeof(data));
+	LOG_INFO("Number of threads: %d\n", numOfThreads);
+	LOG_INFO("Number of packages per client: %d\n", numOfMsg);
+	LOG_INFO("Size per package: %d Bytes\n", (int)sizeof(msg));
 
 	std::vector<Thread> threads(numOfThreads);
 	for (int n = 0; n < numOfThreads; n++)
@@ -150,6 +158,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	Timestamp _time;
+
+	while (clientsCount < numOfClients) {
+		Thread::sleep(10);
+	}
 
 	while (cmd.isRun()) {
 		// Benchmark
