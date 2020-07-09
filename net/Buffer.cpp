@@ -47,7 +47,15 @@ int Buffer::send(SOCKET client) {
 	int ret = 0;
 	if (_last > 0) {
 		ret = ::send(client, _pBuf, _last, 0);
-		clear();
+		if (ret <= 0) return SOCKET_ERROR;
+		if (ret == _last) {
+			clear();
+		}
+		else {
+			// Fail to send the entire buffer - still has remaining data
+			memcpy(_pBuf, _pBuf + ret, _last - ret);
+			_last -= ret;
+		}
 	}
 	return ret;
 }
