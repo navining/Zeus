@@ -39,8 +39,7 @@ bool Thread::isRun() const {
 
 void Thread::sleep(time_t t)
 {
-	std::chrono::milliseconds dt(t);
-	std::this_thread::sleep_for(dt);
+	Thread::sleep(1);
 }
 
 void Thread::run() {

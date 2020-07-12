@@ -40,8 +40,7 @@ void TaskHandler::onRun(Thread & thread) {
 
 		// Sleep if there's no task to do
 		if (_tasks.empty()) {
-			std::chrono::milliseconds t(1);
-			std::this_thread::sleep_for(t);
+			Thread::sleep(1);
 			continue;
 		}
 
