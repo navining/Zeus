@@ -104,7 +104,7 @@ bool TcpClient::onRun() {
 	// If socket is inside the set
 	if (FD_ISSET(_pClient->sockfd(), &fdRead)) {
 		// Handle request
-		if (-1 == recv()) {
+		if (SOCKET_ERROR == recv()) {
 			LOG_ERROR("<client %d> Read - Fail...\n", _pClient->sockfd());
 			close();
 			return false;
@@ -113,7 +113,7 @@ bool TcpClient::onRun() {
 
 	if (FD_ISSET(_pClient->sockfd(), &fdWrite)) {
 		// Handle request
-		if (-1 == _pClient->sendAll()) {
+		if (SOCKET_ERROR == _pClient->sendAll()) {
 			LOG_ERROR("<client %d> Write - Fail...\n", _pClient->sockfd());
 			close();
 			return false;

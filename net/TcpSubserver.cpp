@@ -15,10 +15,12 @@ TcpSubserver::~TcpSubserver() {
 void TcpSubserver::onRun(Thread & thread) {
 	_clientsChange = false;
 	while (thread.isRun()) {
+		// Update current timestamp
+		_tCurrent = Time::getCurrentTimeInMilliSec();
+
 		// Sleep if there's no clients
 		if (getClientCount() == 0) {
 			Thread::sleep(1);
-			_tCurrent = Time::getCurrentTimeInMilliSec();
 			continue;
 		}
 
@@ -39,11 +41,13 @@ void TcpSubserver::onRun(Thread & thread) {
 			thread.exit();
 		}
 
+		// Process messages
+		process();
+
 		// Do other things here...
 		onIdle();
 
-		// Update current timestamp
-		_tCurrent = Time::getCurrentTimeInMilliSec();
+		
 	}
 }
 
@@ -98,7 +102,7 @@ void TcpSubserver::respondRead(fd_set & fdRead) {
 		auto it = _clients.find(fdRead.fd_array[n]);
 		if (it == _clients.end()) continue;
 		const TcpConnection& pClient = it->second;
-		if (-1 == recv(pClient)) {
+		if (SOCKET_ERROR == recv(pClient)) {
 			// Client disconnected
 			onDisconnection(pClient);
 			_clients.erase(pClient->sockfd());
@@ -108,7 +112,7 @@ void TcpSubserver::respondRead(fd_set & fdRead) {
 #else
 	for (auto it = _clients.begin(); it != _clients.end();) {
 		if (FD_ISSET(it->second->sockfd(), &fdRead)) {
-			if (-1 == recv(it->second)) {
+			if (SOCKET_ERROR == recv(it->second)) {
 				// Client disconnected
 				onDisconnection(it->second);
 				it = _clients.erase(it);
@@ -127,7 +131,7 @@ void TcpSubserver::respondWrite(fd_set & fdWrite) {
 		auto it = _clients.find(fdWrite.fd_array[n]);
 		if (it == _clients.end()) continue;
 		const TcpConnection& pClient = it->second;
-		if (-1 == pClient->sendAll()) {
+		if (SOCKET_ERROR == pClient->sendAll()) {
 			// Client disconnected
 			onDisconnection(pClient);
 			_clients.erase(pClient->sockfd());
@@ -136,7 +140,7 @@ void TcpSubserver::respondWrite(fd_set & fdWrite) {
 #else
 	for (auto it = _clients.begin(); it != _clients.end();) {
 		if (FD_ISSET(it->second->sockfd(), &fdWrite)) {
-			if (-1 == recv(it->second)) {
+			if (SOCKET_ERROR == recv(it->second)) {
 				// Client disconnected
 				onDisconnection(it->second);
 				it = _clients.erase(it);
@@ -190,18 +194,24 @@ int TcpSubserver::recv(const TcpConnection & pClient) {
 
 	// Use each buffer of the client directly, no need to copy here
 	int ret = pClient->recv();
+
 	if (ret <= 0) {
 		return ret;
 	}
 
-	while (pClient->hasMessage()) {
-		// Pop one message from the client buffer
-		Message *msg = pClient->popMessage();
-		// Process message
-		onMessage(pClient, msg);
-	}
-
 	return 0;
+}
+
+void TcpSubserver::process() {
+	for (auto it : _clients) {
+		TcpConnection & pClient = it.second;
+		if (pClient->hasMessage()) {
+			// Pop one message from the client buffer
+			Message *msg = pClient->popMessage();
+			// Process message
+			onMessage(pClient, msg);
+		}
+	}
 }
 
 // Handle message

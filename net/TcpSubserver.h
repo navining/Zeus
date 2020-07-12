@@ -56,6 +56,9 @@ public:
 	// Receive data
 	int recv(const TcpConnection& pClient);
 
+	// Process messages in each client buffer
+	void process();
+
 	// Close socket
 	void close();
 
