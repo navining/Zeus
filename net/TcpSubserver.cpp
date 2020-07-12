@@ -57,6 +57,7 @@ bool TcpSubserver::select() {
 	fd_set fdRead;	// Set of sockets
 	FD_ZERO(&fdRead);
 	fd_set fdWrite;
+	FD_ZERO(&fdWrite);
 
 	if (_clientsChange) {
 		_maxSock = INVALID_SOCKET;
@@ -78,10 +79,23 @@ bool TcpSubserver::select() {
 		memcpy(&fdRead, &_fdRead, sizeof(fd_set));
 	}
 
-	memcpy(&fdWrite, &_fdRead, sizeof(fd_set));
+	// Only put writtable sockets in fdWrite
+	bool needWrite = false;
+	for (auto it : _clients) {
+		if (!it.second->isSendEmpty()) {
+			needWrite = true;
+			FD_SET(it.second->sockfd(), &fdWrite);
+		}
+	}
 
 	timeval t{ 0, 1 };
-	int ret = ::select(_maxSock + 1, &fdRead, &fdWrite, nullptr, &t);
+	int ret = 0;
+	if (needWrite) {
+		ret = ::select(_maxSock + 1, &fdRead, &fdWrite, nullptr, &t);
+	}
+	else {
+		ret = ::select(_maxSock + 1, &fdRead, nullptr, nullptr, &t);
+	}
 
 	if (ret < 0) {
 		LOG_ERROR("<subserver %d> Select - Fail...\n", _id);
