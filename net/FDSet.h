@@ -3,11 +3,9 @@
 
 #include "common.h"
 
-#define MAX_FD_SIZE 65535
-
 class FDSet {
 public:
-	FDSet(int fdCount);
+	FDSet();
 
 	~FDSet();
 
@@ -26,10 +24,8 @@ public:
 	int fdCount() const;
 
 	// Warning: assume same size here
-	FDSet(const FDSet &other);
-	
-	// Warning: assume same size here
-	FDSet& operator=(const FDSet &other);
+	void copy(const FDSet &other);
+
 private:
 	fd_set *_fdset = nullptr;
 	size_t _fdSize = 0;

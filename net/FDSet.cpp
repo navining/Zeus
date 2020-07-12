@@ -1,7 +1,9 @@
 #include "FDSet.h"
 
-FDSet::FDSet(int fdCount) {
-	_fdCount = fdCount <= MAX_FD_SIZE ? fdCount : MAX_FD_SIZE;
+#define FD_SIZE 10240
+
+FDSet::FDSet() {
+	_fdCount = FD_SIZE;
 #ifdef _WIN32
 	_fdSize = sizeof(u_int) + sizeof(SOCKET) * _fdCount;
 #else
@@ -19,15 +21,21 @@ FDSet::~FDSet() {
 	}
 }
 
-inline void FDSet::set(SOCKET sock) {
+void FDSet::set(SOCKET sock) {
+#ifndef _WIN32
+	if (sock >= FD_SIZE) {
+		LOG_ERROR("Socket fd exceed limit: %d\n", FD_SIZE);
+		return;
+	}
+#endif // _WIN32
 	FD_SET(sock, _fdset);
 }
 
-inline void FDSet::clear(SOCKET sock) {
+void FDSet::clear(SOCKET sock) {
 	FD_CLR(sock, _fdset);
 }
 
-inline void FDSet::zero() {
+void FDSet::zero() {
 #ifdef _WIN32
 	FD_ZERO(_fdset);
 #else
@@ -53,11 +61,6 @@ int FDSet::fdCount() const {
 
 // Warning: assume same size here
 
-FDSet::FDSet(const FDSet & other) {
+void FDSet::copy(const FDSet & other) {
 	memcpy(_fdset, other.fdset(), other.fdSize());
-}
-
-FDSet& FDSet::operator=(const FDSet &other) {
-	memcpy(_fdset, other.fdset(), other.fdSize());
-	return *this;
 }

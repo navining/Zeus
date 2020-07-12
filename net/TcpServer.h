@@ -51,6 +51,8 @@ public:
 	// If connected
 	bool isRun();
 
+	bool select();
+
 	// Close socket
 	void close();
 

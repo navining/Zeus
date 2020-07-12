@@ -5,6 +5,7 @@
 #include <atomic>
 #include "TcpServer.h"
 #include "Config.h"
+#include "FDSet.h"
 //#include "Allocator.hpp"
 
 class MyServer : public TcpServer {
@@ -59,7 +60,7 @@ int main(int argc, char* argv[]) {
 	Config::Init(argc, argv);
 	const char *ip = Config::Instance().parseStr("IP", NULL);
 	u_short port = Config::Instance().parseInt("PORT", 4567);
-	int numOfThreads = Config::Instance().parseInt("THREAD", 2);
+	int numOfThreads = Config::Instance().parseInt("THREAD", 1);
 
 	LOG_SETPATH("zeus-server.log", "w");
 	MyServer server;

@@ -2,7 +2,7 @@
 #define _common_h_
 
 #ifdef _WIN32
-#define FD_SETSIZE	10240	// Size of FD_SET
+#define FD_SETSIZE 10240	// Size of fd_set
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WinSock2.h>
