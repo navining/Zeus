@@ -8,11 +8,11 @@
 #include <vector>
 #include <atomic>
 #include "Config.h"
+#include "client.h"
 
 class MyClient : public TcpClient {
 public:
 	void onMessage(Message *msg) {
-		_msgCount++;
 		switch (msg->cmd) {
 		case CMD_TEST:
 		{
@@ -32,8 +32,33 @@ public:
 		}
 	}
 
-public:
-	std::atomic_int _msgCount;	// Number of messages
+	int sendTest(Message *test)
+	{
+		int ret = 0;
+		if (_nSendCount > 0)
+		{
+			ret = send(test);
+			if (SOCKET_ERROR != ret)
+			{
+				--_nSendCount;
+			}
+		}
+		return ret;
+	}
+
+	bool checkSend(time_t dt)
+	{
+		_tRestTime += dt;
+		if (_tRestTime >= 1)
+		{
+			_tRestTime -= 1;
+			_nSendCount = 1;
+		}
+		return _nSendCount > 0;
+	}
+private:
+	time_t _tRestTime = 0;
+	int _nSendCount = 0;
 };
 
 
@@ -58,10 +83,9 @@ Test msg;	// 100 Byte
 // Number of messages sent by each client
 int numOfMsg;
 
-int msgCount = 0;
-
 std::atomic_int clientsCount(0);
 std::atomic_int readyCount(0);
+std::atomic_int sendCount(0);
 
 void cmdThread(Thread &t) {
 	while (t.isRun())
@@ -87,11 +111,13 @@ void workerThread(Thread &t, int id) {
 
 	for (int i = begin; i < end; i++) {
 		clients[i] = new MyClient();
+		Thread::sleep(0);
 	}
 
 	for (int i = begin; i < end; i++) {
-		clients[i]->connect(ip, port);
+		if (SOCKET_ERROR == clients[i]->connect(ip, port)) break;
 		clientsCount++;
+		Thread::sleep(0);
 	}
 
 	readyCount++;
@@ -101,15 +127,36 @@ void workerThread(Thread &t, int id) {
 		Thread::sleep(10);
 	}
 
+	auto t2 = Time::getCurrentTimeInMilliSec();
+	auto t0 = t2;
+	auto dt = t0;
+	Timestamp tTime;
+
 	while (t.isRun()) {
+
+		t0 = Time::getCurrentTimeInMilliSec();
+		dt = t0 - t2;
+		t2 = t0;
+
 		for (int n = 0; n < numOfMsg; n++) {
 			for (int i = begin; i < end; i++) {
 				if (clients[i]->isRun())
-					clients[i]->send(&msg);
-				if (clients[i]->isRun())
-					clients[i]->onRun();
+					if (clients[i]->sendTest(&msg) > 0)
+						sendCount++;
 			}
 		}
+
+		for (int i = begin; i < end; i++) {
+			if (clients[i]->isRun()) {
+				if (!clients[i]->onRun()) {
+					clientsCount--;
+					continue;
+				}
+				clients[i]->checkSend(dt);
+			}
+		}
+
+		Thread::sleep(1);
 	}
 
 	for (int n = begin; n < end; n++)
@@ -118,6 +165,7 @@ void workerThread(Thread &t, int id) {
 	}
 
 	LOG_INFO("thread<%d> exit..\n", id);
+	readyCount--;
 }
 
 int main(int argc, char* argv[]) {
@@ -160,7 +208,7 @@ int main(int argc, char* argv[]) {
 
 	Timestamp _time;
 
-	while (clientsCount < numOfClients) {
+	while (readyCount < numOfThreads) {
 		Thread::sleep(10);
 	}
 
@@ -168,16 +216,12 @@ int main(int argc, char* argv[]) {
 		// Benchmark
 		double t1 = _time.getElapsedSecond();
 		if (t1 >= 1.0) {
-
-			for (int i = 0; i < numOfClients; i++) {
-				msgCount += clients[i]->_msgCount;
-				clients[i]->_msgCount = 0;
-			}
-
-			LOG_INFO("Time: %f Threads: %d Clients: %d Packages: %d\n", t1, numOfThreads, (int)clientsCount, msgCount);
-			msgCount = 0;
+			LOG_INFO("Time: %f Threads: %d Clients: %d Send: %d\n", t1, numOfThreads, (int)clientsCount, (int)sendCount);
+			sendCount = 0;
 			_time.update();
 		}
+
+		Thread::sleep(1);
 	}
 
 	for (auto &t : threads) {

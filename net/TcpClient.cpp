@@ -96,7 +96,7 @@ bool TcpClient::select() {
 
 	int ret = 0;
 
-	timeval t = { 0, 1 };
+	timeval t = { 0, 0 };
 
 	if (_pClient->isSendEmpty()) {
 		int ret = ::select(_pClient->sockfd() + 1, &fdRead, NULL, NULL, &t);

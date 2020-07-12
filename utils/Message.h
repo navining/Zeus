@@ -4,7 +4,7 @@
 #define TEST_DATA_SIZE 100
 
 enum CMD {
-	CMD_TEST = 6,
+	CMD_TEST,
 	CMD_ERROR
 };
 
