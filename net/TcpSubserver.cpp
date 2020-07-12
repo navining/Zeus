@@ -17,8 +17,7 @@ void TcpSubserver::onRun(Thread & thread) {
 	while (thread.isRun()) {
 		// Sleep if there's no clients
 		if (getClientCount() == 0) {
-			std::chrono::milliseconds t(1);
-			std::this_thread::sleep_for(t);
+			Thread::sleep(1);
 			_tCurrent = Time::getCurrentTimeInMilliSec();
 			continue;
 		}
@@ -35,44 +34,10 @@ void TcpSubserver::onRun(Thread & thread) {
 			_clientsChange = true;
 		}
 
-		// Select
-		fd_set fdRead;	// Set of sockets
-		FD_ZERO(&fdRead);
-		fd_set fdWrite;
-
-		if (_clientsChange) {
-			_maxSock = INVALID_SOCKET;
-
-			// Put client sockets inside fd_set
-			for (auto it : _clients) {
-				FD_SET(it.second->sockfd(), &fdRead);
-				if (_maxSock < it.second->sockfd()) {
-					_maxSock = it.second->sockfd();
-				}
-			}
-
-			// Cache _fdRead
-			memcpy(&_fdRead, &fdRead, sizeof(fd_set));
-			_clientsChange = false;
-		}
-		else {
-			// Use cached fdRead
-			memcpy(&fdRead, &_fdRead, sizeof(fd_set));
-		}
-
-		memcpy(&fdWrite, &_fdRead, sizeof(fd_set));
-
-		timeval t{ 0, 1 };
-		int ret = select(_maxSock + 1, &fdRead, &fdWrite, nullptr, &t);
-
-		if (ret < 0) {
-			LOG_ERROR("<subserver %d> Select - Fail...\n", _id);
+		// IO-multiplexing
+		if (!select()) {
 			thread.exit();
-			return;
 		}
-
-		respondRead(fdRead);
-		respondWrite(fdWrite);
 
 		// Do other things here...
 		onIdle();
@@ -80,6 +45,49 @@ void TcpSubserver::onRun(Thread & thread) {
 		// Update current timestamp
 		_tCurrent = Time::getCurrentTimeInMilliSec();
 	}
+}
+
+// Select
+
+bool TcpSubserver::select() {
+	fd_set fdRead;	// Set of sockets
+	FD_ZERO(&fdRead);
+	fd_set fdWrite;
+
+	if (_clientsChange) {
+		_maxSock = INVALID_SOCKET;
+
+		// Put client sockets inside fd_set
+		for (auto it : _clients) {
+			FD_SET(it.second->sockfd(), &fdRead);
+			if (_maxSock < it.second->sockfd()) {
+				_maxSock = it.second->sockfd();
+			}
+		}
+
+		// Cache _fdRead
+		memcpy(&_fdRead, &fdRead, sizeof(fd_set));
+		_clientsChange = false;
+	}
+	else {
+		// Use cached fdRead
+		memcpy(&fdRead, &_fdRead, sizeof(fd_set));
+	}
+
+	memcpy(&fdWrite, &_fdRead, sizeof(fd_set));
+
+	timeval t{ 0, 1 };
+	int ret = ::select(_maxSock + 1, &fdRead, &fdWrite, nullptr, &t);
+
+	if (ret < 0) {
+		LOG_ERROR("<subserver %d> Select - Fail...\n", _id);
+		return false;
+	}
+
+	respondRead(fdRead);
+	respondWrite(fdWrite);
+
+	return true;
 }
 
 // Client socket response: handle request

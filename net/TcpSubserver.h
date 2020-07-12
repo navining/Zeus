@@ -23,6 +23,10 @@ public:
 	// Start server service
 	void onRun(Thread & thread);
 
+	// select
+	// Return false if error
+	bool select();
+
 	// Handle message
 	void onMessage(const TcpConnection& pClient, Message *msg);
 
