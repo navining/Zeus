@@ -1,7 +1,7 @@
 #include "FDSet.h"
 
-FDSet::FDSet() {
-	_fdCount = FD_SIZE;
+FDSet::FDSet(int fdCount) {
+	_fdCount = fdCount <= MAX_FD_SIZE ? fdCount : MAX_FD_SIZE;
 #ifdef _WIN32
 	_fdSize = sizeof(u_int) + sizeof(SOCKET) * _fdCount;
 #else
@@ -19,21 +19,15 @@ FDSet::~FDSet() {
 	}
 }
 
-void FDSet::set(SOCKET sock) {
-#ifndef _WIN32
-	if (sock >= FD_SIZE) {
-		LOG_ERROR("Socket fd exceed limit: %d\n", FD_SIZE);
-		return;
-	}
-#endif // _WIN32
+inline void FDSet::set(SOCKET sock) {
 	FD_SET(sock, _fdset);
 }
 
-void FDSet::clear(SOCKET sock) {
+inline void FDSet::clear(SOCKET sock) {
 	FD_CLR(sock, _fdset);
 }
 
-void FDSet::zero() {
+inline void FDSet::zero() {
 #ifdef _WIN32
 	FD_ZERO(_fdset);
 #else

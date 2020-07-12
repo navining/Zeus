@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\net\Buffer.cpp" />
-    <ClCompile Include="..\..\net\FDSet.cpp" />
     <ClCompile Include="..\..\net\Network.cpp" />
     <ClCompile Include="..\..\net\TcpClient.cpp" />
     <ClCompile Include="..\..\net\TcpConnection.cpp" />

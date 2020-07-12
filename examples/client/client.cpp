@@ -1,3 +1,5 @@
+#ifdef _WIN32
+#endif
 
 #include <iostream>
 #include <thread>

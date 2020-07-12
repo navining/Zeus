@@ -8,7 +8,6 @@
 #include "Event.h"
 #include "TaskHandler.h"
 #include "Thread.h"
-#include "FDSet.h"
 
 // Child thread responsible for handling messsages
 class TcpSubserver
@@ -37,10 +36,10 @@ public:
 	void onIdle();
 
 	// Client socket response: handle read request
-	void respondRead();
+	void respondRead(fd_set &fdRead);
 
 	// Client socket response: handle write request
-	void respondWrite();
+	void respondWrite(fd_set &fdWrite);
 
 	// Check if the client is alive
 	void checkAlive();
@@ -70,9 +69,7 @@ private:
 	Event *_pMain;	// Pointer to the main thread (for event callback)
 	//TaskHandler _sendTaskHandler;	// Child thread for sending messages
 	time_t _tCurrent;	// Current timestamp				
-	FDSet _fdRead_cached;	// A cache of fd_set
-	FDSet _fdRead;
-	FDSet _fdWrite;
+	fd_set _fdRead;	// A cache of fd_set
 	bool _clientsChange;	// If the clients array changes
 	SOCKET _maxSock;	// Record current max socket
 	int _id;

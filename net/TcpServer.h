@@ -12,7 +12,6 @@
 #include "TcpSubserver.h"
 #include "Event.h"
 #include "Network.h"
-#include "FDSet.h"
 
 #define TCPSERVER_THREAD_COUNT 1
 
@@ -49,8 +48,6 @@ public:
 	// Start server service
 	void onRun(Thread & thread);
 
-	bool select();
-
 	// If connected
 	bool isRun();
 
@@ -63,7 +60,6 @@ private:
 	std::vector<TcpSubserver *> _subservers;
 	Thread _thread;
 	std::atomic_int _clientCount;	// Number of clients
-	FDSet _fdRead;
 protected:
 	SOCKET _sock;
 	Timestamp _time;
