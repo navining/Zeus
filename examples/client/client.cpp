@@ -8,7 +8,35 @@
 #include <vector>
 #include <atomic>
 #include "Config.h"
-#include "client.h"
+
+class MyClient;
+
+// Number of clients
+int numOfClients;
+
+// Number of threads
+int numOfThreads;
+
+// Server IP
+const char *ip;
+
+// Server port
+u_short port;
+
+// Array of clients
+MyClient** clients;
+
+// Message to be sent
+Test msg;	// 100 Byte
+
+int numOfMsg;	// Number of messages sent by each client
+
+time_t sleepTime; // How long each client will sleep after sending a message
+
+std::atomic_int clientsCount(0);
+std::atomic_int readyCount(0);
+std::atomic_int sendCount(0);
+
 
 class MyClient : public TcpClient {
 public:
@@ -49,10 +77,10 @@ public:
 	bool checkSend(time_t dt)
 	{
 		_tRestTime += dt;
-		if (_tRestTime >= 1)
+		if (_tRestTime >= sleepTime)
 		{
-			_tRestTime -= 1;
-			_nSendCount = 1;
+			_tRestTime -= sleepTime;
+			_nSendCount = numOfMsg;
 		}
 		return _nSendCount > 0;
 	}
@@ -62,30 +90,6 @@ private:
 };
 
 
-// Number of clients
-int numOfClients;
-
-// Number of threads
-int numOfThreads;
-
-// Server IP
-const char *ip;
-
-// Server port
-u_short port;
-
-// Array of clients
-MyClient** clients;
-
-// Message to be sent
-Test msg;	// 100 Byte
-
-// Number of messages sent by each client
-int numOfMsg;
-
-std::atomic_int clientsCount(0);
-std::atomic_int readyCount(0);
-std::atomic_int sendCount(0);
 
 void cmdThread(Thread &t) {
 	while (t.isRun())
@@ -156,7 +160,7 @@ void workerThread(Thread &t, int id) {
 			}
 		}
 
-		Thread::sleep(1);
+		//Thread::sleep(1);
 	}
 
 	for (int n = begin; n < end; n++)
@@ -172,9 +176,10 @@ int main(int argc, char* argv[]) {
 	Config::Init(argc, argv);
 	ip = Config::Instance().parseStr("IP", "127.0.0.1");
 	port = Config::Instance().parseInt("PORT", 4567);
-	numOfClients = Config::Instance().parseInt("CLIENT", 1000);
-	numOfThreads = Config::Instance().parseInt("THREAD", 2);
-	numOfMsg = Config::Instance().parseInt("MSG", 100);
+	numOfClients = Config::Instance().parseInt("CLIENT", 10000);
+	numOfThreads = Config::Instance().parseInt("THREAD", 1);
+	numOfMsg = Config::Instance().parseInt("MSG", 10);
+	sleepTime = Config::Instance().parseInt("SLEEP", 100);
 
 	clients = new MyClient*[numOfClients];
 
