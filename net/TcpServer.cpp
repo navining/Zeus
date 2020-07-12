@@ -162,33 +162,39 @@ void TcpServer::onRun(Thread & thread) {
 
 	while (thread.isRun()) {
 
-		// Select
-		fd_set fdRead;
-		FD_ZERO(&fdRead);
-		// Put server sockets inside fd_set
-		FD_SET(_sock, &fdRead);
-
-		// Timeval
-		timeval t = { 0, 1 };
-
-		int ret = select(_sock + 1, &fdRead, 0, 0, &t);
-
-		if (ret < 0) {
-			LOG_ERROR("<server %d> Select - Fail...\n", _sock);
+		// IO-multiplexing
+		if (!select()) {
 			thread.exit();
 			return;
-		}
-
-		// Server socket response: accept connection
-		if (FD_ISSET(_sock, &fdRead)) {
-			FD_CLR(_sock, &fdRead);
-			accept();
 		}
 
 		// Handle other services here...
 		// Benchmark
 		onIdle();
 	}
+}
+
+bool TcpServer::select() {
+	_fdRead.zero();
+	// Put server sockets inside fd_set
+	_fdRead.set(_sock);
+	// Timeval
+	timeval t = { 0, 1 };
+
+	int ret = ::select(_sock + 1, _fdRead.fdset(), 0, 0, &t);
+
+	if (ret < 0) {
+		LOG_ERROR("<server %d> Select - Fail...\n", _sock);
+		return false;
+	}
+
+	// Server socket response: accept connection
+	if (_fdRead.isset(_sock)) {
+		_fdRead.clear(_sock);
+		accept();
+	}
+
+	return true;
 }
 
 void TcpServer::onIdle() {

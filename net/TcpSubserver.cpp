@@ -54,52 +54,50 @@ void TcpSubserver::onRun(Thread & thread) {
 // Select
 
 bool TcpSubserver::select() {
-	fd_set fdRead;	// Set of sockets
-	FD_ZERO(&fdRead);
-	fd_set fdWrite;
+	_fdRead.zero();
 
 	if (_clientsChange) {
 		_maxSock = INVALID_SOCKET;
 
 		// Put client sockets inside fd_set
 		for (auto it : _clients) {
-			FD_SET(it.second->sockfd(), &fdRead);
+			_fdRead.set(it.second->sockfd());
 			if (_maxSock < it.second->sockfd()) {
 				_maxSock = it.second->sockfd();
 			}
 		}
 
 		// Cache _fdRead
-		memcpy(&_fdRead, &fdRead, sizeof(fd_set));
+		_fdRead_cached = _fdRead;
 		_clientsChange = false;
 	}
 	else {
 		// Use cached fdRead
-		memcpy(&fdRead, &_fdRead, sizeof(fd_set));
+		_fdRead = _fdRead_cached;
 	}
 
-	memcpy(&fdWrite, &_fdRead, sizeof(fd_set));
+	_fdWrite = _fdRead;
 
 	timeval t{ 0, 1 };
-	int ret = ::select(_maxSock + 1, &fdRead, &fdWrite, nullptr, &t);
+	int ret = ::select(_maxSock + 1, _fdRead.fdset(), _fdWrite.fdset(), nullptr, &t);
 
 	if (ret < 0) {
 		LOG_ERROR("<subserver %d> Select - Fail...\n", _id);
 		return false;
 	}
 
-	respondRead(fdRead);
-	respondWrite(fdWrite);
+	respondRead();
+	respondWrite();
 
 	return true;
 }
 
 // Client socket response: handle request
 
-void TcpSubserver::respondRead(fd_set & fdRead) {
+void TcpSubserver::respondRead() {
 #ifdef _WIN32
-	for (int n = 0; n < fdRead.fd_count; n++) {
-		auto it = _clients.find(fdRead.fd_array[n]);
+	for (int n = 0; n < _fdRead.fdset()->fd_count; n++) {
+		auto it = _clients.find(_fdRead.fdset()->fd_array[n]);
 		if (it == _clients.end()) continue;
 		const TcpConnection& pClient = it->second;
 		if (SOCKET_ERROR == recv(pClient)) {
@@ -111,7 +109,7 @@ void TcpSubserver::respondRead(fd_set & fdRead) {
 	}
 #else
 	for (auto it = _clients.begin(); it != _clients.end();) {
-		if (FD_ISSET(it->second->sockfd(), &fdRead)) {
+		if (_fdRead.isset(it->second->sockfd()) {
 			if (SOCKET_ERROR == recv(it->second)) {
 				// Client disconnected
 				onDisconnection(it->second);
@@ -125,10 +123,10 @@ void TcpSubserver::respondRead(fd_set & fdRead) {
 #endif
 }
 
-void TcpSubserver::respondWrite(fd_set & fdWrite) {
+void TcpSubserver::respondWrite() {
 #ifdef _WIN32
-	for (int n = 0; n < fdWrite.fd_count; n++) {
-		auto it = _clients.find(fdWrite.fd_array[n]);
+	for (int n = 0; n < _fdWrite.fdset()->fd_count; n++) {
+		auto it = _clients.find(_fdWrite.fdset()->fd_array[n]);
 		if (it == _clients.end()) continue;
 		const TcpConnection& pClient = it->second;
 		if (SOCKET_ERROR == pClient->sendAll()) {
@@ -139,7 +137,7 @@ void TcpSubserver::respondWrite(fd_set & fdWrite) {
 	}
 #else
 	for (auto it = _clients.begin(); it != _clients.end();) {
-		if (FD_ISSET(it->second->sockfd(), &fdWrite)) {
+		if (_fdWrite.isset(it->second->sockfd()) {
 			if (SOCKET_ERROR == recv(it->second)) {
 				// Client disconnected
 				onDisconnection(it->second);

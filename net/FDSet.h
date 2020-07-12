@@ -3,11 +3,9 @@
 
 #include "common.h"
 
-#define MAX_FD_SIZE 65535
-
 class FDSet {
 public:
-	FDSet(int fdCount);
+	FDSet();
 
 	~FDSet();
 

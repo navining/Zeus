@@ -2,7 +2,6 @@
 #define _common_h_
 
 #ifdef _WIN32
-#define FD_SETSIZE	4096	// Size of FD_SET
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WinSock2.h>
@@ -23,6 +22,9 @@ typedef long unsigned int size_t;
 #include "Timestamp.h"
 #include "Log.h"
 
+// Size of fd_set (can exceed the limit of 1024 under linux)
+#define FD_SIZE 1024
+
 // Size of the receive buffer
 #define RECV_BUFF_SIZE 10240
 
@@ -31,7 +33,7 @@ typedef long unsigned int size_t;
 
 // Heartbeat detection (in millisecond)
 // Define a negative number to disable it
-#define CLIENT_DEAD_TIME 10000
+#define CLIENT_DEAD_TIME -1
 
 // Interval to clear the send buffer (in millisecond)
 // Define a negative number to disable it
