@@ -60,7 +60,8 @@ int numOfMsg;
 
 int msgCount = 0;
 
-std::atomic_int clientsCount;
+std::atomic_int clientsCount(0);
+std::atomic_int readyCount(0);
 
 void cmdThread(Thread &t) {
 	while (t.isRun())
@@ -93,23 +94,22 @@ void workerThread(Thread &t, int id) {
 		clientsCount++;
 	}
 
+	readyCount++;
 	LOG_INFO("thread<%d> connected...\n", id);
 
-	while (clientsCount < numOfClients) {
+	while (readyCount < numOfThreads) {
 		Thread::sleep(10);
 	}
 
 	while (t.isRun()) {
 		for (int n = 0; n < numOfMsg; n++) {
 			for (int i = begin; i < end; i++) {
-				clients[i]->send(&msg);
+				if (clients[i]->isRun())
+					clients[i]->send(&msg);
+				if (clients[i]->isRun())
+					clients[i]->onRun();
 			}
 		}
-
-		for (int i = begin; i < end; i++) {
-			clients[i]->onRun();
-		}
-
 	}
 
 	for (int n = begin; n < end; n++)
@@ -174,7 +174,7 @@ int main(int argc, char* argv[]) {
 				clients[i]->_msgCount = 0;
 			}
 
-			LOG_INFO("Time: %f Threads: %d Clients: %d Packages: %d\n", t1, numOfThreads, numOfClients, msgCount);
+			LOG_INFO("Time: %f Threads: %d Clients: %d Packages: %d\n", t1, numOfThreads, (int)clientsCount, msgCount);
 			msgCount = 0;
 			_time.update();
 		}

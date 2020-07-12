@@ -26,7 +26,7 @@ SOCKET TcpClient::init() {
 	}
 	else {
 		// LOG::INFO("<client %d> Create socket - Success...\n", _sock);
-		_pClient = new TcpSocket(_sock);
+		_pClient = std::make_shared<TcpSocket>(_sock);
 	}
 	return _sock;
 }
@@ -59,9 +59,6 @@ int TcpClient::connect(const char * ip, unsigned short port) {
 // Close socket
 
 void TcpClient::close() {
-	if (_pClient == nullptr) return;
-	delete _pClient;
-	_pClient = nullptr;
 	isConnect = false;
 }
 
@@ -76,6 +73,7 @@ bool TcpClient::onRun() {
 
 	// IO-mutiplex
 	if (!select()) {
+		close();
 		return false;
 	}
 
@@ -111,7 +109,6 @@ bool TcpClient::select() {
 
 	if (ret < 0) {
 		LOG_ERROR("<client %d> Select - Fail...\n", _pClient->sockfd());
-		close();
 		return false;
 	}
 
@@ -120,7 +117,6 @@ bool TcpClient::select() {
 		// Handle request
 		if (SOCKET_ERROR == recv()) {
 			LOG_ERROR("<client %d> Read - Fail...\n", _pClient->sockfd());
-			close();
 			return false;
 		}
 	}
@@ -129,7 +125,6 @@ bool TcpClient::select() {
 		// Handle request
 		if (SOCKET_ERROR == _pClient->sendAll()) {
 			LOG_ERROR("<client %d> Write - Fail...\n", _pClient->sockfd());
-			close();
 			return false;
 		}
 	}

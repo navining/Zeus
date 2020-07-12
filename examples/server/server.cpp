@@ -59,13 +59,14 @@ int main(int argc, char* argv[]) {
 	Config::Init(argc, argv);
 	const char *ip = Config::Instance().parseStr("IP", NULL);
 	u_short port = Config::Instance().parseInt("PORT", 4567);
+	int numOfThreads = Config::Instance().parseInt("THREAD", 2);
 
 	LOG_SETPATH("zeus-server.log", "w");
 	MyServer server;
 	server.init();
 	server.bind(ip, port);
 	server.listen(5);
-	server.start(8);
+	server.start(numOfThreads);
 	
 
 	while (true)

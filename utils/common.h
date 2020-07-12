@@ -31,7 +31,7 @@ typedef long unsigned int size_t;
 
 // Heartbeat detection (in millisecond)
 // Define a negative number to disable it
-#define CLIENT_DEAD_TIME -1
+#define CLIENT_DEAD_TIME 10000
 
 // Interval to clear the send buffer (in millisecond)
 // Define a negative number to disable it

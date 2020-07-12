@@ -49,7 +49,7 @@ private:
 	bool isConnect;
 
 protected:
-	TcpSocket *_pClient;
+	TcpConnection _pClient;
 };
 
 #endif // !_TcpClient_h_
