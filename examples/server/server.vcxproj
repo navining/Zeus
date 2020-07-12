@@ -19,75 +19,74 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\net\Allocator.h" />
-    <ClInclude Include="..\net\Buffer.h" />
-    <ClInclude Include="..\net\Event.h" />
-    <ClInclude Include="..\net\Network.h" />
-    <ClInclude Include="..\net\TcpClient.h" />
-    <ClInclude Include="..\net\TcpConnection.h" />
-    <ClInclude Include="..\net\TcpServer.h" />
-    <ClInclude Include="..\net\TcpSubserver.h" />
-    <ClInclude Include="..\utils\common.h" />
-    <ClInclude Include="..\utils\Config.h" />
-    <ClInclude Include="..\utils\Log.h" />
-    <ClInclude Include="..\utils\MemoryPool.h" />
-    <ClInclude Include="..\utils\Message.h" />
-    <ClInclude Include="..\utils\ObjectPool.h" />
-    <ClInclude Include="..\utils\Semaphore.h" />
-    <ClInclude Include="..\utils\TaskHandler.h" />
-    <ClInclude Include="..\utils\Thread.h" />
-    <ClInclude Include="..\utils\Timestamp.h" />
+    <ClCompile Include="..\..\net\Buffer.cpp" />
+    <ClCompile Include="..\..\net\Network.cpp" />
+    <ClCompile Include="..\..\net\TcpClient.cpp" />
+    <ClCompile Include="..\..\net\TcpConnection.cpp" />
+    <ClCompile Include="..\..\net\TcpServer.cpp" />
+    <ClCompile Include="..\..\net\TcpSubserver.cpp" />
+    <ClCompile Include="..\..\utils\common.cpp" />
+    <ClCompile Include="..\..\utils\Config.cpp" />
+    <ClCompile Include="..\..\utils\Log.cpp" />
+    <ClCompile Include="..\..\utils\MemoryPool.cpp" />
+    <ClCompile Include="..\..\utils\Semaphore.cpp" />
+    <ClCompile Include="..\..\utils\TaskHandler.cpp" />
+    <ClCompile Include="..\..\utils\Thread.cpp" />
+    <ClCompile Include="..\..\utils\Timestamp.cpp" />
+    <ClCompile Include="server.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\net\Buffer.cpp" />
-    <ClCompile Include="..\net\Network.cpp" />
-    <ClCompile Include="..\net\TcpClient.cpp" />
-    <ClCompile Include="..\net\TcpConnection.cpp" />
-    <ClCompile Include="..\net\TcpServer.cpp" />
-    <ClCompile Include="..\net\TcpSubserver.cpp" />
-    <ClCompile Include="..\utils\common.cpp" />
-    <ClCompile Include="..\utils\Config.cpp" />
-    <ClCompile Include="..\utils\Log.cpp" />
-    <ClCompile Include="..\utils\MemoryPool.cpp" />
-    <ClCompile Include="..\utils\Semaphore.cpp" />
-    <ClCompile Include="..\utils\TaskHandler.cpp" />
-    <ClCompile Include="..\utils\Thread.cpp" />
-    <ClCompile Include="..\utils\Timestamp.cpp" />
-    <ClCompile Include="client.cpp" />
+    <ClInclude Include="..\..\net\Allocator.h" />
+    <ClInclude Include="..\..\net\Buffer.h" />
+    <ClInclude Include="..\..\net\Event.h" />
+    <ClInclude Include="..\..\net\Network.h" />
+    <ClInclude Include="..\..\net\TcpClient.h" />
+    <ClInclude Include="..\..\net\TcpConnection.h" />
+    <ClInclude Include="..\..\net\TcpServer.h" />
+    <ClInclude Include="..\..\net\TcpSubserver.h" />
+    <ClInclude Include="..\..\utils\common.h" />
+    <ClInclude Include="..\..\utils\Config.h" />
+    <ClInclude Include="..\..\utils\Log.h" />
+    <ClInclude Include="..\..\utils\MemoryPool.h" />
+    <ClInclude Include="..\..\utils\Message.h" />
+    <ClInclude Include="..\..\utils\ObjectPool.h" />
+    <ClInclude Include="..\..\utils\Semaphore.h" />
+    <ClInclude Include="..\..\utils\TaskHandler.h" />
+    <ClInclude Include="..\..\utils\Thread.h" />
+    <ClInclude Include="..\..\utils\Timestamp.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{4BA25A30-7101-4F1A-8149-7B8785F6AAA4}</ProjectGuid>
-    <Keyword>Win32Proj</Keyword>
-    <RootNamespace>ZeusClient</RootNamespace>
+    <ProjectGuid>{1E84AD50-7E80-42DE-92E2-6717EB007B14}</ProjectGuid>
+    <RootNamespace>ZeusServer</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>client</ProjectName>
+    <ProjectName>server</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -108,106 +107,82 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
-    <SourcePath>$(SourcePath)</SourcePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
-    <SourcePath>$(SourcePath)</SourcePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
-    <SourcePath>$(SourcePath)</SourcePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
+    <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
+    <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)/bin/$(Platform)/$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)/build/$(Platform)/$(Configuration)/$(ProjectName)</IntDir>
-    <SourcePath>$(SourcePath)</SourcePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;$(SolutionDir)/net/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../utils/;$(SolutionDir)/../net/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;$(SolutionDir)/net/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../utils/;$(SolutionDir)/../net/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;$(SolutionDir)/net/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../utils/;$(SolutionDir)/../net/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/utils/;$(SolutionDir)/net/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../utils/;$(SolutionDir)/../net/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
