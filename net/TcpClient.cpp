@@ -74,7 +74,21 @@ bool TcpClient::onRun() {
 		return false;
 	};
 
-	// Select
+	// IO-mutiplex
+	if (!select()) {
+		return false;
+	}
+
+	// Process messages
+	process();
+
+	// Handle other services
+	onIdle();
+
+	return true;
+}
+
+bool TcpClient::select() {
 	fd_set fdRead;
 	FD_ZERO(&fdRead);
 	FD_SET(_pClient->sockfd(), &fdRead);
@@ -87,12 +101,12 @@ bool TcpClient::onRun() {
 	timeval t = { 0, 1 };
 
 	if (_pClient->isSendEmpty()) {
-		int ret = select(_pClient->sockfd() + 1, &fdRead, NULL, NULL, &t);
+		int ret = ::select(_pClient->sockfd() + 1, &fdRead, NULL, NULL, &t);
 	}
 	else {
 		// Only check fdWrite if there's something to be sent
 		FD_SET(_pClient->sockfd(), &fdWrite);
-		int ret = select(_pClient->sockfd() + 1, &fdRead, &fdWrite, NULL, &t);
+		int ret = ::select(_pClient->sockfd() + 1, &fdRead, &fdWrite, NULL, &t);
 	}
 
 	if (ret < 0) {
@@ -120,9 +134,6 @@ bool TcpClient::onRun() {
 		}
 	}
 
-	// Handle other services
-	onIdle();
-
 	return true;
 }
 
@@ -140,16 +151,20 @@ int TcpClient::recv() {
 	if (ret <= 0) {
 		return ret;
 	}
+	return ret;
+}
 
+void TcpClient::process()
+{
 	while (_pClient->hasMessage()) {
 		// Pop one message from the client buffer
 		Message *msg = _pClient->popMessage();
 		// Process message
 		onMessage(msg);
 	}
-
-	return ret;
 }
+
+
 
 void TcpClient::onMessage(Message * msg)
 {

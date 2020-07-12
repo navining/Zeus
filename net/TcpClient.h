@@ -22,11 +22,17 @@ public:
 	// Start client service
 	bool onRun();
 
+	// Select
+	bool select();
+
 	// If connected
 	bool isRun();
 
 	// Receive data and unpack
 	int recv();
+
+	// Process messages in each client buffer
+	void process();
 
 	// Process data
 	virtual void onMessage(Message *msg);
