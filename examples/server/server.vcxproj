@@ -39,6 +39,7 @@
     <ClInclude Include="..\..\net\Allocator.h" />
     <ClInclude Include="..\..\net\Buffer.h" />
     <ClInclude Include="..\..\net\Event.h" />
+    <ClInclude Include="..\..\net\FDSet.h" />
     <ClInclude Include="..\..\net\Network.h" />
     <ClInclude Include="..\..\net\TcpClient.h" />
     <ClInclude Include="..\..\net\TcpConnection.h" />
