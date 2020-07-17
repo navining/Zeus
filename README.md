@@ -9,7 +9,7 @@ A high performance, cross-platform Internet Communication Engine. Developed with
 - Developed with native socket API and C++ standard libraries, no dependency on any external libraries.
 - Along with an one-click compile script to deploy.
 ### High Performance
-- Current concurrency ability: 10K connections, 200 messages per connection.
+- Current concurrency ability: 10K connections, 1Gbps I/O with single thread
 - Target concurrency ability: 1M concurrent connections.
 ### Multiple Network Models
 - Select
@@ -17,12 +17,9 @@ A high performance, cross-platform Internet Communication Engine. Developed with
 - Epoll (TODO)
 ### Multiple Transfer Protocols
 - TCP
-- UDP
+- UDP (TODO)
 - FTP (TODO)
 - HTTP (TODO)
-### Good Maintainability
-- Structured message data
-- Good OOP encapsulation of network modules
 
 # Examples
 
