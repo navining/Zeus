@@ -12,11 +12,12 @@
 #include "TcpSubserver.h"
 #include "Event.h"
 #include "Network.h"
+#include "IO.h"
 
 #define TCPSERVER_THREAD_COUNT 1
 
 // Main thread responsible for accepting connections
-class TcpServer : public Event {
+class TcpServer : public Event, public IO {
 public:
 	TcpServer();
 
@@ -52,6 +53,10 @@ public:
 	bool isRun();
 
 	bool select();
+
+	bool epoll();
+
+	bool iocp();
 
 	// Close socket
 	void close();

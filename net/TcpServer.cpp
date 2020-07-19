@@ -163,7 +163,8 @@ void TcpServer::onRun(Thread & thread) {
 	while (thread.isRun()) {
 
 		// IO multiplexing
-		if (!select()) {
+		if (!multiplex()) {
+			LOG_ERROR("IO multiplexing - Fail...\n");
 			thread.exit();
 			return;
 		}
@@ -198,6 +199,16 @@ bool TcpServer::select()
 	}
 
 	return true;
+}
+
+bool TcpServer::epoll()
+{
+	return false;
+}
+
+bool TcpServer::iocp()
+{
+	return false;
 }
 
 void TcpServer::onIdle() {

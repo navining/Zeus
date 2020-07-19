@@ -23,6 +23,7 @@
     <ClInclude Include="..\..\net\Buffer.h" />
     <ClInclude Include="..\..\net\Event.h" />
     <ClInclude Include="..\..\net\FDSet.h" />
+    <ClInclude Include="..\..\net\IO.h" />
     <ClInclude Include="..\..\net\Network.h" />
     <ClInclude Include="..\..\net\TcpClient.h" />
     <ClInclude Include="..\..\net\TcpConnection.h" />
@@ -42,6 +43,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\net\Buffer.cpp" />
     <ClCompile Include="..\..\net\FDSet.cpp" />
+    <ClCompile Include="..\..\net\IO.cpp" />
     <ClCompile Include="..\..\net\Network.cpp" />
     <ClCompile Include="..\..\net\TcpClient.cpp" />
     <ClCompile Include="..\..\net\TcpConnection.cpp" />

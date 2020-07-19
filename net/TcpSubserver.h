@@ -8,9 +8,10 @@
 #include "Event.h"
 #include "TaskHandler.h"
 #include "Thread.h"
+#include "IO.h"
 
 // Child thread responsible for handling messsages
-class TcpSubserver
+class TcpSubserver : public Event, public IO
 {
 public:
 	TcpSubserver(int id = 0, Event *pEvent = nullptr);
@@ -24,13 +25,18 @@ public:
 	void onRun(Thread & thread);
 
 	// select
-	// Return false if error
 	bool select();
+
+	bool epoll();
+
+	bool iocp();
 
 	// Handle message
 	void onMessage(const TcpConnection& pClient, Message *msg);
 
 	void onDisconnection(const TcpConnection& pClient);
+
+	void onConnection(const TcpConnection& pClient);
 
 	// Do extra things when the server is idle
 	void onIdle();

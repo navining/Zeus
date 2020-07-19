@@ -25,10 +25,6 @@ typedef long unsigned int size_t;
 #include "Timestamp.h"
 #include "Log.h"
 
-#define SELECT() select()
-#define IOCP() iocp()
-#define EPOLL() epoll()
-
 // IO multiplexing mode
 // SELECT, IOCP, EPOLL
 #define IO_MODE SELECT

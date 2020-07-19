@@ -37,7 +37,7 @@ void TcpSubserver::onRun(Thread & thread) {
 		}
 
 		// IO-multiplexing
-		if (!IO_MODE()) {
+		if (!multiplex()) {
 			thread.exit();
 		}
 
@@ -106,6 +106,16 @@ bool TcpSubserver::select() {
 	respondWrite(fdWrite);
 
 	return true;
+}
+
+bool TcpSubserver::epoll()
+{
+	return false;
+}
+
+bool TcpSubserver::iocp()
+{
+	return false;
 }
 
 // Client socket response: handle request
@@ -241,6 +251,10 @@ void TcpSubserver::onDisconnection(const TcpConnection & pClient)
 	if (_pMain != nullptr) {
 		_pMain->onDisconnection(pClient);
 	}
+}
+
+void TcpSubserver::onConnection(const TcpConnection & pClient)
+{
 }
 
 void TcpSubserver::onIdle()
