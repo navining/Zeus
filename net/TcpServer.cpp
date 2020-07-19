@@ -160,6 +160,11 @@ void TcpServer::onRun(Thread & thread) {
 		return;
 	};
 
+#if IO_MODE == EPOLL
+  _epoll.create(1);
+  _epoll.ctl(EPOLL_CTL_ADD, _sock, EPOLLIN);
+#endif
+
 	while (thread.isRun()) {
 
 		// IO multiplexing
@@ -203,6 +208,24 @@ bool TcpServer::select()
 
 bool TcpServer::epoll()
 {
+  #if IO_MODE == EPOLL
+  int ret = _epoll.wait(1);
+
+  if (ret < 0) {
+		LOG_ERROR("<server %d> Epoll - Fail...\n", _sock);
+		return false;
+	}
+
+  for (int i = 0; i < ret; i++) {
+	  if (_epoll.events()[i].events & EPOLLIN) {
+    	// Server socket response: accept connection
+		  accept();
+	  }
+  }
+
+  return true;
+  #endif
+
 	return false;
 }
 

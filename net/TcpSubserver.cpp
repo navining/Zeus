@@ -13,6 +13,9 @@ TcpSubserver::~TcpSubserver() {
 // Start server service
 
 void TcpSubserver::onRun(Thread & thread) {
+#if IO_MODE == EPOLL
+  _epoll.create();
+#endif
 	_clientsChange = false;
 	while (thread.isRun()) {
 		// Update current timestamp
@@ -30,6 +33,9 @@ void TcpSubserver::onRun(Thread & thread) {
 				std::lock_guard<std::mutex> lock(_mutex);
 				for (auto pClient : _clientsBuf) {
 					_clients[pClient->sockfd()] = pClient;
+#if IO_MODE == EPOLL
+          _epoll.ctl(EPOLL_CTL_ADD, pClient->sockfd(), EPOLLIN);
+#endif
 				}
 			}
 			_clientsBuf.clear();
@@ -110,6 +116,51 @@ bool TcpSubserver::select() {
 
 bool TcpSubserver::epoll()
 {
+#if IO_MODE == EPOLL
+  // Only mornitor writtable sockets
+	bool needWrite = false;
+	for (auto it : _clients) {
+		if (!it.second->isSendEmpty()) {
+			needWrite = true;
+      _epoll.ctl(EPOLL_CTL_MOD, it.second->sockfd(), EPOLLIN | EPOLLOUT);
+		} else {
+      _epoll.ctl(EPOLL_CTL_MOD, it.second->sockfd(), EPOLLIN);
+    }
+	}
+
+  int ret = _epoll.wait(1);
+  if (ret < 0) {
+		LOG_ERROR("<subserver %d> Epoll - Fail...\n", _id);
+		return false;
+	}
+
+  for (int i = 0; i < ret; i++) {
+    int sockfd = _epoll.events()[i].data.fd;
+    auto it = _clients.find(sockfd);
+    if (it == _clients.end()) continue;
+
+	  if (_epoll.events()[i].events & EPOLLIN) {
+      if (SOCKET_ERROR == recv(it->second)) {
+				// Client disconnected
+				onDisconnection(it->second);
+				_clients.erase(it);
+				continue;
+			}
+	  }
+
+    if (_epoll.events()[i].events & EPOLLOUT) {
+      if (SOCKET_ERROR == it->second->sendAll()) {
+				// Client disconnected
+				onDisconnection(it->second);
+				_clients.erase(it);
+				continue;
+			}
+	  }
+  }
+
+  return true;
+#endif
+
 	return false;
 }
 
@@ -248,6 +299,9 @@ void TcpSubserver::onMessage(const TcpConnection & pClient, Message * msg) {
 void TcpSubserver::onDisconnection(const TcpConnection & pClient)
 {
 	_clientsChange = true;
+#if IO_MODE == EPOLL
+  _epoll.ctl(EPOLL_CTL_DEL, pClient->sockfd(), 0);
+#endif
 	if (_pMain != nullptr) {
 		_pMain->onDisconnection(pClient);
 	}

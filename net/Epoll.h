@@ -23,6 +23,8 @@ public:
 
   // Close epoll
   void close();
+
+  const epoll_event *events();
 private:
   epoll_event *_pEvents = nullptr;  // Events array for responce
   int _epfd = -1;  // Epoll fd

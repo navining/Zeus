@@ -49,3 +49,7 @@ void Epoll::close() {
   }
 
 }
+
+const epoll_event *Epoll::events() {
+  return _pEvents;
+}

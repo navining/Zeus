@@ -27,10 +27,10 @@ typedef long unsigned int size_t;
 
 // IO multiplexing mode
 // SELECT, IOCP, EPOLL
-#define IO_MODE SELECT
+#define IO_MODE EPOLL
 
 // Maximum number of events mornitored by epoll
-#define EPOLL_SIZE 1024
+#define EPOLL_SIZE 10240
 
 // Size of the receive buffer
 #define RECV_BUFF_SIZE 8192
