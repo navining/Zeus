@@ -8,5 +8,7 @@ bool IO::multiplex()
 	return iocp();
 #elif IO_MODE == EPOLL
 	return epoll();
+#else
+	return false;
 #endif
 }
