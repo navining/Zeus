@@ -191,10 +191,11 @@ void TcpSubserver::respondRead(fd_set & fdRead) {
 				// Client disconnected
 				onDisconnection(it->second);
 				it = _clients.erase(it);
-				continue;
+			}
+			else {
+				++it;
 			}
 		}
-		++it;
 	}
 #endif
 }
@@ -214,14 +215,15 @@ void TcpSubserver::respondWrite(fd_set & fdWrite) {
 #else
 	for (auto it = _clients.begin(); it != _clients.end();) {
 		if (FD_ISSET(it->second->sockfd(), &fdWrite)) {
-			if (SOCKET_ERROR == it->second->sendAll()) {
+			if (SOCKET_ERROR == recv(it->second)) {
 				// Client disconnected
 				onDisconnection(it->second);
 				it = _clients.erase(it);
-				continue;
+			}
+			else {
+				++it;
 			}
 		}
-		++it;
 	}
 #endif
 }
