@@ -68,7 +68,7 @@ int Buffer::recv(SOCKET client) {
 
 	int recvlen = (int)::recv(client, _pBuf + _last, _size - _last, 0);
 	if (recvlen <= 0) {
-		return recvlen;
+		return SOCKET_ERROR;
 	}
 
 	_last += recvlen;

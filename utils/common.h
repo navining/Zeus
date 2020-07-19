@@ -27,7 +27,13 @@ typedef long unsigned int size_t;
 
 // IO multiplexing mode
 // SELECT, IOCP, EPOLL
+#ifdef _WIN32
+#define IO_MODE SELECT
+#else
+#ifdef __linux__
 #define IO_MODE EPOLL
+#endif
+#endif
 
 // Maximum number of events mornitored by epoll
 #define EPOLL_SIZE 10240
