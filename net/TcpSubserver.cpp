@@ -270,8 +270,8 @@ int TcpSubserver::recv(const TcpConnection & pClient) {
 	// Use each buffer of the client directly, no need to copy here
 	int ret = pClient->recv();
 
-	if (ret <= 0) {
-		return ret;
+	if (ret < 0) {
+		return SOCKET_ERROR;
 	}
 
 	return 0;
