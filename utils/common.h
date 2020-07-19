@@ -23,6 +23,13 @@ typedef long unsigned int size_t;
 #include "Timestamp.h"
 #include "Log.h"
 
+#define SELECT() select()
+#define IOCP() iocp()
+#define EPOLL() epoll()
+
+// IO multiplexing mode
+#define IO_MODE SELECT
+
 // Size of the receive buffer
 #define RECV_BUFF_SIZE 8192
 

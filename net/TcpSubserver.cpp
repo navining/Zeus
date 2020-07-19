@@ -37,7 +37,7 @@ void TcpSubserver::onRun(Thread & thread) {
 		}
 
 		// IO-multiplexing
-		if (!select()) {
+		if (!IO_MODE()) {
 			thread.exit();
 		}
 

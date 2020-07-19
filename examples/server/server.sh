@@ -2,7 +2,7 @@
 
 IP=
 PORT=4567
-THREAD=8
+THREAD=1
 
 ../bin/server IP=$IP PORT=$PORT THREAD=$THREAD$
 
