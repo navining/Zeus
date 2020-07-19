@@ -13,9 +13,11 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <limits.h>
+#include <sys/epoll.h>
 #define SOCKET int
 #define INVALID_SOCKET    (SOCKET)(~0)
 #define SOCKET_ERROR        (-1)
+#define EPOLL_ERROR        (-1)
 typedef long unsigned int size_t;
 #endif
 
@@ -28,7 +30,11 @@ typedef long unsigned int size_t;
 #define EPOLL() epoll()
 
 // IO multiplexing mode
+// SELECT, IOCP, EPOLL
 #define IO_MODE SELECT
+
+// Maximum number of events mornitored by epoll
+#define EPOLL_SIZE 1024
 
 // Size of the receive buffer
 #define RECV_BUFF_SIZE 8192
