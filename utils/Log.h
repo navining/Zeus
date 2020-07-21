@@ -54,33 +54,36 @@ public:
 		print("ERROR", format, args...);
 	}
 
-  template<typename ...Args>
+	template<typename ...Args>
 	static void perror(const char *format, Args... args) {
-		print("ERROR", format, args...);
-    print("ERROR", "errno = %d, errmsg = %s\n", errno, strerror(errno));
-	}
+#ifdef _WIN32
+		// Get errno in current thread
+		DWORD err = GetLastError();
+		// Get errmsg in taskHandler thread
+		Instance()._logTaskHandler.addTask([=]() {
+			char msg[256] = {};
+			FormatMessageA(
+				FORMAT_MESSAGE_FROM_SYSTEM,
+				NULL,
+				err,
+				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				(LPSTR)&msg, 256, NULL
+			);
+			printTask("ERROR", format, args...);
+			printTask("ERROR", "<%d> %s", err, msg);
+		});
+#else
+		int err = errno;
+		Instance()._logTaskHandler.addTask([=]() {
+			print("ERROR", format, args...);
+			print("ERROR", "<%d> %s\n", err, strerror(err));
+		});
+#endif		
+		}
 
 	template<typename ...Args>
 	static void debug(const char *format, Args... args) {
 		print("DEBUG", format, args...);
-	}
-
-	template<typename ...Args>
-	static void print(const char *type, const char *format, Args... args) {
-		Instance()._logTaskHandler.addTask([=]() {
-			printf("[%s] ", type);
-			printf(format, args...);
-
-			FILE *pFile = Instance()._pFile;
-			if (pFile != nullptr) {
-				time_t now = system_clock::to_time_t(system_clock::now());
-				std::tm *pNow = localtime(&now);
-				fprintf(pFile, "[%d-%02d-%02d %02d:%02d:%02d] ", pNow->tm_year + 1900, pNow->tm_mon + 1, pNow->tm_mday, pNow->tm_hour, pNow->tm_min, pNow->tm_sec);
-				fprintf(Instance()._pFile, "[%s] ", type);
-				fprintf(Instance()._pFile, format, args...);
-				fflush(Instance()._pFile);
-			}
-		});
 	}
 
 	static void setPath(const char *path, const char *mode);
@@ -96,6 +99,29 @@ private:
 	FILE *_pFile;
 
 	static void split(const char *whole_name, char *fname, char *ext);
-};
+
+	template<typename ...Args>
+	static void print(const char *type, const char *format, Args... args) {
+		Instance()._logTaskHandler.addTask([=]() {
+			printTask(type, format, args...);
+		});
+	}
+
+	template<typename ...Args>
+	static void printTask(const char *type, const char *format, Args... args) {
+		printf("[%s] ", type);
+		printf(format, args...);
+
+		FILE *pFile = Instance()._pFile;
+		if (pFile != nullptr) {
+			time_t now = system_clock::to_time_t(system_clock::now());
+			std::tm *pNow = localtime(&now);
+			fprintf(pFile, "[%d-%02d-%02d %02d:%02d:%02d] ", pNow->tm_year + 1900, pNow->tm_mon + 1, pNow->tm_mday, pNow->tm_hour, pNow->tm_min, pNow->tm_sec);
+			fprintf(Instance()._pFile, "[%s] ", type);
+			fprintf(Instance()._pFile, format, args...);
+			fflush(Instance()._pFile);
+		}
+	}
+	};
 
 #endif // !_Log_hpp_
