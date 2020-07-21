@@ -5,7 +5,6 @@
 #include <atomic>
 #include "TcpServer.h"
 #include "Config.h"
-#include "FDSet.h"
 //#include "Allocator.hpp"
 
 class MyServer : public TcpServer {
