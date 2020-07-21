@@ -1,8 +1,8 @@
-#include "FDSet.h"
+#include "Select.h"
 
 #define FD_SIZE 10240
 
-FDSet::FDSet() {
+Select::Select() {
 	_fdCount = FD_SIZE;
 #ifdef _WIN32
 	_fdSize = sizeof(u_int) + sizeof(SOCKET) * _fdCount;
@@ -14,14 +14,14 @@ FDSet::FDSet() {
 	memset(_fdset, 0, _fdSize);
 }
 
-FDSet::~FDSet() {
+Select::~Select() {
 	if (_fdset != nullptr) {
 		delete[] _fdset;
 		_fdset = nullptr;
 	}
 }
 
-void FDSet::set(SOCKET sock) {
+void Select::set(SOCKET sock) {
 #ifndef _WIN32
 	if (sock >= FD_SIZE) {
 		LOG_ERROR("Socket fd exceed limit: %d\n", FD_SIZE);
@@ -31,11 +31,11 @@ void FDSet::set(SOCKET sock) {
 	FD_SET(sock, _fdset);
 }
 
-void FDSet::clear(SOCKET sock) {
+void Select::clear(SOCKET sock) {
 	FD_CLR(sock, _fdset);
 }
 
-void FDSet::zero() {
+void Select::zero() {
 #ifdef _WIN32
 	FD_ZERO(_fdset);
 #else
@@ -43,24 +43,24 @@ void FDSet::zero() {
 #endif // _WIN32
 }
 
-int FDSet::isset(SOCKET sock) {
+int Select::isset(SOCKET sock) {
 	return FD_ISSET(sock, _fdset);
 }
 
-fd_set * FDSet::fdset() const {
+fd_set * Select::fdset() const {
 	return _fdset;
 }
 
-size_t FDSet::fdSize() const {
+size_t Select::fdSize() const {
 	return _fdSize;
 }
 
-int FDSet::fdCount() const {
+int Select::fdCount() const {
 	return _fdCount;
 }
 
 // Warning: assume same size here
 
-void FDSet::copy(const FDSet & other) {
+void Select::copy(const Select & other) {
 	memcpy(_fdset, other.fdset(), other.fdSize());
 }

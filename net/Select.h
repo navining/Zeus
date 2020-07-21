@@ -1,13 +1,13 @@
-#ifndef _FDSet_h_
-#define _FDSet_h_
+#ifndef _Select_h_
+#define _Select_h_
 
 #include "common.h"
 
-class FDSet {
+class Select {
 public:
-	FDSet();
+	Select();
 
-	~FDSet();
+	~Select();
 
 	void set(SOCKET sock);
 
@@ -24,7 +24,7 @@ public:
 	int fdCount() const;
 
 	// Warning: assume same size here
-	void copy(const FDSet &other);
+	void copy(const Select &other);
 
 private:
 	fd_set *_fdset = nullptr;
@@ -32,4 +32,4 @@ private:
 	int _fdCount = 0;
 };
 
-#endif // _FDSet_h_
+#endif // _Select_h_
