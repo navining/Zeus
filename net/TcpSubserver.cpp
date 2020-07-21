@@ -104,6 +104,10 @@ bool TcpSubserver::select() {
 	}
 
 	if (ret < 0) {
+    if (errno == EINTR) {
+      LOG_WARNING("<subserver %d> Select - Interrupted\n", _id);
+      return true;
+    }
 		LOG_PERROR("<subserver %d> Select - Fail...\n", _id);
 		return false;
 	}

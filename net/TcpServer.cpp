@@ -193,6 +193,10 @@ bool TcpServer::select()
 	int ret = ::select(_sock + 1, &fdRead, 0, 0, &t);
 
 	if (ret < 0) {
+    if (errno == EINTR) {
+      LOG_WARNING("<server %d> Select - Interrupted\n", _sock);
+      return true;
+    }
 		LOG_PERROR("<server %d> Select - Fail...\n", _sock);
 		return false;
 	}

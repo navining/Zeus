@@ -33,6 +33,10 @@ int Epoll::ctl(int op, SOCKET sockfd, uint32_t events) {
 int Epoll::wait(int timeout) {
   int ret = epoll_wait(_epfd, _pEvents, _nEvents, timeout);
   if (EPOLL_ERROR == ret) {
+    if (errno == EINTR) {
+      LOG_WARNING("Epoll::wait() interrupted\n");
+      return 0;
+    }
     LOG_PERROR("Epoll:wait() - Fail\n");
   }
   return ret;

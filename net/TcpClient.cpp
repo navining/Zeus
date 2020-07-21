@@ -108,6 +108,10 @@ bool TcpClient::select() {
 	}
 
 	if (ret < 0) {
+    if (errno == EINTR) {
+      LOG_WARNING("<client %d> Select - Interrupted\n", _pClient->sockfd());
+      return true;
+    }
 		LOG_PERROR("<client %d> Select - Fail...\n", _pClient->sockfd());
 		return false;
 	}
@@ -116,7 +120,7 @@ bool TcpClient::select() {
 	if (FD_ISSET(_pClient->sockfd(), &fdRead)) {
 		// Handle request
 		if (SOCKET_ERROR == recv()) {
-			LOG_PERROR("<client %d> Read - Fail...\n", _pClient->sockfd());
+			LOG_ERROR("<client %d> Read - Fail...\n", _pClient->sockfd());
 			return false;
 		}
 	}
@@ -124,7 +128,7 @@ bool TcpClient::select() {
 	if (FD_ISSET(_pClient->sockfd(), &fdWrite)) {
 		// Handle request
 		if (SOCKET_ERROR == _pClient->sendAll()) {
-			LOG_PERROR("<client %d> Write - Fail...\n", _pClient->sockfd());
+			LOG_ERROR("<client %d> Write - Fail...\n", _pClient->sockfd());
 			return false;
 		}
 	}
