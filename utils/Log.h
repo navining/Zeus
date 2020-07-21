@@ -9,9 +9,21 @@
 using std::chrono::system_clock;
 
 class Log {
-#define LOG_INFO(...) Log::info(__VA_ARGS__);
+#ifdef LOG_LEVEL
 
+#if LOG_LEVEL >= 1
+#define LOG_INFO(...) Log::info(__VA_ARGS__);
+#else
+#define LOG_INFO(...)
+#endif
+
+#if LOG_LEVEL >= 2
 #define LOG_WARNING(...) Log::warning(__VA_ARGS__);
+#else
+#define LOG_WARNING(...)
+#endif
+
+#endif // LOG_LEVEL
 
 #define LOG_ERROR(...) Log::error(__VA_ARGS__);
 

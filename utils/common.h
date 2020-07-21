@@ -21,10 +21,6 @@
 typedef long unsigned int size_t;
 #endif
 
-#include "Message.h"
-#include "Timestamp.h"
-#include "Log.h"
-
 // IO multiplexing mode
 // SELECT, IOCP, EPOLL
 #ifdef _WIN32
@@ -56,9 +52,19 @@ typedef long unsigned int size_t;
 // Define a negative number to disable it
 #define MAX_CLIENT -1
 
+// Log warning level
+// 0 - LOG_ERROR, LOG_PERROR
+// 1 - LOG_INFO, LOG_ERROR, LOG_PERROR
+// 2 - LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_PERROR
+#define LOG_LEVEL 2
+
 #ifndef _WIN32
 void blockSignal();
 #endif // !_WIN32
 
+
+#include "Message.h"
+#include "Timestamp.h"
+#include "Log.h"
 
 #endif // !_common_h_
