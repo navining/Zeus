@@ -22,7 +22,7 @@ SOCKET TcpClient::init() {
 	}
 	SOCKET _sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (_sock == INVALID_SOCKET) {
-		LOG_ERROR("Create socket - Fail...\n");
+		LOG_PERROR("Create socket - Fail...\n");
 	}
 	else {
 		// LOG::INFO("<client %d> Create socket - Success...\n", _sock);
@@ -47,7 +47,7 @@ int TcpClient::connect(const char * ip, unsigned short port) {
 #endif
 	int ret = ::connect(_pClient->sockfd(), (sockaddr *)&_sin, sizeof(sockaddr_in));
 	if (SOCKET_ERROR == ret) {
-		LOG_ERROR("<client %d> Connect - Fail...\n", _pClient->sockfd());
+		LOG_PERROR("<client %d> Connect - Fail...\n", _pClient->sockfd());
 	}
 	else {
 		isConnect = true;
@@ -67,7 +67,7 @@ void TcpClient::close() {
 bool TcpClient::onRun() {
 	if (!isRun())
 	{
-		LOG_ERROR("<client %d> Start - Fail...\n", _pClient->sockfd());
+		LOG_PERROR("<client %d> Start - Fail...\n", _pClient->sockfd());
 		return false;
 	};
 
@@ -108,7 +108,7 @@ bool TcpClient::select() {
 	}
 
 	if (ret < 0) {
-		LOG_ERROR("<client %d> Select - Fail...\n", _pClient->sockfd());
+		LOG_PERROR("<client %d> Select - Fail...\n", _pClient->sockfd());
 		return false;
 	}
 
@@ -116,7 +116,7 @@ bool TcpClient::select() {
 	if (FD_ISSET(_pClient->sockfd(), &fdRead)) {
 		// Handle request
 		if (SOCKET_ERROR == recv()) {
-			LOG_ERROR("<client %d> Read - Fail...\n", _pClient->sockfd());
+			LOG_PERROR("<client %d> Read - Fail...\n", _pClient->sockfd());
 			return false;
 		}
 	}
@@ -124,7 +124,7 @@ bool TcpClient::select() {
 	if (FD_ISSET(_pClient->sockfd(), &fdWrite)) {
 		// Handle request
 		if (SOCKET_ERROR == _pClient->sendAll()) {
-			LOG_ERROR("<client %d> Write - Fail...\n", _pClient->sockfd());
+			LOG_PERROR("<client %d> Write - Fail...\n", _pClient->sockfd());
 			return false;
 		}
 	}

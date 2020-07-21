@@ -104,7 +104,7 @@ bool TcpSubserver::select() {
 	}
 
 	if (ret < 0) {
-		LOG_ERROR("<subserver %d> Select - Fail...\n", _id);
+		LOG_PERROR("<subserver %d> Select - Fail...\n", _id);
 		return false;
 	}
 
@@ -130,7 +130,7 @@ bool TcpSubserver::epoll()
 
   int ret = _epoll.wait(1);
   if (ret < 0) {
-		LOG_ERROR("<subserver %d> Epoll - Fail...\n", _id);
+		LOG_PERROR("<subserver %d> Epoll - Fail...\n", _id);
 		return false;
 	}
 

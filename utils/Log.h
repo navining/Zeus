@@ -15,6 +15,8 @@ class Log {
 
 #define LOG_ERROR(...) Log::error(__VA_ARGS__);
 
+#define LOG_PERROR(...) Log::perror(__VA_ARGS__);
+
 #ifdef _DEBUG
 #define LOG_DEBUG(...) Log::debug(__VA_ARGS__);
 #else
@@ -38,6 +40,12 @@ public:
 	template<typename ...Args>
 	static void error(const char *format, Args... args) {
 		print("ERROR", format, args...);
+	}
+
+  template<typename ...Args>
+	static void perror(const char *format, Args... args) {
+		print("ERROR", format, args...);
+    print("ERROR", "errno = %d, errmsg = %s\n", errno, strerror(errno));
 	}
 
 	template<typename ...Args>

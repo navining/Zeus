@@ -21,7 +21,7 @@ int TcpServer::init() {
 	}
 	_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (!isRun()) {
-		LOG_ERROR("Create socket - Fail...\n");
+		LOG_PERROR("Create socket - Fail...\n");
 	}
 	else {
 		LOG_INFO("<server %d> Create socket - Success...\n", _sock);
@@ -57,7 +57,7 @@ int TcpServer::bind(const char * ip, unsigned short port) {
 
 	int ret = ::bind(_sock, (sockaddr *)&_sin, sizeof(sockaddr_in));
 	if (SOCKET_ERROR == ret) {
-		LOG_ERROR("<server %d> Bind %d - Fail...\n", _sock, port);
+		LOG_PERROR("<server %d> Bind %d - Fail...\n", _sock, port);
 	}
 	else {
 		LOG_INFO("<server %d> Bind %d - Success...\n", _sock, port);
@@ -71,7 +71,7 @@ int TcpServer::bind(const char * ip, unsigned short port) {
 int TcpServer::listen(int n) {
 	int ret = ::listen(_sock, n);
 	if (SOCKET_ERROR == ret) {
-		LOG_ERROR("<server %d> Listen - Fail...\n", _sock);
+		LOG_PERROR("<server %d> Listen - Fail...\n", _sock);
 	}
 	else {
 		LOG_INFO("<server %d> Listen - Success...\n", _sock);
@@ -93,7 +93,7 @@ SOCKET TcpServer::accept() {
 	SOCKET cli = ::accept(_sock, (sockaddr *)&clientAddr, (socklen_t *)&addrlen);
 #endif
 	if (INVALID_SOCKET == cli) {
-		LOG_ERROR("<server %d> Invaild client socket...\n", _sock);
+		LOG_PERROR("<server %d> Invaild client socket...\n", _sock);
 		return INVALID_SOCKET;
 	}
 
@@ -156,7 +156,7 @@ void TcpServer::start(int numOfThreads) {
 void TcpServer::onRun(Thread & thread) {
 	if (!isRun())
 	{
-		LOG_ERROR("<server %d> Start - Fail...\n", _sock);
+		LOG_PERROR("<server %d> Start - Fail...\n", _sock);
 		return;
 	};
 
@@ -193,7 +193,7 @@ bool TcpServer::select()
 	int ret = ::select(_sock + 1, &fdRead, 0, 0, &t);
 
 	if (ret < 0) {
-		LOG_ERROR("<server %d> Select - Fail...\n", _sock);
+		LOG_PERROR("<server %d> Select - Fail...\n", _sock);
 		return false;
 	}
 
@@ -212,7 +212,7 @@ bool TcpServer::epoll()
   int ret = _epoll.wait(1);
 
   if (ret < 0) {
-		LOG_ERROR("<server %d> Epoll - Fail...\n", _sock);
+		LOG_PERROR("<server %d> Epoll - Fail...\n", _sock);
 		return false;
 	}
 

@@ -30,7 +30,7 @@ public:
 			Test* _test = (Test *)msg;
 			// Send
 			Test result;
-			//pClient->send(&result);
+			pClient->send(&result);
 			break;
 		}
 		default:
