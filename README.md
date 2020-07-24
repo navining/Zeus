@@ -11,10 +11,15 @@ A high performance, cross-platform Internet Communication Engine. Developed with
 ### High Performance
 - Current concurrency ability: 10K connections, 1Gbps I/O with single thread
 - Target concurrency ability: 1M concurrent connections.
+### Good Availability
+- A complete and detailed log system
+- Friendly configuration files
+- Heartbeat detection and flow control is available
+- Customizable thread pool, memory pool and object pool
 ### Multiple Network Models
-- Select
+- select
 - IOCP (TODO)
-- Epoll (TODO)
+- epoll
 ### Multiple Transfer Protocols
 - TCP
 - UDP (TODO)
