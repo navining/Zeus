@@ -23,6 +23,7 @@
     <ClCompile Include="..\..\net\Select.cpp" />
     <ClCompile Include="..\..\net\IO.cpp" />
     <ClCompile Include="..\..\net\Network.cpp" />
+    <ClCompile Include="..\..\net\Stream.cpp" />
     <ClCompile Include="..\..\net\TcpClient.cpp" />
     <ClCompile Include="..\..\net\TcpConnection.cpp" />
     <ClCompile Include="..\..\net\TcpServer.cpp" />
@@ -44,6 +45,7 @@
     <ClInclude Include="..\..\net\Select.h" />
     <ClInclude Include="..\..\net\IO.h" />
     <ClInclude Include="..\..\net\Network.h" />
+    <ClInclude Include="..\..\net\Stream.h" />
     <ClInclude Include="..\..\net\TcpClient.h" />
     <ClInclude Include="..\..\net\TcpConnection.h" />
     <ClInclude Include="..\..\net\TcpServer.h" />

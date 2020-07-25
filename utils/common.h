@@ -23,13 +23,7 @@ typedef long unsigned int size_t;
 
 // IO multiplexing mode
 // SELECT, IOCP, EPOLL
-#ifdef _WIN32
 #define IO_MODE SELECT
-#else
-#ifdef __linux__
-#define IO_MODE EPOLL
-#endif
-#endif
 
 // Maximum number of events mornitored by epoll
 #define EPOLL_SIZE 10240
@@ -39,6 +33,9 @@ typedef long unsigned int size_t;
 
 // Size of the send buffer
 #define SEND_BUFF_SIZE 10240
+
+// Size of the byte stream buffer
+#define STREAM_BUFF_SIZE 1024
 
 // Heartbeat detection (in millisecond)
 // Define a negative number to disable it
