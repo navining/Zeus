@@ -21,31 +21,31 @@ Stream::~Stream() {
 }
 
 int8_t Stream::readInt8() {
-	int8_t n = NULL;
+	int8_t n = 0;
 	read(n);
 	return n;
 }
 
 int16_t Stream::readInt16() {
-	int16_t n = NULL;
+	int16_t n = 0;
 	read(n);
 	return n;
 }
 
 int32_t Stream::readInt32() {
-	int32_t n = NULL;
+	int32_t n = 0;
 	read(n);
 	return n;
 }
 
 float Stream::readFloat() {
-	float n = NULL;
+	float n = 0;
 	read(n);
 	return n;
 }
 
 double Stream::readDouble() {
-	double n = NULL;
+	double n = 0;
 	read(n);
 	return n;
 }

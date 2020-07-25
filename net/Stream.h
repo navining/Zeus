@@ -115,7 +115,7 @@ bool Stream::peek(T &n) {
 
 template<typename T>
 uint32_t Stream::readArray(T *n, uint32_t desSize) {
-	uint32_t srcSize = NULL;
+	uint32_t srcSize = 0;
 	peek(srcSize);
 
 	if (desSize < srcSize) {
