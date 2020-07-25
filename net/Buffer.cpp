@@ -22,7 +22,7 @@ char * Buffer::data() {
 // Retern false if the buffer is full
 
 bool Buffer::push(const char * pData, int length) {
-	if (_last + length > SEND_BUFF_SIZE) {
+	if (_last + length > _size) {
 		return false;
 	}
 
