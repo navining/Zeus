@@ -40,6 +40,8 @@ public:
 	template<typename T>
 	uint32_t readArray(T *n, uint32_t srcSize);
 
+	int32_t getArraySize();
+
 private:
 	char* _pBuf = nullptr;	// Buffer
 	int _read = 0;	// Read position of the buffer

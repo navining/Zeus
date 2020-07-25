@@ -69,3 +69,10 @@ bool Stream::writeFloat(float n) {
 bool Stream::writeDouble(double n) {
 	return write(n);
 }
+
+int32_t Stream::getArraySize()
+{
+	int32_t n = 0;
+	peek(n);
+	return n;
+}
