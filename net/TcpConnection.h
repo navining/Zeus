@@ -4,6 +4,7 @@
 #include "common.h"
 #include "ObjectPool.h"
 #include "Buffer.h"
+#include "Stream.h"
 
 class TcpSocket : public ObjectPool<TcpSocket, 10000> {
 public:

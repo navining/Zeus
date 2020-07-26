@@ -63,6 +63,5 @@ void blockSignal();
 #include "Message.h"
 #include "Timestamp.h"
 #include "Log.h"
-#include "Stream.h"
 
 #endif // !_common_h_
