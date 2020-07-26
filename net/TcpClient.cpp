@@ -158,14 +158,16 @@ void TcpClient::process()
 	while (_pClient->hasMessage()) {
 		// Pop one message from the client buffer
 		Message *msg = _pClient->popMessage();
+		// Convert into stream
+		Stream stream(msg);
 		// Process message
-		onMessage(msg);
+		onMessage(&stream);
 	}
 }
 
 
 
-void TcpClient::onMessage(Message * msg)
+void TcpClient::onMessage(Stream * msg)
 {
 
 }

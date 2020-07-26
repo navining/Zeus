@@ -35,7 +35,7 @@ public:
 	void process();
 
 	// Process data
-	virtual void onMessage(Message *msg);
+	virtual void onMessage(Stream *msg);
 
 	// Handle other services
 	virtual void onIdle();

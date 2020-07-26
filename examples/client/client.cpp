@@ -38,8 +38,13 @@ std::atomic_int sendCount(0);
 
 class MyClient : public TcpClient {
 public:
-	void onMessage(Message *msg) {
+	void onMessage(Stream *stream) {
+		Message *msg = stream->toMessage();
 		switch (msg->type) {
+		case STREAM:
+		{
+			break;
+		}
 		case CMD_TEST:
 		{
 			Test* test = (Test *)msg;
