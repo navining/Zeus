@@ -3,8 +3,8 @@
 
 #define TEST_DATA_SIZE 100
 
-enum CMD {
-	STREAM = 11,
+enum MESSAGE_TYPE {
+	STREAM,
 	CMD_TEST,
 	CMD_ERROR
 };
@@ -12,16 +12,16 @@ enum CMD {
 struct Message {
 	Message() {
 		length = sizeof(Message);
-		cmd = CMD_ERROR;
+		type = CMD_ERROR;
 	}
-	short cmd;
+	short type;
 	short length;
 };
 
 struct Test : public Message {
 	Test() {
 		length = sizeof(Test);
-		cmd = CMD_TEST;
+		type = CMD_TEST;
 	}
 	char data[TEST_DATA_SIZE - 4];
 };

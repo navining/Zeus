@@ -39,7 +39,7 @@ std::atomic_int sendCount(0);
 class MyClient : public TcpClient {
 public:
 	void onMessage(Message *msg) {
-		switch (msg->cmd) {
+		switch (msg->type) {
 		case CMD_TEST:
 		{
 			Test* test = (Test *)msg;

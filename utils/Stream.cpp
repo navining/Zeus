@@ -29,7 +29,7 @@ const char * Stream::data()
 Message * Stream::toMessage()
 {
 	Message *msg = (Message *)(_pBuf - OFFSET);
-	msg->cmd = STREAM;
+	msg->type = STREAM;
 	msg->length = _write + OFFSET;
 	return msg;
 }
