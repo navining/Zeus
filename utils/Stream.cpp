@@ -80,6 +80,21 @@ bool Stream::writeDouble(double n) {
 	return write(n);
 }
 
+bool Stream::writeString(const char * n, uint32_t len)
+{
+	return writeArray(n, len);
+}
+
+bool Stream::writeString(const char * n)
+{
+	return writeArray(n, strlen(n));
+}
+
+bool Stream::writeString(std::string & n)
+{
+	return writeArray(n.c_str(), n.length());
+}
+
 int32_t Stream::getArraySize()
 {
 	int32_t n = 0;

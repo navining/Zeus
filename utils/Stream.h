@@ -46,6 +46,12 @@ public:
 
 	bool writeDouble(double n);
 
+	bool writeString(const char *n, uint32_t len);
+
+	bool writeString(const char *n);
+
+	bool writeString(std::string &n);
+
 	template<typename T>
 	bool writeArray(T *n, uint32_t size);
 
