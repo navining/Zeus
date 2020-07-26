@@ -20,6 +20,16 @@ Stream::~Stream() {
 		delete[] _pBuf;
 }
 
+const char * Stream::data()
+{
+	return _pBuf;
+}
+
+int Stream::size()
+{
+	return _write - _read;
+}
+
 int8_t Stream::readInt8() {
 	int8_t n = 0;
 	read(n);

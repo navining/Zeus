@@ -3,7 +3,15 @@
 
 #include <cstdint>
 #include "common.h"
-#include <atomic>
+
+// ---------------------------------------
+// |          |            |             |
+// |  readed  |  readable  |  writtable  |
+// |          |            |             |
+// ---------------------------------------
+//            ^            ^             ^
+//          _read        _write        _size
+
 class Stream {
 public:
 	Stream(int size = STREAM_BUFF_SIZE);
@@ -13,6 +21,10 @@ public:
 	Stream(char *pBuf, int size, bool flag = false);
 
 	~Stream();
+
+	const char *data();
+
+	int size();
 
 	int8_t readInt8();
 

@@ -36,6 +36,7 @@
     <ClInclude Include="..\..\utils\Message.h" />
     <ClInclude Include="..\..\utils\ObjectPool.h" />
     <ClInclude Include="..\..\utils\Semaphore.h" />
+    <ClInclude Include="..\..\utils\Stream.h" />
     <ClInclude Include="..\..\utils\TaskHandler.h" />
     <ClInclude Include="..\..\utils\Thread.h" />
     <ClInclude Include="..\..\utils\Timestamp.h" />
@@ -54,6 +55,7 @@
     <ClCompile Include="..\..\utils\Log.cpp" />
     <ClCompile Include="..\..\utils\MemoryPool.cpp" />
     <ClCompile Include="..\..\utils\Semaphore.cpp" />
+    <ClCompile Include="..\..\utils\Stream.cpp" />
     <ClCompile Include="..\..\utils\TaskHandler.cpp" />
     <ClCompile Include="..\..\utils\Thread.cpp" />
     <ClCompile Include="..\..\utils\Timestamp.cpp" />
