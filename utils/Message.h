@@ -4,7 +4,7 @@
 #define TEST_DATA_SIZE 100
 
 enum CMD {
-	STREAM,
+	STREAM = 11,
 	CMD_TEST,
 	CMD_ERROR
 };

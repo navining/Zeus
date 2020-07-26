@@ -7,9 +7,18 @@ Stream::Stream(int size) {
 	_flag = true;
 }
 
+Stream::Stream(Message * msg)
+{
+	_size = msg->length - OFFSET;
+	_write = _size;
+	_pBuf = (char *)msg + OFFSET;
+	_flag = false;
+}
+
 
 Stream::~Stream() {
-	delete[] (_pBuf - OFFSET);
+	if (_flag)
+		delete[] (_pBuf - OFFSET);
 }
 
 const char * Stream::data()

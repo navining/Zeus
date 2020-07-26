@@ -19,6 +19,8 @@ public:
 
 	Stream(int size = STREAM_BUFF_SIZE);
 
+	Stream(Message *msg);
+
 	~Stream();
 
 	const char *data();

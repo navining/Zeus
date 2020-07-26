@@ -287,15 +287,17 @@ void TcpSubserver::process() {
 		if (pClient->hasMessage()) {
 			// Pop one message from the client buffer
 			Message *msg = pClient->popMessage();
+			// Convert into stream
+			Stream stream(msg);
 			// Process message
-			onMessage(pClient, msg);
+			onMessage(pClient, &stream);
 		}
 	}
 }
 
 // Handle message
 
-void TcpSubserver::onMessage(const TcpConnection & pClient, Message * msg) {
+void TcpSubserver::onMessage(const TcpConnection & pClient, Stream * msg) {
 	pClient->reset_tHeartbeat();
 	if (_pMain != nullptr) {
 		_pMain->onMessage(pClient, msg);

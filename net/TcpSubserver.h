@@ -32,7 +32,7 @@ public:
 	bool iocp();
 
 	// Handle message
-	void onMessage(const TcpConnection& pClient, Message *msg);
+	void onMessage(const TcpConnection& pClient, Stream *msg);
 
 	void onDisconnection(const TcpConnection& pClient);
 

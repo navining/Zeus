@@ -246,7 +246,7 @@ void TcpServer::onDisconnection(const TcpConnection & pClient) {
 
 }
 
-void TcpServer::onMessage(const TcpConnection & pClient, Message * msg) {
+void TcpServer::onMessage(const TcpConnection & pClient, Stream * msg) {
 
 }
 

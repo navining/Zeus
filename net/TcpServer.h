@@ -27,7 +27,7 @@ public:
 
 	virtual void onDisconnection(const TcpConnection& pClient);
 
-	virtual void onMessage(const TcpConnection& pClient, Message *msg);
+	virtual void onMessage(const TcpConnection& pClient, Stream *msg);
 
 	virtual void onIdle();
 

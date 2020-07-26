@@ -13,7 +13,7 @@ public:
 	// Client disconnect event
 	virtual void onDisconnection(const TcpConnection& pClient) = 0;
 	// Receive message event
-	virtual void onMessage(const TcpConnection& pClient, Message *msg) = 0;
+	virtual void onMessage(const TcpConnection& pClient, Stream *msg) = 0;
 	// Handle other events when the server is idle
 	virtual void onIdle() = 0;
 };

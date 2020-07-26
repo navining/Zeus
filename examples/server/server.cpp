@@ -22,29 +22,9 @@ public:
 		_clientCount--;
 	}
 
-	void onMessage(const TcpConnection& pClient, Message *msg) {
-		_msgCount++;
-		switch (msg->cmd) {
-		case CMD_TEST:	// Send back the test data (echo)
-		{
-			Test* _test = (Test *)msg;
-			// Send
-			Test result;
-			// pClient->send(&result);
-			break;
-		}
-		case STREAM :
-		{
-			char * str = (char *)msg + 4;
-			printf("%s", str);
-			break;
-		}
-		default:
-		{
-			printf("<server %d> From: <client %d> Receive Message: UNDIFINED\n", _sock, pClient->sockfd());
-		}
-		}
-
+	void onMessage(const TcpConnection& pClient, Stream *stream) {
+		_msgCount++;	
+		//printf("%s", stream->toString().c_str());
 	}
 
 	void onIdle() {
