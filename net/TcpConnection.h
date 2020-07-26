@@ -33,6 +33,9 @@ public:
 	// Send message (put into the send buffer)
 	int send(Message *msg);
 
+	// Send message (byte stream)
+	int send(Stream * stream);
+
 	// Clear the buffer (send everything out)
 	int sendAll();
 

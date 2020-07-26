@@ -30,7 +30,13 @@ public:
 			Test* _test = (Test *)msg;
 			// Send
 			Test result;
-			pClient->send(&result);
+			// pClient->send(&result);
+			break;
+		}
+		case STREAM :
+		{
+			char * str = (char *)msg + 4;
+			printf("%s", str);
 			break;
 		}
 		default:

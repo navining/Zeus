@@ -181,6 +181,10 @@ int TcpClient::send(Message * _msg) {
 	return _pClient->send(_msg);
 }
 
+int TcpClient::send(Stream * _msg) {
+	return _pClient->send(_msg);
+}
+
 int TcpClient::sendAll() {
 	return _pClient->sendAll();
 }

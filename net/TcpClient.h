@@ -43,6 +43,8 @@ public:
 	// Send data
 	int send(Message *_msg);
 
+	int send(Stream * _msg);
+
 	int sendAll();
 
 private:

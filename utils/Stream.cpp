@@ -2,22 +2,14 @@
 
 Stream::Stream(int size) {
 	_size = size;
-	_pBuf = new char[_size];
+	_pBuf = new char[_size + OFFSET];
+	_pBuf += OFFSET;
 	_flag = true;
 }
 
-// Construct a stream from outside
-// flag: whether the memory is freed within Stream or not
-
-Stream::Stream(char * pBuf, int size, bool flag) {
-	_size = size;
-	_pBuf = pBuf;
-	_flag = flag;
-}
 
 Stream::~Stream() {
-	if (_flag)
-		delete[] _pBuf;
+	delete[] (_pBuf - OFFSET);
 }
 
 const char * Stream::data()
@@ -25,9 +17,35 @@ const char * Stream::data()
 	return _pBuf;
 }
 
-int Stream::size()
+Message * Stream::toMessage()
+{
+	Message *msg = (Message *)(_pBuf - OFFSET);
+	msg->cmd = STREAM;
+	msg->length = _write + OFFSET;
+	return msg;
+}
+
+int Stream::size() {
+	return _write;
+}
+
+int Stream::capacity() {
+	return _size;
+}
+
+int Stream::readedSize()
+{
+	return _read;
+}
+
+int Stream::readableSize()
 {
 	return _write - _read;
+}
+
+int Stream::writableSize()
+{
+	return _size - _write;
 }
 
 int8_t Stream::readInt8() {
@@ -60,6 +78,15 @@ double Stream::readDouble() {
 	return n;
 }
 
+std::string Stream::toString()
+{
+	char *a = new char[_write - OFFSET];
+	readArray(a, _write - OFFSET);
+	std::string s(a);
+	delete[] a;
+	return s;
+}
+
 bool Stream::writeInt8(int8_t n) {
 	return write(n);
 }
@@ -87,12 +114,12 @@ bool Stream::writeString(const char * n, uint32_t len)
 
 bool Stream::writeString(const char * n)
 {
-	return writeArray(n, strlen(n));
+	return writeArray(n, strlen(n)+1);
 }
 
 bool Stream::writeString(std::string & n)
 {
-	return writeArray(n.c_str(), n.length());
+	return writeArray(n.c_str(), n.length()+1);
 }
 
 int32_t Stream::getArraySize()

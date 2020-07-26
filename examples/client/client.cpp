@@ -25,7 +25,7 @@ u_short port;
 MyClient** clients;
 
 // Message to be sent
-Test msg;	// 100 Byte
+Stream msg;
 
 int numOfMsg;	// Number of messages sent by each client
 
@@ -58,7 +58,7 @@ public:
 		}
 	}
 
-	int sendTest(Message *test)
+	int sendTest(Stream *test)
 	{
 		int ret = 0;
 		if (_nSendCount > 0)
@@ -181,6 +181,8 @@ int main(int argc, char* argv[]) {
 
 	clients = new MyClient*[numOfClients];
 
+	msg.writeString("Hello World!\n");
+
 	Thread cmd;
 	cmd.start(
 		EMPTY_THREAD_FUNC,
@@ -195,7 +197,7 @@ int main(int argc, char* argv[]) {
 	LOG_INFO("Number of clients: %d\n", numOfClients);
 	LOG_INFO("Number of threads: %d\n", numOfThreads);
 	LOG_INFO("Number of packages per client: %d\n", numOfMsg);
-	LOG_INFO("Size per package: %d Bytes\n", (int)sizeof(msg));
+	LOG_INFO("Size per package: %d Bytes\n", msg.size() + msg.OFFSET);
 
 	std::vector<Thread> threads(numOfThreads);
 	for (int n = 0; n < numOfThreads; n++)

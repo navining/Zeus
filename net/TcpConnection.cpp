@@ -72,6 +72,10 @@ int TcpSocket::send(Message * msg) {
 	return SOCKET_ERROR;
 }
 
+int TcpSocket::send(Stream * stream) {
+	return send(stream->toMessage());
+}
+
 // Clear the buffer (send everything out)
 
 int TcpSocket::sendAll() {

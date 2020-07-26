@@ -3,28 +3,37 @@
 
 #include <cstdint>
 #include "common.h"
-
-// ---------------------------------------
-// |          |            |             |
-// |  readed  |  readable  |  writtable  |
-// |          |            |             |
-// ---------------------------------------
-//            ^            ^             ^
-//          _read        _write        _size
+#include <string>
+// ---------------------------------------------------------
+// |      |          |          |            |             |
+// | type |  length  |  readed  |  readable  |  writtable  |
+// |      |          |          |            |             |
+// ---------------------------------------------------------
+// ^                 ^          ^            ^             ^
+// 0                _pBuf     _read        _write        _size
+// <---- OFFSET  ---->
 
 class Stream {
 public:
-	Stream(int size = STREAM_BUFF_SIZE);
+	static const int OFFSET = sizeof(Message);
 
-	// Construct a stream from outside
-	// flag: whether the memory is freed within Stream or not
-	Stream(char *pBuf, int size, bool flag = false);
+	Stream(int size = STREAM_BUFF_SIZE);
 
 	~Stream();
 
 	const char *data();
 
+	Message * toMessage();
+
 	int size();
+
+	int capacity();
+
+	int readedSize();
+
+	int readableSize();
+
+	int writableSize();
 
 	int8_t readInt8();
 
@@ -35,6 +44,8 @@ public:
 	float readFloat();
 
 	double readDouble();
+
+	std::string toString();
 
 	bool writeInt8(int8_t n);
 
