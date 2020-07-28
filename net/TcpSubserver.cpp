@@ -41,7 +41,6 @@ void TcpSubserver::onRun(Thread & thread) {
 			_clientsBuf.clear();
 			_clientsChange = true;
 		}
-
 		// IO-multiplexing
 		if (!multiplex()) {
 			thread.exit();
@@ -195,11 +194,10 @@ void TcpSubserver::respondRead(fd_set & fdRead) {
 				// Client disconnected
 				onDisconnection(it->second);
 				it = _clients.erase(it);
-			}
-			else {
-				++it;
+        continue;
 			}
 		}
+    ++it;
 	}
 #endif
 }
@@ -223,11 +221,10 @@ void TcpSubserver::respondWrite(fd_set & fdWrite) {
 				// Client disconnected
 				onDisconnection(it->second);
 				it = _clients.erase(it);
-			}
-			else {
-				++it;
+        continue;
 			}
 		}
+    ++it;
 	}
 #endif
 }
