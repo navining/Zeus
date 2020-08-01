@@ -52,6 +52,9 @@ int TcpClient::connect(const char * ip, unsigned short port) {
 	else {
 		isConnect = true;
 		// LOG::INFO("<client %d> Connect - Success...\n", _pClient->sockfd());
+#if IO_MODE == EPOLL
+		_epoll.ctl(EPOLL_CTL_ADD, _pClient->sockfd(), EPOLLIN);
+#endif
 	}
 	return ret;
 }
@@ -72,7 +75,7 @@ bool TcpClient::onRun() {
 	};
 
 	// IO-mutiplex
-	if (!select()) {
+	if (!multiplex()) {
 		close();
 		return false;
 	}
@@ -108,10 +111,10 @@ bool TcpClient::select() {
 	}
 
 	if (ret < 0) {
-    if (errno == EINTR) {
-      LOG_WARNING("<client %d> Select - Interrupted\n", _pClient->sockfd());
-      return true;
-    }
+		if (errno == EINTR) {
+			LOG_WARNING("<client %d> Select - Interrupted\n", _pClient->sockfd());
+			return true;
+		}
 		LOG_PERROR("<client %d> Select - Fail...\n", _pClient->sockfd());
 		return false;
 	}
@@ -127,13 +130,55 @@ bool TcpClient::select() {
 
 	if (FD_ISSET(_pClient->sockfd(), &fdWrite)) {
 		// Handle request
-		if (SOCKET_ERROR == _pClient->sendAll()) {
+		if (SOCKET_ERROR == sendAll()) {
 			LOG_ERROR("<client %d> Write - Fail...\n", _pClient->sockfd());
 			return false;
 		}
 	}
 
 	return true;
+}
+
+bool TcpClient::epoll()
+{
+#if IO_MODE == EPOLL
+	// Only mornitor writtable sockets
+	if (!_pClient->isSendEmpty()) {
+		_epoll.ctl(EPOLL_CTL_MOD, _pClient->sockfd(), EPOLLIN | EPOLLOUT);
+	}
+	else {
+		_epoll.ctl(EPOLL_CTL_MOD, _pClient->sockfd(), EPOLLIN);
+	}
+
+	int ret = _epoll.wait(1);
+	if (ret < 0) {
+		LOG_PERROR("<client %d> Epoll - Fail...\n", _pClient->sockfd());
+		return false;
+	}
+
+	if (_epoll.events()[0].events & EPOLLIN) {
+		if (SOCKET_ERROR == recv()) {
+			LOG_ERROR("<client %d> Read - Fail...\n", _pClient->sockfd());
+			return false;
+		}
+	}
+
+	if (_epoll.events()[0].events & EPOLLOUT) {
+		if (SOCKET_ERROR == sendAll()) {
+			// Client disconnected
+			LOG_ERROR("<client %d> Write - Fail...\n", _pClient->sockfd());
+			return false;
+		}
+	}
+	return true;
+#endif
+
+	return false;
+}
+
+bool TcpClient::iocp()
+{
+	return false;
 }
 
 // If connected

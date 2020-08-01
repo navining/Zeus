@@ -3,8 +3,8 @@
 
 #include "common.h"
 #include "TcpConnection.h"
-
-class TcpClient {
+#include "IO.h"
+class TcpClient : public IO {
 public:
 	TcpClient();
 
@@ -24,6 +24,10 @@ public:
 
 	// Select
 	bool select();
+
+	bool epoll();
+
+	bool iocp();
 
 	// If connected
 	bool isRun();
