@@ -24,7 +24,7 @@ public:
 
 	void onMessage(const TcpConnection& pClient, Stream *stream) {
 		_msgCount++;	
-		printf("%s", stream->toString().c_str());
+		//printf("%s", stream->toString().c_str());
 	}
 
 	void onIdle() {
