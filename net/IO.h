@@ -5,6 +5,7 @@
 #define IOCP 2
 #define EPOLL 3
 
+#include "Select.h"
 #ifdef __linux__
 #include "Epoll.h"
 #endif
@@ -18,11 +19,16 @@ public:
 	bool multiplex();
 protected:
 	virtual bool select() = 0;
+#ifdef _WIN32
 	virtual bool iocp() = 0;
+#endif
+#ifdef __linux__
 	virtual bool epoll() = 0;
-
+#endif
 #if IO_MODE == EPOLL
-  Epoll _epoll;
+	Epoll _epoll;
+#elif IO_MODE == SELECT
+	Select _select;
 #endif
 };
 
