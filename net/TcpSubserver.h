@@ -18,12 +18,22 @@ public:
 
 	~TcpSubserver();
 
+	// Add new clients into the buffer
+	void addClients(const TcpConnection& pClient);
+
+	// Get number of clients in the current subserver
+	size_t getClientCount();
+
 	// Start the server
 	void start();
 
 	// Start server service
 	void onRun(Thread & thread);
 
+	// Close socket
+	void close();
+
+private:
 	// select
 	bool select();
 
@@ -53,20 +63,11 @@ public:
 	// Check if the send buffer is ready to be cleared
 	// void checkSendBuffer();
 
-	// Add new clients into the buffer
-	void addClients(const TcpConnection& pClient);
-
-	// Get number of clients in the current subserver
-	size_t getClientCount();
-
 	// Receive data
 	int recv(const TcpConnection& pClient);
 
 	// Process messages in each client buffer
 	void process();
-
-	// Close socket
-	void close();
 
 private:
 	std::unordered_map<SOCKET, TcpConnection> _clients;

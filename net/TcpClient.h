@@ -22,21 +22,8 @@ public:
 	// Start client service
 	bool onRun();
 
-	// Select
-	bool select();
-
-	bool epoll();
-
-	bool iocp();
-
 	// If connected
 	bool isRun();
-
-	// Receive data and unpack
-	int recv();
-
-	// Process messages in each client buffer
-	void process();
 
 	// Process data
 	virtual void onMessage(Stream *msg);
@@ -48,6 +35,20 @@ public:
 	int send(Message *_msg);
 
 	int send(Stream * _msg);
+
+private:
+	// Select
+	bool select();
+
+	bool epoll();
+
+	bool iocp();
+
+	// Receive data and unpack
+	int recv();
+
+	// Process messages in each client buffer
+	void process();
 
 	int sendAll();
 

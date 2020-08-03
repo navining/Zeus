@@ -52,12 +52,6 @@ public:
 	// If connected
 	bool isRun();
 
-	bool select();
-
-	bool epoll();
-
-	bool iocp();
-
 	// Close socket
 	void close();
 
@@ -67,6 +61,12 @@ private:
 	std::vector<TcpSubserver *> _subservers;
 	Thread _thread;
 	std::atomic_int _clientCount;	// Number of clients
+	
+	bool select();
+
+	bool epoll();
+
+	bool iocp();
 protected:
 	SOCKET _sock;
 	Timestamp _time;
