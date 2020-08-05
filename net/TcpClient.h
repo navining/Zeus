@@ -31,9 +31,10 @@ public:
 	// Handle other services
 	virtual void onIdle();
 
-	// Send data
+	// Send data with Message
 	int send(Message *_msg);
 
+	// Send data with Stream
 	int send(Stream * _msg);
 
 private:
@@ -50,6 +51,7 @@ private:
 	// Process messages in each client buffer
 	void process();
 
+	// Send all data in the buffer immediately
 	int sendAll();
 
 private:

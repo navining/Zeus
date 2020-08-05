@@ -246,24 +246,6 @@ void TcpSubserver::checkAlive() {
 	}
 }
 
-// Check if the send buffer is ready to be cleared
-/*
-void TcpSubserver::checkSendBuffer() {
-	time_t current = Time::getCurrentTimeInMilliSec();
-	time_t dt = current - _tCurrent;
-	_tCurrent = current;
-	for (auto it = _clients.begin(); it != _clients.end(); ++it) {
-		const TcpConnection &pClient = it->second;
-		if (pClient->canSend(dt)) {
-			// Add a task to clear the client buffer (send everything out)
-			_sendTaskHandler.addTask([=]()->void {
-				pClient->sendAll();
-			});
-		}
-	}
-}
-*/
-
 // Receive data
 
 int TcpSubserver::recv(const TcpConnection & pClient) {

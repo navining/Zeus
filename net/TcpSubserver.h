@@ -24,24 +24,19 @@ public:
 	// Get number of clients in the current subserver
 	size_t getClientCount();
 
-	// Start the server
+	// Start the subserver
 	void start();
 
-	// Start server service
-	void onRun(Thread & thread);
-
-	// Close socket
+	// Close subserver
 	void close();
 
 private:
-	// select
 	bool select();
 
 	bool epoll();
 
 	bool iocp();
 
-	// Handle message
 	void onMessage(const TcpConnection& pClient, Stream *msg);
 
 	void onDisconnection(const TcpConnection& pClient);
@@ -60,17 +55,17 @@ private:
 	// Check if the client is alive
 	void checkAlive();
 
-	// Check if the send buffer is ready to be cleared
-	// void checkSendBuffer();
-
 	// Receive data
 	int recv(const TcpConnection& pClient);
 
 	// Process messages in each client buffer
 	void process();
 
+	// Start server service
+	void onRun(Thread & thread);
+
 private:
-	std::unordered_map<SOCKET, TcpConnection> _clients;
+	std::unordered_map<SOCKET, TcpConnection> _clients;	// Map the sockfd to client connections
 	std::vector<TcpConnection> _clientsBuf;	// Clients buffer
 	std::mutex _mutex;	// Mutex for clients buffer
 	Event *_pMain;	// Pointer to the main thread (for event callback)
@@ -79,7 +74,7 @@ private:
 	fd_set _fdRead;	// A cache of fd_set
 	bool _clientsChange;	// If the clients array changes
 	SOCKET _maxSock;	// Record current max socket
-	int _id;
-	Thread _thread;
+	int _id;	// id of the subserver
+	Thread _thread;	// current thread
 };
 #endif // !_TcpSubserver_h_

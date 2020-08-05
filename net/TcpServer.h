@@ -40,26 +40,21 @@ public:
 	// Listen to port
 	int listen(int n);
 
-	// Accept client connection
-	SOCKET accept();
-
-	// Start child threads
+	// Start TcpSubservers and TcpServer::onRun()
 	void start(int numOfThreads = TCPSERVER_THREAD_COUNT);
-
-	// Start server service
-	void onRun(Thread & thread);
 
 	// If connected
 	bool isRun();
 
-	// Close socket
+	// Close the server
 	void close();
 
+	// Total number of clients
 	int clientCount();
 
 private:
-	std::vector<TcpSubserver *> _subservers;
-	Thread _thread;
+	std::vector<TcpSubserver *> _subservers;	// Vector of subservers
+	Thread _thread; // Current thread
 	std::atomic_int _clientCount;	// Number of clients
 	
 	bool select();
@@ -67,6 +62,12 @@ private:
 	bool epoll();
 
 	bool iocp();
+
+	// Start server service
+	void onRun(Thread & thread);
+
+	// Accept client connection
+	SOCKET accept();
 protected:
 	SOCKET _sock;
 	Timestamp _time;
