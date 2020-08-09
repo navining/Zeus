@@ -1,8 +1,9 @@
-#ifdef SERVER_MAIN
 #ifndef _Allocator_h_
 #define _Allocator_h_
 
 #include "MemoryPool.h"
+
+#ifdef MEMORY_POOL
 
 void *operator new(size_t size) {
 	return Memory::Instance().alloc(size);
@@ -27,5 +28,6 @@ void *mem_alloc(size_t size) {
 void mem_free(void * p) {
 	free(p);
 }
+
+#endif  // MEMORY_POOL
 #endif // !_Allocator_h_
-#endif

@@ -1,5 +1,3 @@
-#define SERVER_MAIN
-
 #include <iostream>
 #include <thread>
 #include <atomic>

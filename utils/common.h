@@ -55,6 +55,9 @@ typedef long unsigned int size_t;
 // 2 - LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_PERROR
 #define LOG_LEVEL 2
 
+// define MEMORY_POOL to use the memory pool (Be careful!)
+// #define MEMORY_POOL
+
 #ifndef _WIN32
 void blockSignal();
 #endif // !_WIN32
