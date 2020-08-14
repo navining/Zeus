@@ -27,6 +27,7 @@ public:
 	
 	// Sleep the thread
 	static void sleep(time_t t);
+
 protected:
 	// The actual funtion of the thread, shouldn't be called directly, use start() instead
 	void run();
