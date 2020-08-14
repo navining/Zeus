@@ -12,6 +12,8 @@ typedef std::function<void(Thread &)> ThreadFunc;
 
 class Thread {
 public:
+	// Start the thread
+	// Three function objects can be passed in (use EMPTY_THREAD_FUNC as default)
 	void start(ThreadFunc onStart = EMPTY_THREAD_FUNC, ThreadFunc onRun = EMPTY_THREAD_FUNC, ThreadFunc onClose = EMPTY_THREAD_FUNC);
 
 	// Close the thread. This function should be called from other threads (otherwise will cause dead lock)
@@ -20,10 +22,13 @@ public:
 	// Exit the thread. This function should be called by current thread
 	void exit();
 
+	// Whether the thread is running
 	bool isRun() const;
 	
+	// Sleep the thread
 	static void sleep(time_t t);
 protected:
+	// The actual funtion of the thread, shouldn't be called directly, use start() instead
 	void run();
 private:
 	bool _isRun = false;	// Whether the thread is running
