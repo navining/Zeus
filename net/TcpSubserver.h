@@ -58,6 +58,9 @@ private:
 	// Receive data
 	int recv(const TcpConnection& pClient);
 
+	// Send data
+	int send(const TcpConnection& pClient);
+
 	// Process messages in each client buffer
 	void process();
 

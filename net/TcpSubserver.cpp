@@ -152,7 +152,7 @@ bool TcpSubserver::epoll()
 	  }
 
     if (_epoll.events()[i].events & EPOLLOUT) {
-      if (it->second->sendAll() <= 0) {
+      if (send(it->second) <= 0) {
 				// Client disconnected
 				onDisconnection(it->second);
 				_clients.erase(it);
@@ -208,7 +208,7 @@ void TcpSubserver::respondWrite(fd_set & fdWrite) {
 		auto it = _clients.find(fdWrite.fd_array[n]);
 		if (it == _clients.end()) continue;
 		const TcpConnection& pClient = it->second;
-		if (pClient->sendAll() <= 0) {
+		if (send(pClient) <= 0) {
 			// Client disconnected
 			onDisconnection(pClient);
 			_clients.erase(pClient->sockfd());
@@ -217,7 +217,7 @@ void TcpSubserver::respondWrite(fd_set & fdWrite) {
 #else
 	for (auto it = _clients.begin(); it != _clients.end();) {
 		if (FD_ISSET(it->second->sockfd(), &fdWrite)) {
-			if (it->second->sendAll() <= 0) {
+			if (send(it->second) <= 0) {
 				// Client disconnected
 				onDisconnection(it->second);
 				it = _clients.erase(it);
@@ -250,6 +250,11 @@ void TcpSubserver::checkAlive() {
 
 int TcpSubserver::recv(const TcpConnection & pClient) {
 	return pClient->recv();
+}
+
+int TcpSubserver::send(const TcpConnection & pClient)
+{
+	return pClient->sendAll();
 }
 
 void TcpSubserver::process() {
