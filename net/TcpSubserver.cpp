@@ -143,7 +143,7 @@ bool TcpSubserver::epoll()
     if (it == _clients.end()) continue;
 
 	  if (_epoll.events()[i].events & EPOLLIN) {
-      if (SOCKET_ERROR == recv(it->second)) {
+      if (recv(it->second) <= 0) {
 				// Client disconnected
 				onDisconnection(it->second);
 				_clients.erase(it);
@@ -152,7 +152,7 @@ bool TcpSubserver::epoll()
 	  }
 
     if (_epoll.events()[i].events & EPOLLOUT) {
-      if (SOCKET_ERROR == it->second->sendAll()) {
+      if (it->second->sendAll() <= 0) {
 				// Client disconnected
 				onDisconnection(it->second);
 				_clients.erase(it);
@@ -180,7 +180,7 @@ void TcpSubserver::respondRead(fd_set & fdRead) {
 		auto it = _clients.find(fdRead.fd_array[n]);
 		if (it == _clients.end()) continue;
 		const TcpConnection& pClient = it->second;
-		if (SOCKET_ERROR == recv(pClient)) {
+		if (recv(pClient) <= 0) {
 			// Client disconnected
 			onDisconnection(pClient);
 			_clients.erase(pClient->sockfd());
@@ -190,7 +190,7 @@ void TcpSubserver::respondRead(fd_set & fdRead) {
 #else
 	for (auto it = _clients.begin(); it != _clients.end();) {
 		if (FD_ISSET(it->second->sockfd(), &fdRead)) {
-			if (SOCKET_ERROR == recv(it->second)) {
+			if (recv(it->second) <= 0) {
 				// Client disconnected
 				onDisconnection(it->second);
 				it = _clients.erase(it);
@@ -208,7 +208,7 @@ void TcpSubserver::respondWrite(fd_set & fdWrite) {
 		auto it = _clients.find(fdWrite.fd_array[n]);
 		if (it == _clients.end()) continue;
 		const TcpConnection& pClient = it->second;
-		if (SOCKET_ERROR == pClient->sendAll()) {
+		if (pClient->sendAll() <= 0) {
 			// Client disconnected
 			onDisconnection(pClient);
 			_clients.erase(pClient->sockfd());
@@ -217,7 +217,7 @@ void TcpSubserver::respondWrite(fd_set & fdWrite) {
 #else
 	for (auto it = _clients.begin(); it != _clients.end();) {
 		if (FD_ISSET(it->second->sockfd(), &fdWrite)) {
-			if (SOCKET_ERROR == recv(it->second)) {
+			if (it->second->sendAll() <= 0) {
 				// Client disconnected
 				onDisconnection(it->second);
 				it = _clients.erase(it);
@@ -249,15 +249,7 @@ void TcpSubserver::checkAlive() {
 // Receive data
 
 int TcpSubserver::recv(const TcpConnection & pClient) {
-
-	// Use each buffer of the client directly, no need to copy here
-	int ret = pClient->recv();
-
-	if (ret < 0) {
-		return SOCKET_ERROR;
-	}
-
-	return 0;
+	return pClient->recv();
 }
 
 void TcpSubserver::process() {

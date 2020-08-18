@@ -191,11 +191,7 @@ bool TcpClient::isRun() {
 // Receive data and unpack
 
 int TcpClient::recv() {
-	int ret = _pClient->recv();
-	if (ret <= 0) {
-		return ret;
-	}
-	return ret;
+	return _pClient->recv();
 }
 
 void TcpClient::process()
