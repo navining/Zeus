@@ -1,3 +1,5 @@
+![Travis (.org)](https://img.shields.io/travis/navining/Zeus)
+
 # Zeus
 A high performance, cross-platform Internet Communication Engine. Developed with native socket API. Aim at handling millions of concurrent connections.
 
