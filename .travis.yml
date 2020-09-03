@@ -1,0 +1,9 @@
+language: cpp
+dist: bionic
+compiler:
+  - gcc
+os:
+  - linux
+script:
+  - cd examples/
+  - ./build.sh
