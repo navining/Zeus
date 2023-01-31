@@ -13,7 +13,9 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <limits.h>
+#ifdef __linux__
 #include <sys/epoll.h>
+#endif
 #define SOCKET int
 #define INVALID_SOCKET    (SOCKET)(~0)
 #define SOCKET_ERROR        (-1)

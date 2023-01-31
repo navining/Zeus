@@ -1,5 +1,5 @@
 #include "Epoll.h"
-
+#ifdef __linux__
 Epoll::~Epoll() {
   close();
 }
@@ -57,3 +57,4 @@ void Epoll::close() {
 const epoll_event *Epoll::events() {
   return _pEvents;
 }
+#endif
